@@ -1,0 +1,94 @@
+.ajustado {
+    --padding-top: 56px; 
+    --padding-bottom: 80px;  
+  }
+
+
+  .chat-header {
+    position: fixed;
+    background-color: white;
+    z-index: 10;
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+    
+  }
+  
+  .spacer-header {
+    height: 56px; 
+  }
+  
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 40px;
+    margin-top: 18px;
+  }
+
+
+  .barra-fija {
+    position: fixed;
+    bottom: 60px;
+    width: 100%;
+    background: white;
+    border-top: 1px solid #ccc;
+    z-index: 100;
+  }
+
+
+
+  
+  .message {
+    display: flex;
+    margin-bottom: 10px;
+    max-width: 80%;
+  }
+  
+  .sent {
+    align-self: flex-end;
+    justify-content: flex-end;
+  }
+  
+  .received {
+    align-self: flex-start;
+    justify-content: flex-start;
+  }
+  
+  .bubble {
+    background-color: var(--ion-color-light);
+    border-radius: 18px;
+    padding: 10px 14px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+  
+  .sent .bubble {
+    background-color: #dcf8c6;
+  }
+  
+  .hora {
+    font-size: 10px;
+    color: gray;
+    display: block;
+    text-align: right;
+    margin-top: 4px;
+  }
+  
+  .mensaje-input {
+    width: 100%;
+  }
+
+
+  .imagen-chat {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-top: 5px;
+  }
+  
+  .video-chat {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-top: 5px;
+  }

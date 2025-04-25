@@ -1,0 +1,86 @@
+<ion-content [fullscreen]="true" class="ajustado">
+
+  <!-- MOSTRAR PUBLICACIÓN -->
+  <ion-card *ngIf="post" class="publicacion-card">
+    <ion-item>
+      <ion-avatar slot="start">
+        <img [src]="post.userAvatar" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ post.username }}</h2>
+        <p>{{ post.time }}</p>
+      </ion-label>
+    </ion-item>
+
+    <img [src]="post.image" class="post-image" />
+
+      <!-- Acciones -->
+      <ion-row class="action-row" responsive>
+
+        <!-- Botón de me gusta -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="likes(post)">
+            <!-- Cambia el icono según el estado de me gusta -->
+            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large" color="danger"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <!-- Botón de compartir -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="enviar(post)">
+            <ion-icon name="paper-plane-outline" size="large"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <ion-col></ion-col>
+        
+        <!-- Botón de guardar -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="guardar(post)">
+            <!-- Cambia el icono según el estado de guardado -->
+            <ion-icon [name]="post.guardar ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+
+
+    <ion-card-content>
+      <p><strong>{{ post.likes }} likes</strong></p>
+      <p>{{ post.description }}</p>
+    </ion-card-content>
+  </ion-card>
+
+
+
+ 
+
+
+
+
+  <!-- COMENTARIOS -->
+  <div #comentariosContainer  class="comentario-container">
+    <h1 style="text-align: center;">Comentarios</h1>
+    <ion-list>
+      <ion-item *ngFor="let comentario of post.comments">
+        <ion-avatar slot="start">
+          <img [src]="comentario.avatar" />
+        </ion-avatar>
+        <ion-label>
+          <h3>{{ comentario.usuario }}</h3>
+          <p>{{ comentario.mensaje }}</p>
+          <small>{{ comentario.fecha | date:'short' }}</small>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- CAMPO NUEVO COMENTARIO -->
+  <ion-toolbar class="barra-comentario-fija">
+    <ion-item lines="none">
+      <ion-input placeholder="Añadir comentario..." [(ngModel)]="nuevoComentario"></ion-input>
+      <ion-button fill="clear" (click)="publicarComentario()">Publicar</ion-button>
+    </ion-item>
+  </ion-toolbar>
+
+</ion-content>

@@ -1,0 +1,22 @@
+<ion-content fullscreen="true" class="ajustado">
+  <!-- Barra de búsqueda -->
+  <ion-searchbar [debounce]="1000" (ionInput)="handleInput($event)" placeholder="Buscar chat"></ion-searchbar>
+  <!-- chats -->
+  <ion-list [inset]="true" lines="full">
+    <ion-text color="primary" class="ion-text-center">
+      <h1>Mensajes</h1>
+    </ion-text>
+    <!-- Lista de chat -->
+    <ion-item *ngFor="let post of posts" class="chat-item" [routerLink]="['/chat-privado', post.id]">
+      <ion-avatar slot="start">
+        <img [src]="post.userAvatar" />
+      </ion-avatar>
+      <ion-label>
+        <!-- Nombre de usuario -->
+        <h5>{{ post.username }}</h5>
+        <!-- Último mensaje -->
+        <p class="message-text">{{ post.mensage }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

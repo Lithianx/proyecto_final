@@ -1,0 +1,21 @@
+.ajustado {
+    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
+    --padding-bottom: 80px;  // Ajusta según el alto de tu navbar/footer
+  }
+
+  .barra-comentario-fija {
+    position: fixed;
+    bottom: 60px;
+    width: 100%;
+    background: white;
+    border-top: 1px solid #ccc;
+    z-index: 100;
+  }
+
+  .comentario-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 40px;
+    padding-top: 40px;
+}

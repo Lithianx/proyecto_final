@@ -1,0 +1,120 @@
+<!--el fullscreen true para ajustar los margenes manualmente-->
+<ion-content fullscreen="true" class="ajustado">
+  <ion-list lines="none">
+
+    <!-- Publicación -->
+    <ion-card *ngFor="let post of posts">
+      <ion-item>
+        <ion-avatar slot="start">
+          <img [src]="post.userAvatar" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ post.username }}</h2>
+          <p>{{ post.time }}</p>
+        </ion-label>
+        <!-- Botón de opciones -->
+        <ion-button fill="clear" size="small" (click)="opcion(post)">
+          <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+        </ion-button>
+
+      </ion-item>
+      <!-- Imagen de la publicación -->
+      <img [src]="post.image"  class="post-image" (click)="verImagen(post)" />
+
+      <!-- Acciones -->
+      <ion-row class="action-row" responsive>
+
+        <!-- Botón de me gusta -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="likes(post)">
+            <!-- Cambia el icono según el estado de me gusta -->
+            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large" color="danger"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <!-- Botón de comentarios -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" [routerLink]="['/comentario', post.id]">
+            <ion-icon name="chatbubble-outline" size="large"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <!-- Botón de compartir -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="enviar(post)">
+            <ion-icon name="paper-plane-outline" size="large"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <ion-col></ion-col>
+        
+        <!-- Botón de guardar -->
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="guardar(post)">
+            <!-- Cambia el icono según el estado de guardado -->
+            <ion-icon [name]="post.guardar ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+      <!-- Descripción -->
+      <ion-card-content>
+        <p><strong>{{ post.likes }} likes</strong></p>
+      
+        <p>
+          {{ mostrarDescripcion ? post.description : (post.description | slice:0:100) + (post.description.length > 100 ? '...' : '') }}
+          <ion-button 
+            *ngIf="post.description.length > 100" 
+            fill="clear" 
+            size="small" 
+            (click)="mostrarDescripcion = !mostrarDescripcion">
+            {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
+          </ion-button>
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+  </ion-list>
+
+
+
+<!-- VISOR DE IMAGEN (solo se muestra cuando se activa) -->
+<div *ngIf="imagenSeleccionada" class="overlay" (click)="cerrarVisor()">
+  <img [src]="imagenSeleccionada" class="imagen-expandida" />
+</div>
+
+
+
+
+  <!-- 
+  En caso que decidan como modal 
+  <ion-modal [isOpen]="mostrarModalComentarios" (didDismiss)="cerrarModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Comentarios</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <ion-list>
+          <ion-item *ngFor="let comentario of comentariosSeleccionados">
+            <ion-label>
+              <p><strong>Usuario</strong>: {{ comentario }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <ion-item lines="none">
+          <ion-input placeholder="Añadir comentario..." [(ngModel)]="nuevoComentario"></ion-input>
+          <ion-button fill="clear" size="small" (click)="publicarComentario()">Publicar</ion-button>
+        </ion-item>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  -->
+
+</ion-content>

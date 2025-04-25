@@ -1,0 +1,66 @@
+<ion-content [fullscreen]="true" class="ajustado">
+
+  <!-- header local con nombre chat y boton de colcer atras -->
+  <ion-toolbar class="chat-header">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/lista-chat"></ion-back-button>
+    </ion-buttons>
+    <ion-avatar slot="start">
+      <img [src]="chatInfo.userAvatar">
+    </ion-avatar>
+    <ion-title>{{ chatInfo.username }}</ion-title>
+  </ion-toolbar>
+
+  <!-- Espacio debajo del header -->
+  <div class="spacer-header"></div>
+
+
+  <div class="chat-container">
+    <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.tipo === 'enviado' ? 'message sent' : 'message received'">
+      <div class="bubble">
+
+        <!-- Imagen (si existe) -->
+        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" />
+
+        <!-- Video (si existe) -->
+        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat"></video>
+
+        <!-- Audio (si existe) -->
+        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*"></audio>
+
+        <!-- Texto (si existe) -->
+        <p *ngIf="mensaje.texto">{{ mensaje.texto }}</p>
+
+        <!-- Hora -->
+        <span class="hora">{{ mensaje.hora }}</span>
+      </div>
+    </div>
+  </div>
+
+
+  <ion-toolbar class="barra-fija">
+    <ion-item lines="none">
+
+      <!-- Botón para seleccionar imagen y video -->
+      <ion-button fill="clear" (click)="seleccionarArchivo()">
+        <ion-icon name="image-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Input oculto para subir imagen -->
+      <input type="file" #fileInput accept="image/*,video/*" hidden (change)="onArchivoSeleccionado($event)" />
+
+      
+      <ion-button (click)="seleccionarAudio()" fill="clear">
+        <ion-icon name="mic-outline"></ion-icon>
+      </ion-button>
+      
+      <input type="file" accept="audio/*" hidden #audioInput (change)="onAudioSeleccionado($event)" />
+
+      <ion-input placeholder="Enviar mensaje..." [(ngModel)]="nuevoMensaje" class="mensaje-input"></ion-input>
+      <ion-button fill="clear" (click)="enviarMensaje()">
+        <ion-icon name="send-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+
+</ion-content>

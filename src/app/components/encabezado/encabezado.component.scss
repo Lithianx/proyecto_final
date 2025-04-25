@@ -1,0 +1,15 @@
+.encabezado-toolbar {
+    --background: #1e1e1e; /* color oscuro */
+    justify-content: center;
+  }
+  
+  .encabezado-buttons {
+    width: 25%;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .encabezado-icon {
+    color: white; /* color de íconos normales */
+    font-size: 33px;
+  }

@@ -1,0 +1,40 @@
+<ion-footer>
+  <ion-toolbar class="footer-toolbar">
+    <ion-buttons class="footer-buttons">
+      <ion-button (click)="irTorneo()">
+        <ion-icon
+          name="trophy-outline"
+          [ngClass]="rutaActual  === '/perfil' ? 'icon-activo' : 'icon-inactivo'">
+        </ion-icon>
+      </ion-button>
+
+      <ion-button (click)="irEvento()">
+        <ion-icon
+          name="flash-outline"
+          [ngClass]="rutaActual  === '/perfil' ? 'icon-activo' : 'icon-inactivo'">
+        </ion-icon>
+      </ion-button>
+
+      <ion-button (click)="mostrarMenu()">
+        <ion-icon
+          name="add-circle-outline"
+          class="icono-mas">
+        </ion-icon>
+      </ion-button>
+
+      <ion-button (click)="irHome()">
+        <ion-icon
+          name="home"
+          [ngClass]="rutaActual  === '/home' ? 'icon-activo' : 'icon-inactivo'">
+        </ion-icon>
+      </ion-button>
+
+      <ion-button (click)="irChat()">
+        <ion-icon
+          name="chatbubble-ellipses-outline"
+          [ngClass]="rutaActual  === '/lista-chat' ? 'icon-activo' : 'icon-inactivo'">
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

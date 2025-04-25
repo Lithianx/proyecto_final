@@ -1,0 +1,47 @@
+<ion-content fullscreen="true" class="ajustado">
+
+
+  <ion-card class="crear-publicacion-card">
+    <ion-item lines="none">
+      <ion-avatar slot="start">
+        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ usuario }}</h2>
+      </ion-label>
+    </ion-item>
+
+    <ion-textarea auto-grow="true" placeholder="¿Qué estás pensando?" [(ngModel)]="contenido"
+      class="textarea-publicacion"></ion-textarea>
+
+    <ion-row class="acciones-publicacion">
+      <ion-col size="4">
+        <ion-button fill="clear" expand="full">
+          <ion-icon name="image-outline" slot="start"></ion-icon>
+          Foto
+        </ion-button>
+      </ion-col>
+
+
+
+      <ion-col size="4">
+        <ion-button fill="clear" expand="full">
+          <ion-icon name="happy-outline" slot="start"></ion-icon>
+          Estado
+        </ion-button>
+      </ion-col>
+
+      
+      <ion-col size="4">
+        <ion-button fill="clear" expand="full">
+          <ion-icon name="location-outline" slot="start"></ion-icon>
+          Ubicación
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-button expand="block" (click)="publicar()" [disabled]="!contenido">
+      Publicar
+    </ion-button>
+  </ion-card>
+</ion-content>
