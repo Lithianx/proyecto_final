@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ModalController } from '@ionic/angular';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 
 // Definir la interfaz para el Usuario
@@ -145,7 +147,7 @@ export class HomePage implements OnInit {
           text: 'Compartir',
           icon: 'share-outline',
           handler: () => {
-            this.abrirModalCompartir(post);
+            this.compartir(post);
             console.log('Compartir post');
           },
         },
@@ -167,22 +169,24 @@ export class HomePage implements OnInit {
     }).then(actionSheet => actionSheet.present());
   }
 
-  abrirModalCompartir(post: Post) {
-    this.postCompartir = post;
-    this.modalCompartirAbierto = true;
-  }
 
-  cerrarModalCompartir() {
-    this.modalCompartirAbierto = false;
-    this.postCompartir = null;
-  }
 
-  compartir(post: Post) {
-    const mensaje = encodeURIComponent(`${post.description} 👉 http://localhost:8100/comentario/${post.id}`);
-    const url = `https://wa.me/?text=${mensaje}`;
-    window.open(url, '_blank');
-    console.log('Compartiendo post:', post);
-    this.cerrarModalCompartir();
+  async compartir(post: Post) {
+    const mensaje = `${post.description}\n\nImagen: ${post.image}\n\nVer más: http://localhost:8100/comentario/${post.id}`;
+  
+    if (Capacitor.getPlatform() !== 'web') {
+      await Share.share({
+        title: 'Mira esto',
+        text: mensaje,
+        url: `http://localhost:8100/comentario/${post.id}`,
+        dialogTitle: 'Compartir con',
+      });
+    } else {
+      // Prueba para navegador: abrir WhatsApp web
+      const mensajeCodificado = encodeURIComponent(mensaje);
+      const url = `https://wa.me/?text=${mensajeCodificado}`;
+      window.open(url, '_blank');
+    }
   }
 
   comentario(post: Post) {

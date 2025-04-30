@@ -116,29 +116,5 @@
     <img [src]="imagenSeleccionada" class="imagen-expandida" />
   </div>
 
-<!-- MODAL DE COMPARTIR -->
-<ion-modal [isOpen]="modalCompartirAbierto" (didDismiss)="cerrarModalCompartir()">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Compartir publicación</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="cerrarModalCompartir()">
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <div *ngIf="postCompartir">
-        <p><strong>Usuario:</strong> {{ postCompartir.usuario.username }}</p>
-        <p><strong>Descripción:</strong> {{ postCompartir.description }}</p>
-        <ion-img [src]="postCompartir.image" *ngIf="postCompartir.image"></ion-img>
-        <ion-button expand="block" (click)="compartir(postCompartir)">Compartir ahora</ion-button>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
 
 </ion-content>
