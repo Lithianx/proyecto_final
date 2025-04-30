@@ -54,7 +54,7 @@ export class NavbarComponent  implements OnInit {
           text: 'Crear Evento',
           icon: 'flash-outline',
           handler: () => {
-            this.router.navigate(['/crear-evento']);
+            this.router.navigate(['/crear-evento-flash']);
           }
         },
         {

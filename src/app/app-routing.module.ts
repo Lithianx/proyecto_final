@@ -30,7 +30,13 @@ const routes: Routes = [
   {
     path: 'comentario/:id',
     loadChildren: () => import('./pages/comentario/comentario.module').then( m => m.ComentarioPageModule)
+  },  {
+    path: 'crear-evento-flash',
+    loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
+
+ 
+
 
 ];
 
