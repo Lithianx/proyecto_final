@@ -1,6 +1,6 @@
 .ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 60px;  // Ajusta según el alto de tu navbar/footer
+   // --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
+    --padding-bottom: 56px;  // Ajusta según el alto de tu navbar/footer
   }
 
   .post-image {
@@ -11,6 +11,13 @@
     padding: 10px;
   }
   
+  .descripcion-sola {
+    font-size: 1.1rem;
+    padding: 1rem;
+    text-align: center;
+  }
+
+
   .action-row {
     align-items: center;
     padding-left: 10px;

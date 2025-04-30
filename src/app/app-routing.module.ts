@@ -24,13 +24,18 @@ const routes: Routes = [
     loadChildren: () => import('./pages/crear-publicacion/crear-publicacion.module').then( m => m.CrearPublicacionPageModule)
   },
   {
-    path: 'editar-publicacion',
+    path: 'editar-publicacion/:id',
     loadChildren: () => import('./pages/editar-publicacion/editar-publicacion.module').then( m => m.EditarPublicacionPageModule)
   },
   {
     path: 'comentario/:id',
     loadChildren: () => import('./pages/comentario/comentario.module').then( m => m.ComentarioPageModule)
   },
+  {
+    path: 'reportar/:id',
+    loadChildren: () => import('./pages/reportar/reportar.module').then( m => m.ReportarPageModule)
+  },
+
 
 ];
 

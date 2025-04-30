@@ -1,13 +1,65 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>editar-publicacion</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content fullscreen="true" class="ajustado">
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">editar-publicacion</ion-title>
+
+    <ion-toolbar class="chat-header">
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="crear-publicacion"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Editar Publicación</ion-title>
     </ion-toolbar>
-  </ion-header>
+
+    <ion-card class="crear-publicacion-card">
+        <ion-item lines="none">
+            <ion-avatar slot="start">
+                <img [src]="usuario.userAvatar" />
+            </ion-avatar>
+            <ion-label>
+                <h2>{{usuario.username}}</h2>
+            </ion-label>
+        </ion-item>
+
+        <ion-textarea auto-grow="true" placeholder="Edita tu publicación" [(ngModel)]="contenido"
+            class="textarea-publicacion">
+        </ion-textarea>
+
+        <!-- Mostrar imagen actual si existe -->
+        <ng-container *ngIf="imagenBase64">
+            <img [src]="imagenBase64" class="media-item" />
+          
+            <ion-button color="danger" fill="clear" size="small" expand="block" (click)="eliminarImagen()">
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              Eliminar Imagen
+            </ion-button>
+          </ng-container>
+
+        <ion-row class="acciones-publicacion">
+            <ion-col size="12">
+                <ion-button fill="clear" expand="full" (click)="seleccionarArchivo()">
+                    <ion-icon name="image-outline" slot="start"></ion-icon>
+                    Cambiar Foto
+                </ion-button>
+                <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
+            </ion-col>
+        </ion-row>
+
+        <ion-button expand="block" (click)="guardarCambios()" [disabled]="!contenido && !imagenBase64">
+            Guardar Cambios
+        </ion-button>
+    </ion-card>
+
+
+<!-- vista previa de publicación guardada -->
+
+<ion-card *ngIf="vistaPreviaVisible" class="vista-previa-card">
+    <ion-card-header>
+        <ion-card-title>Vista previa de publicación guardada</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+        <p>{{ post.description }}</p>
+        <img *ngIf="post.image" [src]="post.image" class="media-item" />
+    </ion-card-content>
+</ion-card>
+
+
 </ion-content>

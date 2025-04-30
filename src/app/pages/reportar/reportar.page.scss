@@ -1,0 +1,22 @@
+.ajustado {
+    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
+    --padding-bottom: 80px;  // Ajusta según el alto de tu navbar/footer
+  }
+
+.publicacion-card{
+  max-width: 400px; // Ancho máximo para que no sea tan grande
+  margin: 16px auto; // Centramos la card y damos separación
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1); // Sombra suave
+  border-radius: 12px; // Bordes redondeados
+  overflow: hidden;
+}
+
+
+
+  .reportar-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 40px;
+    padding-top: 40px;
+}
