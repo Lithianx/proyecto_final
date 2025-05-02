@@ -1,0 +1,131 @@
+/* Fondo general */
+.login-content {
+  --background: linear-gradient(to top, #2ecc71, #000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenedor principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 40px 20px 20px 20px;
+  margin-top: 30px;
+}
+
+.app-logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 1rem;
+}
+
+.app-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Caja del login */
+.login-box {
+  background-color: #000;
+  color: white;
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* Solo a los campos de usuario y contraseña */
+.input-icon {
+  --background: white;
+  --color: black;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-icon.item-has-focus {
+  border: 2px solid #2ecc71;
+}
+
+ion-icon {
+  color: #2ecc71;
+}
+
+.input-icon ion-label {
+  color: #333;
+}
+
+.input-icon ion-input {
+  color: #000;
+}
+
+/* No fondo blanco para checkbox */
+.checkbox-item {
+  --background: transparent;
+  --color: white;
+  margin-right: 10px;
+}
+
+.checkbox-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.small-blue-text {
+  font-size: 0.75rem;
+  color: #3498db;
+}
+
+.forgot-password-inline a {
+  font-size: 0.75rem;
+  color: #3498db;
+  text-decoration: none;
+}
+
+/* Botón */
+.login-button {
+  --background: #2ecc71;
+  --border-radius: 8px;
+  margin-top: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.login-button:hover {
+  transform: scale(1.02);
+}
+
+/* Link crear cuenta */
+.create-account-link {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.create-account-link a {
+  font-size: 0.85rem;
+  color: #3498db;
+  text-decoration: none;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

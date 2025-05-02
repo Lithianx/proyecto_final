@@ -13,3 +13,28 @@
     color: white; /* color de íconos normales */
     font-size: 33px;
   }
+  .footer-toolbar {
+      --background: #1e1e1e; /* color oscuro */
+      justify-content: center;
+    }
+    
+    .footer-buttons {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .icon-activo {
+      color: #58e73b; // verde
+      font-size: 33px;
+    }
+    
+    .icon-inactivo {
+      color: #707070; // gris claro
+      font-size: 33px;
+    }
+    
+    .icono-mas{
+      color: #707070; // gris claro
+      font-size: 33px;
+    }

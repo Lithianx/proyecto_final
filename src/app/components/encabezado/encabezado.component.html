@@ -5,8 +5,11 @@
       <ion-button>
         <ion-icon name="notifications-sharp" class="encabezado-icon"></ion-icon>
       </ion-button>
-      <ion-button>
-        <ion-icon name="person-outline" class="encabezado-icon"></ion-icon>
+      <ion-button (click)="irEvento()">
+        <ion-icon
+          name="person-outline"
+          [ngClass]="rutaActual  === '/perfil' ? 'icon-activo' : 'icon-inactivo'">
+        </ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

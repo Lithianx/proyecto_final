@@ -1,0 +1,76 @@
+.registro-content {
+    --background: linear-gradient(to top, #2ecc71, #000);
+    color: #fff;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* centra verticalmente */
+    height: 100%;
+    padding: 16px;
+    position: relative;
+  }
+  
+  .header-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 70px;
+  }
+  
+  .back-button {
+    margin-right: 8px;
+    color: white;
+  }
+  
+  .app-title {
+    font-size: 35px;
+    color: #fff;
+    margin: 0;
+    padding-left: 4px;
+  }
+  
+  .login-box {
+    background: #000;
+    padding: 24px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .input-icon ion-icon {
+    color: #28a745;
+  }
+  
+  ion-item {
+    --highlight-color-focused: #28a745;
+    --background: transparent;
+    --color: white;
+    --border-color: transparent;
+    margin-bottom: 12px;
+  }
+  
+  ion-label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  ion-input {
+    color: white;
+    --placeholder-color: #ccc;
+    font-size: 15px;
+  }
+  
+  .login-button {
+    margin-top: 20px;
+    --background: #28a745;
+    font-weight: bold;
+    border-radius: 8px;
+  }
+  
+ 

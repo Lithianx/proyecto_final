@@ -1,0 +1,40 @@
+<ion-content class="registro-content" [fullscreen]="true">
+  <div class="container">
+
+    <div class="header-row">
+      <ion-button fill="clear" class="back-button" [routerLink]="['/login']">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <h1 class="app-title">Creación de cuenta</h1>
+    </div>
+
+    <div class="login-box">
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Nombre de usuario</ion-label>
+        <ion-input type="text"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Correo electrónico</ion-label>
+        <ion-input type="email"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input type="password"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Confirmar contraseña</ion-label>
+        <ion-input type="password"></ion-input>
+      </ion-item>
+
+      <ion-button expand="block" class="login-button"[routerLink]="['/login']">Crear cuenta</ion-button>
+
+    </div>
+  </div>
+</ion-content>

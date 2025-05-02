@@ -1,0 +1,38 @@
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="container">
+    <img src="assets/img/logo.png" alt="Logo de la aplicación" class="app-logo" />
+    <h1 class="app-title">Nombre de la Aplicación</h1>
+
+    <div class="login-box">
+
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Nombre de usuario</ion-label>
+        <ion-input type="text"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-icon">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input type="password"></ion-input>
+      </ion-item>
+
+      <div class="checkbox-forgot">
+        <ion-item lines="none" class="checkbox-item">
+          <ion-checkbox slot="start"></ion-checkbox>
+          <ion-label class="small-blue-text">Recordar contraseña</ion-label>
+        </ion-item>
+
+        <div class="forgot-password-inline">
+          <a [routerLink]="['/olvido-contrasena']" class="small-blue-text">¿Olvidaste tu contraseña?</a>
+        </div>
+      </div>
+
+      <ion-button expand="block" class="login-button"[routerLink]="['/home']">Iniciar sesión</ion-button>
+
+      <div class="create-account-link">
+        <a [routerLink]="['/crear-usuario']">¿No tienes cuenta? Crear una</a>
+      </div>
+    </div>
+  </div>
+</ion-content>
