@@ -8,12 +8,15 @@ import { ChatPrivadoPageRoutingModule } from './chat-privado-routing.module';
 
 import { ChatPrivadoPage } from './chat-privado.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ChatPrivadoPageRoutingModule
+    ChatPrivadoPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [ChatPrivadoPage]
 })

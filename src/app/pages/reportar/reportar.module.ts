@@ -8,12 +8,15 @@ import { ReportarPageRoutingModule } from './reportar-routing.module';
 
 import { ReportarPage } from './reportar.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ReportarPageRoutingModule
+    ReportarPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [ReportarPage]
 })

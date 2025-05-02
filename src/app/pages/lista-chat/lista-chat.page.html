@@ -1,4 +1,6 @@
-<ion-content fullscreen="true" class="ajustado">
+<app-encabezado></app-encabezado>
+
+<ion-content>
   <!-- Barra de búsqueda -->
   <ion-searchbar [debounce]="1000" (ionInput)="handleInput($event)" placeholder="Buscar chat"></ion-searchbar>
   <!-- chats -->
@@ -47,3 +49,5 @@
     </ion-item>
   </ion-list>
 </ion-content>
+
+<app-navbar></app-navbar>

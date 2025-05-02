@@ -8,12 +8,15 @@ import { ComentarioPageRoutingModule } from './comentario-routing.module';
 
 import { ComentarioPage } from './comentario.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ComentarioPageRoutingModule
+    ComentarioPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [ComentarioPage]
 })

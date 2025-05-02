@@ -1,53 +1,18 @@
-.encabezado-toolbar {
-  --background: #1e1e1e; /* color oscuro */
-  justify-content: space-between; /* Cambié esto para que el título y los botones estén bien distribuidos */
-}
-
-.encabezado-buttons {
-  display: flex;
-  justify-content: space-around;
-  width: 25%;
-}
-
-.encabezado-icon {
-  color: white; /* color de íconos normales */
-  font-size: 33px; /* tamaño por defecto */
-}
-
-/* Responsividad para pantallas medianas (tabletas) */
-@media (max-width: 768px) {
-  .encabezado-buttons {
-    width: 35%; /* Aumenta un poco el ancho de los botones en pantallas medianas */
-  }
-
-  .encabezado-icon {
-    font-size: 28px; /* Reduce el tamaño de los íconos */
-  }
-}
-
-/* Responsividad para pantallas pequeñas (móviles) */
-@media (max-width: 480px) {
-  .encabezado-buttons {
-    width: 40%; /* Los botones tomarán más espacio en pantallas muy pequeñas */
-  }
-
-  .encabezado-icon {
-    font-size: 24px; /* Reduce aún más el tamaño de los íconos */
+:host ::ng-deep ion-toolbar {
+    padding-top: env(safe-area-inset-top); //ajusta el padding superior para dispositivos con notch
   }
   
-  /* Hacer que el título se ajuste mejor */
-  ion-title {
-    font-size: 18px;
+  .encabezado-toolbar {
+    --background: #1e1e1e;
   }
-}
-
-/* Responsividad para pantallas grandes (por ejemplo, escritorio) */
-@media (min-width: 1024px) {
+  
   .encabezado-buttons {
-    width: 20%; /* Los botones ocupan menos espacio en pantallas grandes */
+    display: flex;
+    justify-content: space-around;
+    width: 25%;
   }
-
+  
   .encabezado-icon {
-    font-size: 36px; /* Tamaño grande de los íconos en pantallas grandes */
+    color: white;
+    font-size: 33px;
   }
-}

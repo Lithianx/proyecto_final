@@ -8,12 +8,15 @@ import { CrearPublicacionPageRoutingModule } from './crear-publicacion-routing.m
 
 import { CrearPublicacionPage } from './crear-publicacion.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    CrearPublicacionPageRoutingModule
+    CrearPublicacionPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [CrearPublicacionPage]
 })
