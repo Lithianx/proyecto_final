@@ -4,7 +4,7 @@
     <div class="perfil-header-section">
       <div class="perfil-top">
         <ion-avatar class="foto-perfil">
-          <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Foto de perfil del usuario">
+          <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil del usuario">
         </ion-avatar>
      
         <h2>nombre_de_usuario</h2>
@@ -16,8 +16,13 @@
 
       <div class="estadisticas">
         <div class="stat-item"><strong>12</strong><br>Publicaciones</div>
-        <div class="stat-item"><strong>340</strong><br>Seguidores</div>
-        <div class="stat-item"><strong>180</strong><br>Seguidos</div>
+        <ion-button fill="" size="small" [routerLink]="['/seguidores']">
+          <div class="stat-item"><strong>340</strong><br>Seguidores</div>
+        </ion-button>
+        <ion-button fill="" size="small" [routerLink]="['/seguidos']">
+          <div class="stat-item"><strong>180</strong><br>Seguidos</div>
+        </ion-button>
+
       </div>
 
     </div>

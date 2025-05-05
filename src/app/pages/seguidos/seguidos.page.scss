@@ -1,0 +1,72 @@
+.centered-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+  }
+  
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 16px 0;
+  }
+  
+  .back-button {
+    position: absolute;
+    left: 16px;
+    font-size: 24px;
+    color: var(--ion-color-medium);
+  }
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--ion-color-dark);
+  }
+  
+  .search-bar {
+    margin: 0 auto 16px auto;
+    max-width: 90%;
+    --background: #f0f0f0;
+    --color: #000;
+    --placeholder-color: #3d3c3c;
+    border-radius: 10px;
+  }
+  
+  .section-divider {
+    border: none;
+    height: 1px;
+    background-color: #dcdcdc;
+    margin: 10px 16px;
+  }
+  
+  .followers-list {
+    margin: 0;
+  }
+  
+  ion-item {
+    --inner-padding-end: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  ion-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  ion-label {
+    margin-left: 10px;
+    font-size: 16px;
+  }
+  
+  .follow-button {
+    margin-left: auto;
+    font-size: 14px;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-weight: 500;
+  }
+  

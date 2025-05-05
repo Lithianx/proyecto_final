@@ -62,6 +62,14 @@ const routes: Routes = [
     path: 'validar-cuenta',
     loadChildren: () => import('./pages/validar-cuenta/validar-cuenta.module').then( m => m.ValidarCuentaPageModule)
   },
+  {
+    path: 'seguidores',
+    loadChildren: () => import('./pages/seguidores/seguidores.module').then( m => m.SeguidoresPageModule)
+  },
+  {
+    path: 'seguidos',
+    loadChildren: () => import('./pages/seguidos/seguidos.module').then( m => m.SeguidosPageModule)
+  },
 
 
 
