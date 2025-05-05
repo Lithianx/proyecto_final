@@ -1,40 +1,59 @@
-<ion-content class="registro-content" [fullscreen]="true">
+<ion-content class="login-content" [fullscreen]="true">
   <div class="container">
-
     <div class="header-row">
-      <ion-button fill="clear" class="back-button" [routerLink]="['/login']">
-        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      <ion-button fill="clear" class="back-button" [routerLink]="['/login']" aria-label="Volver atrás">
+        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
       </ion-button>
-      <h1 class="app-title">Creación de cuenta</h1>
+      <h1 class="app-title">Registrarse</h1>
     </div>
-
     <div class="login-box">
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Nombre de usuario</ion-label>
-        <ion-input type="text"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+
+        <ion-input
+          type="text"
+          placeholder="Nombre de usuario"
+          class="custom-input"
+          aria-label="Nombre de usuario"
+        ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="mail-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Correo electrónico</ion-label>
-        <ion-input type="email"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
+
+        <ion-input
+          type="email"
+          placeholder="Correo electrónico"
+          class="custom-input"
+          aria-label="Correo electrónico"
+        ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Contraseña</ion-label>
-        <ion-input type="password"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+
+        <ion-input
+          type="password"
+          placeholder="Contraseña"
+          class="custom-input"
+          aria-label="Contraseña"
+        ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Confirmar contraseña</ion-label>
-        <ion-input type="password"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+
+        <ion-input
+          type="password"
+          placeholder="Confirma contraseña"
+          class="custom-input"
+          aria-label="Confirmar contraseña"
+        ></ion-input>
       </ion-item>
 
-      <ion-button expand="block" class="login-button"[routerLink]="['/login']">Crear cuenta</ion-button>
-
-    </div>
+      <ion-button expand="block" class="login-button" [routerLink]="['/login']">
+        Crear cuenta
+      </ion-button>
+      </div>
   </div>
 </ion-content>

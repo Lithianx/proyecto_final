@@ -1,0 +1,84 @@
+/* Definición de variables CSS para los colores */
+/* Estos serán los valores por defecto (Modo Claro) */
+
+  
+  /* Aplica las variables CSS a tus elementos */
+  
+
+  
+  .settings-container {
+    width: 100%;
+    max-width: 600px; /* Limita el ancho máximo en pantallas grandes */
+    margin: 20px auto; /* Centra el contenedor y añade margen arriba/abajo */
+    padding: 0 15px; /* Padding horizontal */
+    padding-top: 40px; /* Corregido: Se añadió el guion. Se removió la declaración duplicada. */
+    box-sizing: border-box;
+  }
+  
+  .settings-list {
+    background: var(--settings-list-background); /* Usa la variable para el fondo de la lista */
+    border-radius: 8px; /* Bordes redondeados para la lista */
+    overflow: hidden; /* Asegura que los bordes redondeados corten el contenido */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra sutil (ajustar opacidad para modo oscuro si es necesario) */
+    margin-bottom: 20px; /* Espacio entre la lista y el botón de cerrar sesión */
+  }
+  
+  .settings-item {
+    --padding-start: 15px; /* Padding a la izquierda */
+    --padding-end: 15px; /* Padding a la derecha */
+    --inner-padding-end: 15px; /* Espacio entre label y slot="end" */
+    --min-height: 50px; /* Altura mínima de la fila */
+    border-bottom: 1px solid var(--settings-item-border-color); /* Usa la variable para el borde */
+    color: var(--settings-item-text-color); /* Usa la variable para el color de texto del item */
+    /* Quita el último borde si lo deseas */
+    &:last-child {
+        border-bottom: none;
+    }
+  }
+  
+  /* Estilos para los iconos dentro de las opciones */
+  .settings-item ion-icon[slot="start"] {
+    font-size: 1.4rem; /* Tamaño del icono inicial */
+    color: var(--settings-item-icon-color); /* Usa la variable para el color del icono */
+    margin-right: 10px; /* Espacio a la derecha del icono */
+  }
+  
+  /* Estilos para la flecha al final */
+  .settings-item ion-icon[slot="end"] {
+    font-size: 1.2rem; /* Tamaño de la flecha */
+    color: var(--settings-item-arrow-color); /* Usa la variable para el color de la flecha */
+  }
+  
+  /* Estilos para el texto de la opción */
+  .settings-item ion-label {
+    font-size: 1rem; /* Tamaño del texto de la opción */
+    color: var(--settings-item-text-color); /* Usa la variable para el color del label */
+  }
+  
+  /* Contenedor para el botón de cerrar sesión */
+  .logout-button-container {
+      padding: 0 15px; /* Alinea el padding con la lista */
+      max-width: 600px; /* Alinea el ancho máximo con la lista */
+      margin: 20px auto; /* Centra y añade margen */
+  }
+  
+  /* Estilos específicos para el botón de cerrar sesión */
+  .logout-button {
+    --border-radius: 8px;
+    font-weight: bold;
+    height: 48px;
+    /* El color="danger" en el HTML ya maneja el color de fondo y texto del botón basado en el tema */
+  } 
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centrado horizontal */
+    position: relative;
+    padding: 10px 16px;
+  }
+  
+  .back-button {
+    position: absolute;
+    left: 16px;
+  }
+  

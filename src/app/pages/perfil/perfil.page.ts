@@ -7,7 +7,6 @@ import { Component, OnInit } from '@angular/core';
   standalone: false,
 })
 export class PerfilPage implements OnInit {
-
   constructor() { }
 
   ngOnInit() {

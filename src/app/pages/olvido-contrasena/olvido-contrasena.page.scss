@@ -1,124 +1,145 @@
-.registro-content {
-    --background: linear-gradient(to top, #2ecc71, #000);
-    color: #fff;
-}
-
-.container {
+/* Estilo para el contenido principal con degradado */
+/* Se mantiene la clase 'login-content' como en tu HTML proporcionado */
+ion-content.login-content {
+    --background: linear-gradient(to top, #2ecc71, #1a1a1a); /* Gradiente del login original */
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100%;
-    padding: 16px;
-    position: relative;
-}
-
-.header-row {
-    display: flex;
     align-items: center;
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 70px;
-}
-
-.back-button {
-    margin-right: 8px;
-    color: white;
-}
-
-.app-title {
-    font-size: 30px;
-    color: #fff;
-    margin: 0;
-    padding-left: 4px;
-    padding-top: 8px;
-}
-
-.login-box {
-    background: #000;
-    padding: 24px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.icon-container {
+    height: 100%;
+    width: 100%; /* Asegura que ocupe todo el ancho */
+  }
+  
+  /* Contenedor principal dentro de ion-content */
+  .container {
     display: flex;
+
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
-}
-
-.big-lock-icon {
-    font-size: 150px; /* Aumentamos el tamaño del ícono */
-    color: #3498db;
-    margin-bottom: 12px;
-}
-
-.info-text {
-    color: #ccc;
-    font-size: 16px; /* Aumentamos el tamaño del texto */
-    text-align: center;
-    margin: 0;
-    padding: 0 10px;
-}
-
-.input-icon {
-    display: flex;
-    align-items: center; /* Alinea todos los elementos verticalmente en el centro */
-    justify-content: flex-start; /* Alinea los elementos al inicio (a la izquierda) */
-}
-
-.input-icon ion-icon {
-    margin-right: 12px; /* Añade un margen a la derecha del ícono para separarlo del label */
-    color: #28a745; /* Color del ícono */
-}
-
-.input-icon ion-label {
-    font-size: 16px; /* Ajusta el tamaño de la fuente del label */
-    color: #ffffff;
-    font-weight: 600; /* Aumenta el peso de la fuente */
-    margin-right: 12px; /* Añade margen entre el label y el input */
-}
-
-.input-icon ion-input {
-    flex: 1; /* Hace que el input ocupe el espacio restante */
-    color: white;
-    background: transparent;
-    font-size: 16px;
-    padding-left: 12px; /* Espacio a la izquierda del texto en el input */
-    border-radius: 8px; /* Bordes redondeados para el input */
-}
-
-ion-item {
-    --highlight-color-focused: #28a745;
-    --background: transparent;
-    --color: white;
-    --border-color: transparent;
-    margin-bottom: 12px;
-}
-
-ion-label {
-    color: #ffffff;
-    font-weight: 700; /* Mayor peso para el texto del label */
-    font-size: 16px; /* Aumento del tamaño de la fuente */
-    margin-bottom: 6px; /* Separación más grande */
-}
-
-ion-input {
-    color: white;
-    --placeholder-color: #ccc;
-    font-size: 16px; /* Aumento del tamaño de la fuente de los inputs */
-    padding: 10px; /* Añadimos padding para mejorar la apariencia */
-    border-radius: 8px; /* Bordes redondeados para el input */
-    background: #333; /* Fondo oscuro para los inputs */
-}
-
-.login-button {
-    margin-top: 20px;
-    --background: #28a745;
+    /* justify-content: center; remueve esto si quieres que el contenido se alinee arriba después del header */
+    width: 100%;
+    max-width: 400px; /* Limita el ancho máximo del contenido */
+    padding: 20px;
+    /* min-height: 100%; remueve esto si el contenido es corto y no necesitas que ocupe toda la altura */
+    box-sizing: border-box;
+    overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+  }
+  
+  /* Contenedor para alinear la flecha y el título */
+  .header-row {
+    display: flex; /* Activa Flexbox */
+    align-items: center; /* Alinea verticalmente los elementos */
+    width: 100%; /* Ocupa todo el ancho del contenedor */
+    margin-bottom: 40px; /* Espacio entre el encabezado y la caja de login */
+    padding-top: 120px;
+  }
+  
+  /* Estilo del botón de retroceso */
+  .back-button {
+    /* fill="clear" en HTML lo hace transparente */
+    --color: #ffffff; /* Color blanco para el ícono */
+    font-size: 20px; /* Tamaño del ícono de flecha */
+    margin-right: 10px; /* Espacio a la derecha del ícono */
+  }
+  
+  /* Título de la página */
+  .app-title {
+    font-size: 1.5rem; /* Tamaño del título */
     font-weight: bold;
-    border-radius: 8px;
-    font-size: 16px; /* Aumento del tamaño de la fuente del botón */
-}
+    color: #ffffff;
+    margin: 0; /* Elimina márgenes por defecto */
+    /* margin-bottom: 1.5rem; ya no es necesario si está dentro de .header-row */
+    text-align: left; /* Asegura alineación a la izquierda junto a la flecha */
+    flex-grow: 1; /* Permite que el título ocupe el espacio restante */
+  }
+  
+  /* Caja que contiene el ícono grande, texto y input */
+  .login-box {
+    background-color: #000000; /* Fondo negro */
+    color: #ffffff; /* Texto blanco por defecto */
+    width: 100%;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.6s ease-in-out; /* Mantiene la animación si la usas */
+    /* margin-top: 1rem; // Ya no es necesario si .header-row tiene margin-bottom */
+  }
+  
+  /* Contenedor para el ícono grande y el texto informativo */
+  .icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra horizontalmente el contenido */
+    margin-bottom: 30px; /* Espacio debajo del contenedor de ícono/texto */
+  }
+  
+  /* Estilo para el ícono grande de candado */
+  .big-lock-icon {
+    font-size: 100px; /* Tamaño del ícono según tu indicación */
+    color: #3498db; /* Color azul */
+    margin-bottom: 15px; /* Espacio entre el ícono y el texto */
+  }
+  
+  /* Estilo para el texto informativo */
+  .info-text {
+    color: #ccc; /* Color gris claro */
+    font-size: 1rem; /* Tamaño del texto */
+    text-align: center; /* Centra el texto */
+    margin: 0; /* Elimina márgenes por defecto */
+    padding: 0 10px;
+  }
+  
+  /* Contenedor para el input con icono (basado en tu estructura original) */
+  .input-item {
+    --background: #ffffff; /* Fondo blanco para el item */
+    --padding-start: 10px;
+    --border-radius: 8px;
+    --inner-padding-end: 10px;
+    margin-bottom: 1rem;
+    color: #000000; /* Color por defecto para el ícono y texto en items blancos */
+  
+    ion-icon {
+      font-size: 1.2rem;
+      margin-right: 5px;
+      color: #000000; /* Asegura icono negro */
+    }
+  
+    ion-input {
+      --color: #000000; /* Texto input negro */
+      font-size: 1rem;
+    }
+  }
+  
+  /* Botón de Restaurar Contraseña (se mantiene la clase login-button) */
+  .login-button {
+    --border-radius: 8px;
+    --box-shadow: none;
+    font-weight: bold;
+    height: 48px;
+    margin-top: 20px; /* Espacio arriba del botón */
+    /* Mantenemos el color verde por defecto para el primer botón */
+    --background: #2ecc71;
+    --background-hover: #27ae60;
+    --background-activated: #27ae60;
+    --color: #ffffff; /* Asegura texto blanco */
+  }
+  
+  /* Animación simple de entrada (mantenida) */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Ajustes menores para consistencia (mantenidos) */
+  ion-item.sc-ion-input-md-h, ion-item.sc-ion-input-ios-h {
+    --inner-padding-bottom: 0;
+    --inner-padding-top: 0;
+    --min-height: 40px;
+  }
+  
+  /* --- FIN: CSS Actualizado --- */

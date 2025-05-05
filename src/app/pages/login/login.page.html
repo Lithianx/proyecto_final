@@ -1,38 +1,45 @@
 <ion-content class="login-content" [fullscreen]="true">
   <div class="container">
-    <img src="assets/img/logo.png" alt="Logo de la aplicación" class="app-logo" />
+    <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Logo de la aplicación" class="app-logo" />
     <h1 class="app-title">Nombre de la Aplicación</h1>
 
     <div class="login-box">
 
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Nombre de usuario</ion-label>
-        <ion-input type="text"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="text"
+          placeholder="Usuario"
+          class="custom-input"
+          aria-label="Usuario">
+        </ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-icon">
-        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-        <ion-label position="floating">Contraseña</ion-label>
-        <ion-input type="password"></ion-input>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="password"
+          placeholder="Contraseña"
+          class="custom-input"
+          aria-label="Contraseña">
+        </ion-input>
       </ion-item>
 
-      <div class="checkbox-forgot">
-        <ion-item lines="none" class="checkbox-item">
-          <ion-checkbox slot="start"></ion-checkbox>
-          <ion-label class="small-blue-text">Recordar contraseña</ion-label>
-        </ion-item>
-
-        <div class="forgot-password-inline">
-          <a [routerLink]="['/olvido-contrasena']" class="small-blue-text">¿Olvidaste tu contraseña?</a>
+      <div class="options-row">
+        <div class="account-links">
+          <a [routerLink]="['/crear-usuario']" class="link-option">Registrate</a>
+          <a [routerLink]="['/olvido-contrasena']" class="link-option forgot-link">
+            ¿Olvidaste tu contraseña?
+          </a>
         </div>
       </div>
 
-      <ion-button expand="block" class="login-button"[routerLink]="['/home']">Iniciar sesión</ion-button>
-
-      <div class="create-account-link">
-        <a [routerLink]="['/crear-usuario']">¿No tienes cuenta? Crear una</a>
-      </div>
+      <ion-button expand="block" class="login-button" [routerLink]="['/home']">
+        Iniciar sesión
+      </ion-button>
+      <ion-button expand="block" class="login-button gmail-button" [routerLink]="['/home']">
+         Ingresar con gmail
+      </ion-button>
     </div>
   </div>
 </ion-content>

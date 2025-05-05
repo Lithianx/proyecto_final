@@ -46,6 +46,22 @@ const routes: Routes = [
     path: 'perfil',
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
+  {
+    path: 'configuracion',
+    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
+  },
+  {
+    path: 'editar-perfil',
+    loadChildren: () => import('./pages/editar-perfil/editar-perfil.module').then( m => m.EditarPerfilPageModule)
+  },
+  {
+    path: 'info-cuenta-institucional',
+    loadChildren: () => import('./pages/info-cuenta-institucional/info-cuenta-institucional.module').then( m => m.InfoCuentaInstitucionalPageModule)
+  },
+  {
+    path: 'validar-cuenta',
+    loadChildren: () => import('./pages/validar-cuenta/validar-cuenta.module').then( m => m.ValidarCuentaPageModule)
+  },
 
 
 
