@@ -1,12 +1,32 @@
+.chat-header {
+  position: fixed;
+  background-color: white;
+  z-index: 10;
+  border-bottom: 1px solid #ccc;
+  padding: 4px 16px; /* Reduce el padding general para hacerlo más compacto */
+  
+  /* Usamos flexbox para centrar los elementos */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .chat-header {
-    position: fixed;
-    background-color: white;
-    z-index: 10;
-    border-bottom: 1px solid #ccc;
-    padding: 8px;
-    
-  }
+.chat-header .avatar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-avatar {
+  width: 32px; /* Reduces the size of the avatar */
+  height: 32px;
+  margin-right: 8px; /* Adds a little space between the avatar and the title */
+}
+
+ion-title {
+  font-size: 16px; /* Adjust the size of the title to make it smaller */
+  font-weight: normal; /* Optional: Make the title less bold */
+}
   
   .spacer-header {
     height: 56px; 
@@ -20,19 +40,6 @@
     margin-top: 18px;
   }
 
-
-  .barra-fija {
-    position: fixed;
-    bottom: 60px;
-    width: 100%;
-    background: white;
-    border-top: 1px solid #ccc;
-    z-index: 100;
-  }
-
-
-
-  
   .message {
     display: flex;
     margin-bottom: 10px;

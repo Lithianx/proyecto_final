@@ -1,20 +1,7 @@
 
-
-  .barra-comentario-fija {
-    position: fixed;
-    bottom: 60px;
-    width: 100%;
-    background: white;
-    border-top: 1px solid #ccc;
-    z-index: 100;
-  }
-
-  .comentario-container {
+.comentario-container {
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    padding-bottom: 40px;
-    padding-top: 40px;
 }
 
 .like-container {
