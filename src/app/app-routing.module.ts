@@ -34,6 +34,10 @@ const routes: Routes = [
     path: 'crear-evento-flash',
     loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
+  {
+    path: 'evento',
+    loadChildren: () => import('./pages/evento/evento.module').then( m => m.EventoPageModule)
+  },
 
  
 

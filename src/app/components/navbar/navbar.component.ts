@@ -23,7 +23,7 @@ export class NavbarComponent  implements OnInit {
     this.router.navigate(['/perfil']);
   }
   irEvento() {
-    this.router.navigate(['/perfil']);
+    this.router.navigate(['/evento']);
   }
   irHome() {
     this.router.navigate(['/home']);

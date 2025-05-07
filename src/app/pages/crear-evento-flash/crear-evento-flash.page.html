@@ -1,9 +1,79 @@
 
 
-<ion-content fullscreen="true" class="ajustado">
-    <h1>esto es un evento flash</h1>
- 
 
-  <ion-button (click)="crearEventoFlash()">Crear Evento Flash</ion-button>
+<ion-content class="ion-padding" scroll="true" fullscreen="true"> <!-- Agregado scroll-y="true" -->
+  <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
 
+    <!-- Título -->
+    <ion-item>
+      <ion-label position="floating">Evento</ion-label>
+      <ion-input formControlName="titulo" type="text"></ion-input>
+    </ion-item>
+
+    <!-- Descripción -->
+    <ion-item>
+      <ion-label position="floating">Descripción</ion-label>
+      <ion-textarea formControlName="descripcion"></ion-textarea>
+    </ion-item>
+
+    <!-- Tipo -->
+    <ion-item>
+      <ion-label>Tipo de evento</ion-label>
+        <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Videojuego</ion-checkbox>
+        <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Juego de mesa</ion-checkbox>
+    </ion-item>
+
+    <!-- Lugar -->
+    <ion-item>
+      <ion-label position="floating">Lugar</ion-label>
+      <ion-input formControlName="lugar" type="text"></ion-input>
+    </ion-item>
+
+    <!-- Hora de inicio -->
+    <ion-item>
+      <ion-label>Fecha</ion-label>
+      <ion-datetime formControlName="horaInicio" presentation="datetime"></ion-datetime>
+    </ion-item>
+
+    <!-- Duración -->
+    <ion-item>
+      <ion-label>Duración estimada</ion-label>
+      <ion-select formControlName="duracion">
+        <ion-select-option value="15">15 minutos</ion-select-option>
+        <ion-select-option value="30">30 minutos</ion-select-option>
+        <ion-select-option value="60">1 hora</ion-select-option>
+        <ion-select-option value="90">1h 30min</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Cupos -->
+    <ion-item>
+      <ion-label>Cupos máximos (opcional)</ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="outline" (click)="decrementCupos()">-</ion-button>
+        <ion-input
+          [value]="cupos"
+          readonly
+          class="cupos-input"
+        ></ion-input>
+        <ion-button fill="outline" (click)="incrementCupos()">+</ion-button>
+      </ion-buttons>
+    </ion-item>
+    
+
+    <!-- Visibilidad -->
+    <ion-item>
+      <ion-label>Privacidad</ion-label>
+      
+        <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Público</ion-checkbox>
+        <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Privado</ion-checkbox>
+      
+    </ion-item>
+
+    <!-- Botón -->
+    <ion-button class="boton-verde"  expand="block" type="submit">
+       Lanzar evento
+    </ion-button>
+
+  </form>
 </ion-content>

@@ -2,3 +2,92 @@
     --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
     --padding-bottom: 80px;  // Ajusta según el alto de tu navbar/footer
   }
+  .checkbox-circular-verde {
+    --border-radius: 50%;          /* Hace el checkbox circular */
+    --size: 24px;                  /* Tamaño del checkbox */
+    --border-color: #28a745;       /* Borde verde cuando no está seleccionado */
+    --checkmark-color: white;      /* Color del ✔️ */
+    --background: white;           /* Fondo cuando no está marcado */
+    --checked-background: #28a745; /* Fondo verde cuando está marcado */
+    --checked-border-color: #28a745;
+  }
+  ion-checkbox {
+    /* background: #2a2a2a; */ 
+    color: #00fa00; 
+    font-size: smaller;
+  }
+
+  ion-content {
+    background: #1e1e1e; /* Fondo oscuro */
+    padding: 16px;
+  }
+  
+  ion-item {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    padding: 8px;
+    color: #fff;
+  }
+  
+  ion-label {
+    color: #00ff15;
+    font-weight: bold;
+  }
+  
+  ion-input,
+  ion-textarea,
+  ion-select,
+  ion-datetime {
+    color: #fff;
+    width: 100%;
+  }
+  
+  ion-button {
+    margin-top: 24px;
+    margin-bottom: 40px;
+    background: #20ff02;
+    color: #000;
+    font-weight: bold;
+    border-radius: 12px; 
+    font-size: 15px;
+  }
+
+  .cupos-input {
+    width: 50px;
+    text-align: center;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  .boton-verde {
+    --background: #15ff00;              /* fondo verde */
+    --background-hover: #218838;        /* cuando el cursor está encima */
+    --background-activated: #1e7e34;    /* cuando se hace clic */
+    --color: rgb(0, 0, 0);                     /* color del texto */
+    --border-radius: 6px;               /* opcional: bordes redondeados */
+    --box-shadow: none;                 /* opcional: quitar sombras */
+  }
+  
+  /* RESPONSIVIDAD */
+  @media (max-width: 768px) {
+    ion-content {
+      padding: 8px;
+    }
+  
+    ion-item {
+      margin-bottom: 12px;
+      margin-top: 20px;
+      padding: 10px;
+    }
+  
+    ion-label,
+    ion-input,
+    ion-textarea,
+    ion-select,
+    ion-datetime {
+      font-size: 14px;
+    }
+  
+    
+  }
