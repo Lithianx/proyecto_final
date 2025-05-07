@@ -1,4 +1,13 @@
-.ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 60px;  // Ajusta según el alto de tu navbar/footer
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .no-visto {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: green;
   }

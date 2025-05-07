@@ -7,6 +7,8 @@ interface Comentario {
   avatar: string;
   mensaje: string;
   fecha: Date;
+  comentarioliked:boolean;
+  comentariolikes: number;
 }
 
 interface Post {
@@ -65,7 +67,7 @@ export class ComentarioPage implements OnInit {
       username: 'johndoe',
       userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
       image: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-      time: '2 horas atrás',
+      time: 'Hace 2 horas',
       description: '¡Esa victoria fue épica! 🎮💥 saddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
       likes: 12,
       liked: false,
@@ -75,61 +77,81 @@ export class ComentarioPage implements OnInit {
           usuario: 'Carlos Pérez',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Increíble jugada, ¿cómo lo hiciste?!',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 9
         },
         {
           usuario: 'Ana Torres',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: 'Esa estrategia es legendaria 🔥',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 34
         },
         {
           usuario: 'Luis Gómez',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: 'Me dejó sin palabras 🤯. ¡Qué bien jugaste!',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 4
         },
         {
           usuario: 'Martín Díaz',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Te ganaste el respeto de todos en la comunidad! 💪',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 55
         },
         {
           usuario: 'Isabel Ruiz',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Cómo me gustaría saber esa táctica! 🤔',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 32
         },
         {
           usuario: 'Pablo González',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¿Sabías que hay un truco para mejorar eso aún más? ¡Avísame si te interesa! 🔍',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 23
         },
         {
           usuario: 'Laura Martínez',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Esto es otro nivel! 🎮🚀',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 14
         },
         {
           usuario: 'Sofía López',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡El trabajo en equipo fue clave, felicidades! 👏👏',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 16
         },
         {
           usuario: 'Andrés Castillo',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Me encantó el momento cuando lo hiciste! 😍',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 17
         },
         {
           usuario: 'Paula Jiménez',
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           mensaje: '¡Definitivamente lo replicaré en mi próxima partida! 🔥',
-          fecha: new Date()
+          fecha: new Date(),
+          comentarioliked:false,
+          comentariolikes: 10
         }
       ]
       
@@ -143,11 +165,19 @@ export class ComentarioPage implements OnInit {
         usuario: this.usuarioActual.nombre,
         avatar: this.usuarioActual.avatar,
         mensaje,
-        fecha: new Date()
+        fecha: new Date(),
+        comentarioliked:false,
+        comentariolikes: 0
       };
       this.post.comments.push(nuevo);
       this.nuevoComentario = '';
     }
+  }
+
+
+  comentariolikes(comentario: Comentario) {
+    comentario.comentarioliked = !comentario.comentarioliked;
+    comentario.comentarioliked ? comentario.comentariolikes++ : comentario.comentariolikes--;
   }
 
   likes(post: any) {

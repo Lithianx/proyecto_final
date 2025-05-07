@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonButton, IonTitle } from "@ionic/angular/standalone";
+
 
 @Component({
   selector: 'app-encabezado',

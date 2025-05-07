@@ -1,20 +1,25 @@
-.ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 60px;  // Ajusta según el alto de tu navbar/footer
-  }
 
 .crear-publicacion-card {
-    padding: 10px;
+  padding: 10px;
+}
+
+.textarea-publicacion {
+  margin: 10px;
+}
+
+.acciones-publicacion {
+  padding: 10px;
+  text-align: center;
+
+  ion-button {
+    font-size: 14px;
   }
-  
-  .textarea-publicacion {
-    margin: 10px;
-  }
-  
-  .acciones-publicacion {
-    padding: 10px;
-    text-align: center;
-    ion-button {
-      font-size: 14px;
-    }
-  }
+}
+
+.media-item {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 10px;
+  object-fit: contain;
+}

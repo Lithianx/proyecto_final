@@ -1,4 +1,6 @@
-<ion-content [fullscreen]="true" class="ajustado">
+<app-encabezado></app-encabezado>
+
+<ion-content>
 
   <!-- header local con nombre chat y boton de colcer atras -->
   <ion-toolbar class="chat-header">
@@ -16,25 +18,26 @@
 
 
   <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.tipo === 'enviado' ? 'message sent' : 'message received'">
+    <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.emisorId === 'yo' ? 'message sent' : 'message received'">
       <div class="bubble">
 
         <!-- Imagen (si existe) -->
-        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" />
+        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" (load)="onImageLoad()"/>
 
         <!-- Video (si existe) -->
-        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat"></video>
+        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat" (canplay)="onMediaLoad()"></video>
 
         <!-- Audio (si existe) -->
-        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*"></audio>
+        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" (canplay)="onMediaLoad()"></audio>
 
         <!-- Texto (si existe) -->
-        <p *ngIf="mensaje.texto">{{ mensaje.texto }}</p>
+        <p *ngIf="mensaje.contenido">{{ mensaje.contenido }}</p>
 
         <!-- Hora -->
-        <span class="hora">{{ mensaje.hora }}</span>
+        <span class="hora">{{ mensaje.timestamp }}</span>
       </div>
     </div>
+    <div #endOfMessages></div>
   </div>
 
 
@@ -64,3 +67,5 @@
   </ion-toolbar>
 
 </ion-content>
+
+<app-navbar></app-navbar>

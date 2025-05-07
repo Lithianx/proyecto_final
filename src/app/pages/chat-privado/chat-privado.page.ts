@@ -2,14 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
 
+interface Usuario {
+  id: string;
+  username: string;
+  userAvatar: string;
+}
 
 interface Mensaje {
-  tipo: 'enviado' | 'recibido';
-  texto?: string;
+  id: string;
+  emisorId: string;
+  receptorId: string;
+  contenido: string;
+  timestamp: string;
   imagen?: string;
   video?: string;
   audio?: string;
-  hora: string;
+  leido?: boolean;
 }
 
 @Component({
@@ -22,26 +30,27 @@ export class ChatPrivadoPage implements OnInit {
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild('audioInput', { static: false }) audioInput!: ElementRef;
+  @ViewChild('endOfMessages') endOfMessages!: ElementRef;
 
-  
   chatId: string | null = '';
-  chatInfo: any = { username: '', userAvatar: '' };
-  
+  chatInfo: Usuario = { id: '', username: '', userAvatar: '' };
+
   nuevoMensaje: string = '';
-  
-  constructor(private route: ActivatedRoute) {}
-  
+
+  constructor(private route: ActivatedRoute) { }
+
   ngOnInit() {
     this.chatId = this.route.snapshot.paramMap.get('id');
-    this.chatInfo = this.usuariosMock.find(user => user.id === this.chatId) || {};
+    this.chatInfo = this.usuariosMock.find(user => user.id === this.chatId) || { id: '', username: '', userAvatar: '' };
   }
+
   mensajes: Mensaje[] = [
-    { texto: '¡Hola!', hora: '10:00', tipo: 'recibido' },
-    { texto: '¿Cómo estás?', hora: '10:01', tipo: 'enviado' },
-    { texto: 'Todo bien, ¿y tú?', hora: '10:02', tipo: 'recibido' }
+    { id: 'm1', emisorId: '1', receptorId: 'yo', contenido: '¡Hola!', timestamp: '10:00', leido: true },
+    { id: 'm2', emisorId: 'yo', receptorId: '1', contenido: '¿Cómo estás?', timestamp: '10:01', leido: false },
+    { id: 'm3', emisorId: '1', receptorId: 'yo', contenido: 'Todo bien, ¿y tú?', timestamp: '10:02', leido: true }
   ];
 
-  usuariosMock = [
+  usuariosMock: Usuario[] = [
     { id: '1', username: 'johndoe', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
     { id: '2', username: 'gamer123', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
     { id: '3', username: 'petterpan', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
@@ -49,37 +58,68 @@ export class ChatPrivadoPage implements OnInit {
 
 
 
+
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom() {
+    try {
+      this.endOfMessages.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) { }
+  }
+
+
+
+  onImageLoad() {
+    this.scrollToBottom();  // Desplazar hacia abajo después de que la imagen se haya cargado
+  }
+
+  onMediaLoad() {
+    this.scrollToBottom();  // Desplazar hacia abajo después de que el contenido multimedia (imagen o video) esté listo
+  }
+
+
+
+
+
+
   seleccionarArchivo() {
     this.fileInput.nativeElement.click();
   }
-  
+
   onArchivoSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      
+
       reader.onload = () => {
         const base64 = reader.result as string;
         const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-        // Verificar el tipo de archivo
+
+        const mensaje: Mensaje = {
+          id: new Date().getTime().toString(),
+          emisorId: 'yo',
+          receptorId: this.chatId!,
+          contenido: '',  // No hay texto
+          timestamp: horaActual,
+          leido: false,
+        };
+
         if (file.type.startsWith('image/')) {
-          // Si es una imagen
-          this.mensajes.push({
-            tipo: 'enviado',
-            imagen: base64,
-            hora: horaActual
-          });
+          mensaje.imagen = base64;
         } else if (file.type.startsWith('video/')) {
-          // Si es un video
-          this.mensajes.push({
-            tipo: 'enviado',
-            video: base64,
-            hora: horaActual
-          });
+          mensaje.video = base64;
         }
+
+        this.mensajes.push(mensaje);
+        this.scrollToBottom(); // 👈 Desplazarse al final
+
+        // Resetear input para permitir reelección del mismo archivo
+        event.target.value = '';
       };
-      
+
       reader.readAsDataURL(file);
     }
   }
@@ -87,35 +127,51 @@ export class ChatPrivadoPage implements OnInit {
   seleccionarAudio() {
     this.audioInput.nativeElement.click();
   }
-  
+
   onAudioSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         const audioBase64 = reader.result as string;
+        const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         this.mensajes.push({
-          tipo: 'enviado',
+          id: new Date().getTime().toString(),
+          emisorId: 'yo',
+          receptorId: this.chatId!,
+          contenido: '',
+          timestamp: horaActual,
           audio: audioBase64,
-          hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          leido: false,
         });
+        // Resetear input para permitir reelección del mismo archivo
+        this.scrollToBottom(); // 👈 Desplazarse al final
+        event.target.value = '';
       };
       reader.readAsDataURL(file);
     }
   }
-
 
   enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
 
     const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    this.mensajes.push({
-      texto: this.nuevoMensaje,
-      hora: horaActual,
-      tipo: 'enviado'
-    });
+    const mensaje: Mensaje = {
+      id: new Date().getTime().toString(),
+      emisorId: 'yo',
+      receptorId: this.chatId!,
+      contenido: this.nuevoMensaje,
+      timestamp: horaActual,
+      leido: false,
+    };
+
+    this.mensajes.push(mensaje);
 
     this.nuevoMensaje = '';
+
+
+    this.scrollToBottom();
   }
 }

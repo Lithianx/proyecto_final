@@ -8,12 +8,16 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
-import { EncabezadoComponent } from './components/encabezado/encabezado.component';
-import { NavbarComponent } from './components/navbar/navbar.component';
+
 
 @NgModule({
+<<<<<<< HEAD
   declarations: [AppComponent,EncabezadoComponent,NavbarComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, FormsModule, ReactiveFormsModule],
+=======
+  declarations: [AppComponent],
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
+>>>>>>> master
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })
