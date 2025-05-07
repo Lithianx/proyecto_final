@@ -101,3 +101,19 @@ ion-title {
     border-radius: 10px;
     margin-top: 5px;
   }
+
+.audio-chat {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-top: 5px;
+  }
+
+  .grabar{
+    transition: transform 0.2s ease;
+
+    // Cuando el botón está siendo presionado (activo), lo agrandamos
+    &:active {
+      transform: scale(3.5);  // Agrandar al 120% de su tamaño original
+    }
+  }

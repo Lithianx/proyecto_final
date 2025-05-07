@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
+import { VoiceRecorder } from 'capacitor-voice-recorder';
+
 
 interface Usuario {
   id: string;
@@ -36,6 +38,11 @@ export class ChatPrivadoPage implements OnInit {
   chatInfo: Usuario = { id: '', username: '', userAvatar: '' };
 
   nuevoMensaje: string = '';
+
+  grabando: boolean = false; // Variable para saber si está grabando
+  mediaRecorder: any;
+  audioChunks: any[] = [];
+  audioBlob: Blob | null = null;
 
   constructor(private route: ActivatedRoute) { }
 
@@ -124,6 +131,10 @@ export class ChatPrivadoPage implements OnInit {
     }
   }
 
+
+  /* 
+  // Método para seleccionar un archivo de audio desde el dispositivo
+
   seleccionarAudio() {
     this.audioInput.nativeElement.click();
   }
@@ -152,6 +163,63 @@ export class ChatPrivadoPage implements OnInit {
       reader.readAsDataURL(file);
     }
   }
+
+*/
+
+
+  
+  async iniciarGrabacion() {
+    this.grabando = true;
+    const result = await VoiceRecorder.startRecording();
+    console.log('Grabación iniciada:', result);
+  }
+  
+  async detenerGrabacion() {
+    this.grabando = false;
+    console.log('Deteniendo grabación...');
+  
+    try {
+      const result = await VoiceRecorder.stopRecording();
+      console.log('Resultado de la grabación:', result);
+  
+      if (result.value && result.value.recordDataBase64) {
+        console.log('Contenido grabado:', result.value.recordDataBase64); // 👈 Asegurar que hay datos
+        const audioBase64 = `data:audio/mp4;base64,${result.value.recordDataBase64}`;
+        this.enviarMensajeDeVoz(audioBase64);
+        console.log('Mensaje de voz enviado automáticamente.');
+      } else {
+        console.error('No se obtuvo audio.');
+      }
+    } catch (error) {
+      console.error('Error al detener la grabación:', error);
+    }
+  }
+  
+  
+  async enviarMensajeDeVoz(audioBase64: string) {
+    console.log('Mensaje de voz recibido:', audioBase64);
+
+    const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    console.log('Audio Base64 generado:', audioBase64);
+
+    const mensaje: Mensaje = {
+      id: new Date().getTime().toString(),
+      emisorId: 'yo',
+      receptorId: this.chatId!,
+      contenido: '',
+      timestamp: horaActual,
+      audio: audioBase64,
+      leido: false,
+    };
+    console.log('Mensaje de voz recibido:', mensaje.audio);
+
+    this.mensajes.push(mensaje);
+    this.scrollToBottom();
+  }
+  
+  
+
+
 
   enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;

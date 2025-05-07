@@ -7,7 +7,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/lista-chat"></ion-back-button>
     </ion-buttons>
-    
+
     <div class="avatar-container">
       <ion-avatar>
         <img [src]="chatInfo.userAvatar">
@@ -25,13 +25,14 @@
       <div class="bubble">
 
         <!-- Imagen (si existe) -->
-        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" (load)="onImageLoad()"/>
+        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" (load)="onImageLoad()" />
 
         <!-- Video (si existe) -->
-        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat" (canplay)="onMediaLoad()"></video>
+        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat"
+          (canplay)="onMediaLoad()"></video>
 
         <!-- Audio (si existe) -->
-        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" (canplay)="onMediaLoad()"></audio>
+        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" class="audio-chat" (canplay)="onMediaLoad()"></audio>
 
         <!-- Texto (si existe) -->
         <p *ngIf="mensaje.contenido">{{ mensaje.contenido }}</p>
@@ -44,7 +45,7 @@
   </div>
 
 
-  
+
 </ion-content>
 
 <ion-footer>
@@ -59,11 +60,19 @@
       <!-- Input oculto para subir imagen -->
       <input type="file" #fileInput accept="image/*,video/*" hidden (change)="onArchivoSeleccionado($event)" />
 
+      <!-- Botón para seleccionar audio 
       <ion-button (click)="seleccionarAudio()" fill="clear">
         <ion-icon name="mic-outline"></ion-icon>
       </ion-button>
 
       <input type="file" accept="audio/*" hidden #audioInput (change)="onAudioSeleccionado($event)" />
+      -->
+      
+      <!-- Botón para grabar audio -->
+      <ion-button class="grabar" fill="clear" (mousedown)="iniciarGrabacion()" (mouseup)="detenerGrabacion()" (mouseleave)="detenerGrabacion()"  
+        (touchstart)="iniciarGrabacion()" (touchend)="detenerGrabacion()">
+        <ion-icon [name]="grabando ? 'stop-circle' : 'mic-circle'"></ion-icon>
+      </ion-button>
 
       <ion-input placeholder="Enviar mensaje..." [(ngModel)]="nuevoMensaje" class="mensaje-input"></ion-input>
       <ion-button fill="clear" (click)="enviarMensaje()">

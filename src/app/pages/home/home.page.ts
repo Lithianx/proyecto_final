@@ -5,7 +5,7 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
 
-// Definir la interfaz para el Usuario
+// interfaz para el Usuario
 interface Usuario {
   id: string;
   username: string;
@@ -13,7 +13,7 @@ interface Usuario {
   following: boolean; // Estado de seguimiento
 }
 
-// Definir la interfaz para el Post
+//  interfaz para el Post
 interface Post {
   id: number;
   image: string;
@@ -43,7 +43,7 @@ export class HomePage implements OnInit {
   constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) {}
 
   ngOnInit() {
-    // Ejemplo de datos de posts para simular la información que recibirías de Firebase
+    // Ejemplo de datos de posts para simular Firebase
     this.posts = [
       {
         id: 1,
@@ -99,7 +99,7 @@ export class HomePage implements OnInit {
   doRefresh(event: any) {
     console.log('Recargando publicaciones...');
     setTimeout(() => {
-      // Aquí podrías actualizar los datos, por ejemplo, desde Firebase
+      // Aquí actualizar desde Firebase
       this.ngOnInit(); // Recarga los posts como ejemplo
       event.target.complete(); // Detiene el refresher
       console.log('Recarga completada');
@@ -172,18 +172,20 @@ export class HomePage implements OnInit {
 
 
   async compartir(post: Post) {
-    const mensaje = `${post.description}\n\nImagen: ${post.image}\n\nVer más: http://localhost:8100/comentario/${post.id}`;
-  
+
+    const urlConMetadatos = `http://localhost:8100/comentario/${post.id}`;
+    const mensaje = `${post.description}\n\n¡Tienes que ver esto!\n`;
+
     if (Capacitor.getPlatform() !== 'web') {
       await Share.share({
-        title: 'Mira esto',
+        title: 'Descubre esto',
         text: mensaje,
-        url: `http://localhost:8100/comentario/${post.id}`,
-        dialogTitle: 'Compartir con',
+        url: urlConMetadatos,
+        dialogTitle: 'Compartir publicación',
       });
     } else {
       // Prueba para navegador: abrir WhatsApp web
-      const mensajeCodificado = encodeURIComponent(mensaje);
+      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
       const url = `https://wa.me/?text=${mensajeCodificado}`;
       window.open(url, '_blank');
     }
