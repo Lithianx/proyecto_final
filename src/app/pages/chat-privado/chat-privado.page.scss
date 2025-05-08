@@ -1,14 +1,14 @@
 .chat-header {
   position: fixed;
-  background-color: white;
+  color: #f2f2f2;
   z-index: 10;
-  border-bottom: 1px solid #ccc;
   padding: 4px 16px; /* Reduce el padding general para hacerlo más compacto */
-  
-  /* Usamos flexbox para centrar los elementos */
   display: flex;
   justify-content: center;
   align-items: center;
+  ion-back-button {
+    color: #3fe520;
+  }
 }
 
 .chat-header .avatar-container {
@@ -18,14 +18,14 @@
 }
 
 ion-avatar {
-  width: 32px; /* Reduces the size of the avatar */
+  width: 32px;
   height: 32px;
-  margin-right: 8px; /* Adds a little space between the avatar and the title */
+  margin-right: 8px; 
 }
 
 ion-title {
-  font-size: 16px; /* Adjust the size of the title to make it smaller */
-  font-weight: normal; /* Optional: Make the title less bold */
+  font-size: 16px; 
+  font-weight: normal;
 }
   
   .spacer-header {
@@ -33,11 +33,19 @@ ion-title {
   }
   
   .chat-container {
+    margin-right: 20px;
+    margin-left: 20px;
     display: flex;
     flex-direction: column;
     padding: 10px;
     padding-bottom: 40px;
     margin-top: 18px;
+    p{
+      color: #f2f2f2;
+    }
+    span{
+      color: #d9d9d9;
+    }
   }
 
   .message {
@@ -68,11 +76,11 @@ ion-title {
   }
   
   .sent .bubble {
-    background-color: #dcf8c6;
+    background-color: #1cb400;
   }
 
   .received .bubble {
-    background-color: #c7c6f8;
+    background-color: #494848;
   }
   
   .hora {
@@ -114,6 +122,13 @@ ion-title {
 
     // Cuando el botón está siendo presionado (activo), lo agrandamos
     &:active {
-      transform: scale(3.5);  // Agrandar al 120% de su tamaño original
+      transform: scale(1.9);  // Agrandar al 120% de su tamaño original
+    }
+  }
+
+  .chat-footer {
+    ion-icon{
+      color: #3fe520;
+      font-size: 30px;
     }
   }

@@ -48,7 +48,7 @@
 
 </ion-content>
 
-<ion-footer>
+<ion-footer class="chat-footer">
   <ion-toolbar>
     <ion-item lines="none">
 
@@ -74,7 +74,7 @@
         <ion-icon [name]="grabando ? 'stop-circle' : 'mic-circle'"></ion-icon>
       </ion-button>
 
-      <ion-input placeholder="Enviar mensaje..." [(ngModel)]="nuevoMensaje" class="mensaje-input"></ion-input>
+      <ion-input [placeholder]="grabando ? 'Enviando audio...' : 'Enviar mensaje...'"  [(ngModel)]="nuevoMensaje" class="mensaje-input"></ion-input>
       <ion-button fill="clear" (click)="enviarMensaje()">
         <ion-icon name="send-outline"></ion-icon>
       </ion-button>

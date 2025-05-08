@@ -21,7 +21,7 @@
         <ion-avatar slot="start">
           <img [src]="post.usuario.userAvatar" />
         </ion-avatar>
-        <ion-label>
+        <ion-label class="etiqueta-usuario">
           <h2>{{ post.usuario.username }}</h2>
           <p>{{ post.time }}</p>
         </ion-label>
@@ -75,7 +75,7 @@
         <ion-col size="auto">
           <ion-button fill="clear" size="small" (click)="likes(post)">
             <!-- Cambia el icono según el estado de me gusta -->
-            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large" color="danger"></ion-icon>
+            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large"></ion-icon>
           </ion-button>
         </ion-col>
 

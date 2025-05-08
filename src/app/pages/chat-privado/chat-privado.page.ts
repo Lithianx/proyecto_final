@@ -48,7 +48,7 @@ export class ChatPrivadoPage implements OnInit {
 
   ngOnInit() {
     this.chatId = this.route.snapshot.paramMap.get('id');
-    this.chatInfo = this.usuariosMock.find(user => user.id === this.chatId) || { id: '', username: '', userAvatar: '' };
+    this.chatInfo = this.usuariosMock.find(user => user.id === this.chatId) || { id: '', username: 'PRUEBA', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' };
   }
 
   mensajes: Mensaje[] = [

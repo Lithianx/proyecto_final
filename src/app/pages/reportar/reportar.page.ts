@@ -33,6 +33,11 @@ export class ReportarPage implements OnInit {
   postId: string | null = '';
   post!: Post;
 
+  alertOptions = {
+    header: 'Selecciona una razón',
+    message: 'Ayúdanos a entender el problema',
+  };
+
   // Ahora usamos correctamente la interface Reporte
   reporte: Reporte = {
     razon: '',

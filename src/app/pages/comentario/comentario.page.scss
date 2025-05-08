@@ -16,3 +16,72 @@
   color: var(--ion-color-medium);
   margin-top: -8px; /* Opcional: para acercarlo más al corazón */
 }
+
+ion-label{
+  h2{
+    color: #3fe520;
+  }
+  h3{
+    color: #f2f2f2;
+  }
+  p{
+    color: #a6a6a6;
+  }
+  small{
+    color: #a6a6a6;
+  }
+}
+
+.chat-header {
+  color: f2f2f2;
+  ion-icon {
+    color: #3fe520;
+  }
+}
+
+ion-card-content{
+  p{
+    color: #f2f2f2;
+  }
+}
+
+ion-button {
+  color: #3fe520;
+}
+
+ion-chip {
+  color: #3fe520;
+}
+
+.btn-publicar {
+  --color: #3fe520 ;
+}
+
+::ng-deep .custom-action-sheet .action-sheet-group {
+  max-width: 300px;         // ancho máximo del ActionSheet
+  margin: 0 auto;           // centra horizontalmente
+  width: 90%;               // ancho relativo para móviles
+}
+
+::ng-deep .custom-action-sheet .action-sheet-button {
+  color: #a6a6a6; // color de texto de los botones
+  justify-content: center;  // centra el texto e ícono
+  text-align: center;
+}
+
+::ng-deep .custom-action-sheet .action-sheet-icon {
+  margin-left: 25%;
+  margin-right: 10% !important;
+  color: #3fe520; // color de texto de los botones
+}
+
+::ng-deep .custom-action-sheet .action-sheet-title {
+  text-align: center;
+  color: #f2f2f2; // color del título
+}
+
+::ng-deep .custom-action-sheet .action-sheet-cancel {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}

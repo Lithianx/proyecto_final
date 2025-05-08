@@ -166,6 +166,7 @@ export class HomePage implements OnInit {
           role: 'cancel',
         },
       ],
+      cssClass: 'custom-action-sheet'
     }).then(actionSheet => actionSheet.present());
   }
 

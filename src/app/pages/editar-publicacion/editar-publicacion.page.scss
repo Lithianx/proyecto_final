@@ -1,0 +1,57 @@
+.chat-header {
+    color: #f2f2f2;
+    ion-back-button {
+      color: #3fe520;
+    }
+  }
+
+  .editar-publicacion-card {
+    padding: 10px;
+    h2{
+      color: #3fe520;
+    }
+  }
+
+  .textarea-publicacion {
+    margin: 10px;
+    color: #a6a6a6;
+  }
+  
+  .acciones-publicacion {
+    padding: 10px;
+    text-align: center;
+    .btn-eliminar {
+      font-size: 14px;
+      color: #ee1818;
+    }
+    .btn-cambiar {
+      font-size: 14px;
+      color: #3fe520;
+    }
+  }
+
+  .publicar{
+    --background: #3fe520;
+    --color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  .media-item {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 10px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .post-image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 10px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
