@@ -64,7 +64,11 @@ export class ChatPrivadoPage implements OnInit {
   ];
 
 
-
+  autoResize(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto'; // Reinicia la altura para calcular correctamente
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }
 
 
   ngAfterViewChecked() {
@@ -215,6 +219,7 @@ export class ChatPrivadoPage implements OnInit {
 
     this.mensajes.push(mensaje);
     this.scrollToBottom();
+
   }
   
   
@@ -237,9 +242,17 @@ export class ChatPrivadoPage implements OnInit {
 
     this.mensajes.push(mensaje);
 
+    // Reinicia el tamaño del textarea
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.style.height = 'auto';
+    }
+
+
     this.nuevoMensaje = '';
 
 
     this.scrollToBottom();
+    
   }
 }
