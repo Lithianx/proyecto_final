@@ -30,39 +30,14 @@ const routes: Routes = [
   {
     path: 'comentario/:id',
     loadChildren: () => import('./pages/comentario/comentario.module').then( m => m.ComentarioPageModule)
-  },  {
+  },
+  {
     path: 'crear-evento-flash',
     loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
   {
-<<<<<<< HEAD
     path: 'evento',
     loadChildren: () => import('./pages/evento/evento.module').then( m => m.EventoPageModule)
-=======
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  },
-  {
-    path: 'lista-chat',
-    loadChildren: () => import('./pages/lista-chat/lista-chat.module').then( m => m.ListaChatPageModule)
-  },
-  {
-    path: 'chat-privado/:id',
-    loadChildren: () => import('./pages/chat-privado/chat-privado.module').then( m => m.ChatPrivadoPageModule)
-  },
-  {
-    path: 'crear-publicacion',
-    loadChildren: () => import('./pages/crear-publicacion/crear-publicacion.module').then( m => m.CrearPublicacionPageModule)
-  },
-  {
-    path: 'editar-publicacion/:id',
-    loadChildren: () => import('./pages/editar-publicacion/editar-publicacion.module').then( m => m.EditarPublicacionPageModule)
-  },
-  {
-    path: 'comentario/:id',
-    loadChildren: () => import('./pages/comentario/comentario.module').then( m => m.ComentarioPageModule)
->>>>>>> master
   },
   {
     path: 'reportar/:id',

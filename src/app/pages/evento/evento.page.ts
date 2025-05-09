@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-evento',
@@ -58,6 +61,20 @@ export class EventoPage implements OnInit {
   verDetalles(evento: any) {
     console.log('Detalles del evento:', evento);
     // Puedes abrir un modal o ir a otra página
+  }
+doRefresh(event: any) {
+    console.log('Recargando publicaciones...');
+    setTimeout(() => {
+      // Aquí podrías actualizar los datos, por ejemplo, desde Firebase
+      this.ngOnInit(); // Recarga los posts como ejemplo
+      event.target.complete(); // Detiene el refresher
+      console.log('Recarga completada');
+    }, 1500); // Simula un tiempo de espera
+  }
+  volverAtras() {
+    console.log('Volviendo atrás...');
+    // Aquí puedes agregar lógica para navegar hacia atrás
+    window.history.back();
   }
 
 }

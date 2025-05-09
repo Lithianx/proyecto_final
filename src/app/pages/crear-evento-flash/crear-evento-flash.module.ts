@@ -8,6 +8,7 @@ import { IonicModule } from '@ionic/angular';
 import { CrearEventoFlashPageRoutingModule } from './crear-evento-flash-routing.module';
 
 import { CrearEventoFlashPage } from './crear-evento-flash.page';
+import { ComponentsModule } from '../../components/components.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { CrearEventoFlashPage } from './crear-evento-flash.page';
     IonicModule,
     CrearEventoFlashPageRoutingModule,
     ReactiveFormsModule,
+    ComponentsModule
   ],
   declarations: [CrearEventoFlashPage] 
 })

@@ -1,9 +1,21 @@
+<app-encabezado></app-encabezado>
+
 
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <h2 class="titulo">Eventos Actuales</h2>
-
-  <ion-card *ngFor="let evento of eventos" class="evento-card">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content 
+      pullingIcon="game-controller"
+      refreshingIcon="game-controller"> 
+    </ion-refresher-content>
+</ion-refresher>
+  <div class="fila-eventos">
+  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+    <ion-icon name="arrow-back"></ion-icon>
+  </ion-button>
+  <h2 class="titulo">Eventos Disponibles</h2>
+</div>
+    <ion-card *ngFor="let evento of eventos" class="evento-card">
     <ion-card-header>
       <ion-card-title>{{ evento.nombre }}</ion-card-title>
       <ion-card-subtitle>{{ evento.tipo }}</ion-card-subtitle>
@@ -25,3 +37,4 @@
     </ion-card-content>
   </ion-card>
 </ion-content>
+<app-navbar></app-navbar>

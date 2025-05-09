@@ -53,4 +53,17 @@ export class CrearEventoFlashPage implements OnInit {
       this.eventoForm.get('cupos')?.setValue(this.cupos);
     }
   }
+  volverAtras() {
+    console.log('Volviendo atrás...');
+    // Aquí puedes agregar lógica para navegar hacia atrás
+    window.history.back();
+  }
 }
+
+
+
+
+
+
+
+

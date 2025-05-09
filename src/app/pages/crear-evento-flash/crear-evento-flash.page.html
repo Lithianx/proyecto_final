@@ -1,8 +1,15 @@
-
-
-
+<app-encabezado></app-encabezado>
 <ion-content class="ion-padding" scroll="true" fullscreen="true"> <!-- Agregado scroll-y="true" -->
   <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
+
+    <!-- Botón de volver atrás -->
+    <div class="header-row" style="display: flex; align-items: center;">
+      <ion-button fill="clear" class="boton-volver" (click)="volverAtras()" style="margin-right: 8px;">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+      <h2 class="header-title" style="margin: 0;">Crea tu Evento</h2>
+    </div>
+
 
     <!-- Título -->
     <ion-item>
@@ -16,12 +23,7 @@
       <ion-textarea formControlName="descripcion"></ion-textarea>
     </ion-item>
 
-    <!-- Tipo -->
-    <ion-item>
-      <ion-label>Tipo de evento</ion-label>
-        <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Videojuego</ion-checkbox>
-        <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Juego de mesa</ion-checkbox>
-    </ion-item>
+
 
     <!-- Lugar -->
     <ion-item>
@@ -32,7 +34,13 @@
     <!-- Hora de inicio -->
     <ion-item>
       <ion-label>Fecha</ion-label>
-      <ion-datetime formControlName="horaInicio" presentation="datetime"></ion-datetime>
+      <ion-datetime-button datetime="datetime"></ion-datetime-button>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="datetime"></ion-datetime>
+        </ng-template>
+      </ion-modal>
     </ion-item>
 
     <!-- Duración -->
@@ -51,29 +59,29 @@
       <ion-label>Cupos máximos (opcional)</ion-label>
       <ion-buttons slot="end">
         <ion-button fill="outline" (click)="decrementCupos()">-</ion-button>
-        <ion-input
-          [value]="cupos"
-          readonly
-          class="cupos-input"
-        ></ion-input>
+        <ion-input [value]="cupos" readonly class="cupos-input"></ion-input>
         <ion-button fill="outline" (click)="incrementCupos()">+</ion-button>
       </ion-buttons>
     </ion-item>
-    
+
 
     <!-- Visibilidad -->
     <ion-item>
       <ion-label>Privacidad</ion-label>
-      
-        <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Público</ion-checkbox>
-        <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Privado</ion-checkbox>
-      
+
+      <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Público</ion-checkbox>
+      <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Privado</ion-checkbox>
+
     </ion-item>
 
     <!-- Botón -->
-    <ion-button class="boton-verde"  expand="block" type="submit">
-       Lanzar evento
+    <ion-button class="boton-verde" expand="block" type="submit">
+      Lanzar evento
     </ion-button>
 
   </form>
 </ion-content>
+
+
+
+<app-navbar></app-navbar>

@@ -1,7 +1,16 @@
-.ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 80px;  // Ajusta según el alto de tu navbar/footer
-  }
+.fila-eventos {
+  display: flex; /* Activa Flexbox */
+  align-items: center; /* Alinea verticalmente */
+  gap: 15px; /* Espacio entre la flecha y el texto */
+}
+.boton-volver{
+  /* --background: var(--verde-neon); */
+  --color: rgb(0, 252, 0);
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+}
+
 
   :host {
     --verde-neon: #39ff14;

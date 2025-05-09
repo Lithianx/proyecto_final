@@ -1,26 +1,11 @@
-.ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 80px;  // Ajusta según el alto de tu navbar/footer
-  }
-  .checkbox-circular-verde {
-    --border-radius: 50%;          /* Hace el checkbox circular */
-    --size: 24px;                  /* Tamaño del checkbox */
-    --border-color: #28a745;       /* Borde verde cuando no está seleccionado */
-    --checkmark-color: white;      /* Color del ✔️ */
-    --background: white;           /* Fondo cuando no está marcado */
-    --checked-background: #28a745; /* Fondo verde cuando está marcado */
-    --checked-border-color: #28a745;
-  }
-  ion-checkbox {
-    /* background: #2a2a2a; */ 
-    color: #00fa00; 
-    font-size: smaller;
-  }
+.boton-volver{
+  color: #16fc02;
+  background-color: #000;
+  
+}
+ 
 
-  ion-content {
-    background: #1e1e1e; /* Fondo oscuro */
-    padding: 16px;
-  }
+  
   
   ion-item {
     background-color: #2a2a2a;
