@@ -54,9 +54,25 @@ export class ComentarioPage implements OnInit {
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
   };
 
+
+  followers: Usuario[] = [
+    { id: '1', username: 'PedritoGamer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '2', username: 'Pan_con_queso', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '3', username: 'GamerPro', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '4', username: 'ChocoLover', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '5', username: 'PixelMaster', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '6', username: 'CodeWizard', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '7', username: 'EpicPlayer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+  ];
+
+  isModalOpen: boolean = false;
+  selectedPost: Post | undefined;
+
+
   constructor(private route: ActivatedRoute, private navCtrl: NavController,private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) {}
 
   ngOnInit() {
+    this.followersfriend = [...this.followers];
     this.postId = this.route.snapshot.paramMap.get('id');
     this.obtenerPost();
 
@@ -68,6 +84,16 @@ export class ComentarioPage implements OnInit {
     }, 100); // Se le da un pequeño retraso para asegurarse que todo esté cargado
   }
 
+  followersfriend: Usuario[] = [];
+  // Filtrado por texto
+  handleInput(event: any): void {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    console.log('Valor ingresado en el input:', searchTerm);
+    this.followersfriend = this.followers.filter(user =>
+      user.username.toLowerCase().includes(searchTerm)
+    );
+    console.log('Usuarios filtrados:', this.followersfriend);
+  }
 
 
 
@@ -199,8 +225,31 @@ export class ComentarioPage implements OnInit {
     post.liked ? post.likes++ : post.likes--;
   }
 
-  enviar(post: any) {
-    console.log('Enviar post');
+  enviar(post: Post) {
+    this.isModalOpen = true;
+    this.selectedPost = post;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
+  sendPostToUser(user: Usuario) {
+    if (this.selectedPost) {  // Aseguramos que selectedPost no sea undefined
+      const post = this.selectedPost;
+      console.log(`Enviando post con id ${post.id} a ${user.username}`);
+      console.log(`Descripción: ${post.description}`);
+      console.log(`Imagen: ${post.image}`);
+      console.log(`Tiempo: ${post.time}`);
+      console.log(`Likes: ${post.likes}`);
+      console.log(`Guardado: ${post.guardar}`);
+      console.log(`Usuario: ${post.usuario.username}`);
+      console.log(`Avatar del usuario: ${post.usuario.userAvatar}`);
+      console.log(`¿Seguido por el usuario? ${post.usuario.following ? 'Sí' : 'No'}`);
+    } else {
+      console.log('No hay un post seleccionado');
+    }
+    this.closeModal();
   }
 
   guardar(post: any) {

@@ -1,4 +1,24 @@
 
+::ng-deep .custom-modal-enviar .modal-scrollable-content {
+  --overflow: auto;
+  height: 100%;
+}
+.custom-modal-enviar {
+
+  ion-searchbar {
+    color: #f2f2f2;
+    --icon-color: #3fe520;
+  }
+  ion-title{
+    color: #f2f2f2;
+    text-align: center;
+  }
+  h2{
+    color: #f2f2f2;
+  }
+}
+
+
 .comentario-container {
     display: flex;
     flex-direction: column;
