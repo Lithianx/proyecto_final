@@ -1,7 +1,4 @@
 <app-encabezado></app-encabezado>
-
-
-
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content 
@@ -15,7 +12,10 @@
   </ion-button>
   <h2 class="titulo">Eventos Disponibles</h2>
 </div>
-    <ion-card *ngFor="let evento of eventos" class="evento-card">
+<ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar evento"></ion-searchbar>
+
+
+    <ion-card *ngFor="let evento of eventosFiltrados" class="evento-card">
     <ion-card-header>
       <ion-card-title>{{ evento.nombre }}</ion-card-title>
       <ion-card-subtitle>{{ evento.tipo }}</ion-card-subtitle>
@@ -26,13 +26,11 @@
       <p><strong>Hora:</strong> {{ evento.hora }}</p>
   
       <div class="botones-evento">
-        <ion-button expand="block" class="boton-unirse" (click)="unirse(evento)">
-          UNIRSE
-        </ion-button>
+        <ion-button expand="block" class="boton-unirse" [routerLink]="['/detalle-evento', evento.id]">VER EVENTO</ion-button>
+          
+        
   
-        <ion-button fill="clear" size="small" class="boton-detalles" (click)="verDetalles(evento)">
-          Detalles
-        </ion-button>
+       
       </div>
     </ion-card-content>
   </ion-card>

@@ -43,6 +43,11 @@ const routes: Routes = [
     path: 'reportar/:id',
     loadChildren: () => import('./pages/reportar/reportar.module').then( m => m.ReportarPageModule)
   },
+  {
+    path: 'detalle-evento/:id',
+    loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
+  },
+
 
 
  

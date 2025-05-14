@@ -1,0 +1,49 @@
+<app-encabezado></app-encabezado>
+
+
+<ion-content [fullscreen]="true">
+  <ion-card *ngIf="evento">
+    <ion-card-header>
+      <ion-card-title>Detalles del Evento</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Título:</ion-label>
+        <p>{{ evento.nombre }}</p>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Descripción:</ion-label>
+        <p>{{ evento.descripcion }}</p>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Lugar:</ion-label>
+        <p>{{ evento.lugar }}</p>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Fecha:</ion-label>
+        <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Duración:</ion-label>
+        <p>{{ evento.duracion }} minutos</p>
+      </ion-item>
+
+      <ion-item *ngIf="evento.cupos">
+        <ion-label>Cupos máximos:</ion-label>
+        <p>{{ evento.cupos }}</p>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-button expand="block" color="primary" (click)="unirseAlEvento()">
+          Unirse
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<app-navbar></app-navbar>

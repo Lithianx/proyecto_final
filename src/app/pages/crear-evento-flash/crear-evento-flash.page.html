@@ -7,8 +7,9 @@
       <ion-button fill="clear" class="boton-volver" (click)="volverAtras()" style="margin-right: 8px;">
         <ion-icon name="arrow-back"></ion-icon>
       </ion-button>
-      <h2 class="header-title" style="margin: 0;">Crea tu Evento</h2>
+      <h2 class="header-title">Crea tu Evento</h2>
     </div>
+    
 
 
     <!-- Título -->
@@ -69,8 +70,16 @@
     <ion-item>
       <ion-label>Privacidad</ion-label>
 
-      <ion-checkbox class="checkbox-circular-verde" justify="start" value="videojuego">Público</ion-checkbox>
-      <ion-checkbox class="checkbox-circular-verde" justify="start" value="juego-mesa">Privado</ion-checkbox>
+      <ion-radio-group formControlName="privacidad">
+        <ion-item>
+          <ion-label>Público</ion-label>
+          <ion-radio slot="start" value="publico"></ion-radio>
+        </ion-item>
+        <ion-item>
+          <ion-label>Privado</ion-label>
+          <ion-radio slot="start" value="privado"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
 
     </ion-item>
 

@@ -17,7 +17,6 @@ export class CrearEventoFlashPage implements OnInit {
     this.eventoForm = this.fb.group({
       titulo: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: [''],
-      tipo: ['', Validators.required],
       lugar: ['', Validators.required],
       horaInicio: ['', Validators.required],
       duracion: ['', Validators.required],
