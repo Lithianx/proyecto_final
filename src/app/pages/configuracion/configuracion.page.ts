@@ -54,10 +54,6 @@ export class ConfiguracionPage implements OnInit {
        // Si no hay preferencia guardada, usa la del sistema operativo como valor inicial
        this.initializeDarkPalette(prefersDark.matches);
     }
-
-
-    // Escucha los cambios en la preferencia del sistema operativo
-    // Nota: Esto reaccionará a cambios del sistema incluso si el usuario ya seleccionó una preferencia manual.
     // Puedes ajustar esta lógica si la preferencia manual debe tener prioridad total.
     prefersDark.addEventListener('change', (mediaQuery) => this.initializeDarkPalette(mediaQuery.matches));
   }
