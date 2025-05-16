@@ -70,6 +70,22 @@ const routes: Routes = [
     path: 'seguidos',
     loadChildren: () => import('./pages/seguidos/seguidos.module').then( m => m.SeguidosPageModule)
   },
+  {
+    path: 'historial-eventos',
+    loadChildren: () => import('./pages/historial-eventos/historial-eventos.module').then( m => m.HistorialEventosPageModule)
+  },
+  {
+    path: 'perfil-user',
+    loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
+  },
+  {
+    path: 'evento-inscrito',
+    loadChildren: () => import('./pages/evento-inscrito/evento-inscrito.module').then( m => m.EventoInscritoPageModule)
+  },
+  {
+    path: 'evento-creado',
+    loadChildren: () => import('./pages/evento-creado/evento-creado.module').then( m => m.EventoCreadoPageModule)
+  },
 
 
 

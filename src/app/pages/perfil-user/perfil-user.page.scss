@@ -398,3 +398,38 @@ body {
     margin-top: 10px;
   }
 }
+.perfil-acciones {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+
+  .accion-btn {
+    --border-radius: 20px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: none;
+  }
+
+  .accion-btn.ion-color-success {
+    --background: #2dd36f;
+    --background-hover: #28ba62;
+    --color: white;
+  }
+
+  .accion-btn.ion-color-danger {
+    --background: #eb445a;
+    --background-hover: #cf3c4f;
+    --color: white;
+  }
+
+  .accion-btn.ion-color-primary {
+    --background: #3880ff;
+    --background-hover: #3171e0;
+    --color: white;
+  }
+}
+

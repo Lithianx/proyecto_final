@@ -26,7 +26,7 @@
 
   <!-- Lista de seguidores -->
   <ion-list class="followers-list">
-    <ion-item>
+    <ion-item [routerLink]="['/perfil-user']">
       <ion-avatar slot="start">
         <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 1" />
       </ion-avatar>
@@ -34,7 +34,7 @@
       <ion-button color="success" class="follow-button">Seguir</ion-button>
     </ion-item>
 
-    <ion-item>
+    <ion-item [routerLink]="['/perfil-user']">
       <ion-avatar slot="start">
         <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 2" />
       </ion-avatar>
@@ -42,7 +42,7 @@
       <ion-button color="danger" class="follow-button">Dejar de seguir</ion-button>
     </ion-item>
 
-    <ion-item>
+    <ion-item [routerLink]="['/perfil-user']">
       <ion-avatar slot="start">
         <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 3" />
       </ion-avatar>

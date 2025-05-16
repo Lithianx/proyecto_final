@@ -2,14 +2,17 @@
   <div class="edit-profile-container">
     <div class="profile-form-box">
 
+      <!-- Botón de volver -->
       <div class="header-row">
         <ion-button fill="clear" class="back-button" [routerLink]="['/configuracion']" aria-label="Volver atrás">
           <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
         </ion-button>
       </div>
 
+      <!-- Título -->
       <h1 class="app-title" style="text-align: center;">¿Qué es una cuenta institucional?</h1>
 
+      <!-- Contenido explicativo -->
       <div class="content-box" style="text-align: justify; padding: 16px;">
         <p>
           Una cuenta institucional es aquella que pertenece a una persona profesional acreditada por una institución
@@ -35,11 +38,15 @@
         </p>
       </div>
 
+      
+
+      <!-- Checkbox de términos -->
       <ion-item lines="none">
         <ion-checkbox slot="start" [(ngModel)]="aceptaTerminos"></ion-checkbox>
         <ion-label>Estoy de acuerdo con todos los términos</ion-label>
       </ion-item>
 
+      <!-- Botón para continuar -->
       <div class="save-button-container">
         <ion-button expand="block" class="save-button" [routerLink]="['/validar-cuenta']" [disabled]="!aceptaTerminos">
           Solicitar validación
