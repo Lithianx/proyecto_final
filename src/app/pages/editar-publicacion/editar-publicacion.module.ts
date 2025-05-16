@@ -8,12 +8,15 @@ import { EditarPublicacionPageRoutingModule } from './editar-publicacion-routing
 
 import { EditarPublicacionPage } from './editar-publicacion.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EditarPublicacionPageRoutingModule
+    EditarPublicacionPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [EditarPublicacionPage]
 })

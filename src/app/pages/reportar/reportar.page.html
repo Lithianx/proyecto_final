@@ -1,0 +1,60 @@
+<app-encabezado></app-encabezado>
+
+<ion-content>
+
+  <!-- MOSTRAR PUBLICACIÓN -->
+  <ion-card *ngIf="post" class="publicacion-card">
+    <ion-item lines="none">
+      <ion-avatar slot="start">
+        <img [src]="post.userAvatar" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ post.username }}</h2>
+        <p>{{ post.time }}</p>
+      </ion-label>
+    </ion-item>
+
+    <img [src]="post.image" class="post-image" />
+
+    <ion-card-content>
+      <p>{{ post.description }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- FORMULARIO DE REPORTE -->
+  <div #reportarContainer class="reportar-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-toolbar class="chat-header">
+          <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </ion-button>
+          <ion-title>Reporte de Publicación</ion-title>
+        </ion-toolbar>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form (ngSubmit)="enviarReporte()">
+          <ion-item>
+            <ion-label position="floating">Razón del Reporte</ion-label>
+            <ion-select interface="alert" [interfaceOptions]="alertOptions" [(ngModel)]="reporte.razon" name="razon" required okText="Confirmar"
+              cancelText="Cancelar">
+              <ion-select-option *ngFor="let opcion of razonesReporte" [value]="opcion.valor">
+                {{ opcion.texto }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Detalles Adicionales</ion-label>
+            <ion-textarea [(ngModel)]="reporte.detalles" name="detalles" required></ion-textarea>
+          </ion-item>
+
+          <ion-button class="ion-padding" expand="full" shape="round" type="submit">Enviar Reporte</ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<app-navbar></app-navbar>

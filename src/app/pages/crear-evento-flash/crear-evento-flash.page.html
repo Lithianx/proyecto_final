@@ -1,0 +1,96 @@
+<app-encabezado></app-encabezado>
+<ion-content class="ion-padding" scroll="true" fullscreen="true"> <!-- Agregado scroll-y="true" -->
+  <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
+
+    <!-- Botón de volver atrás -->
+    <div class="header-row" style="display: flex; align-items: center;">
+      <ion-button fill="clear" class="boton-volver" (click)="volverAtras()" style="margin-right: 8px;">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+      <h2 class="header-title">Crea tu Evento</h2>
+    </div>
+    
+
+
+    <!-- Título -->
+    <ion-item>
+      <ion-label position="floating">Evento</ion-label>
+      <ion-input formControlName="titulo" type="text"></ion-input>
+    </ion-item>
+
+    <!-- Descripción -->
+    <ion-item>
+      <ion-label position="floating">Descripción</ion-label>
+      <ion-textarea formControlName="descripcion"></ion-textarea>
+    </ion-item>
+
+
+
+    <!-- Lugar -->
+    <ion-item>
+      <ion-label position="floating">Lugar</ion-label>
+      <ion-input formControlName="lugar" type="text"></ion-input>
+    </ion-item>
+
+    <!-- Hora de inicio -->
+    <ion-item>
+      <ion-label>Fecha</ion-label>
+      <ion-datetime-button datetime="datetime"></ion-datetime-button>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="datetime"></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
+    <!-- Duración -->
+    <ion-item>
+      <ion-label>Duración estimada</ion-label>
+      <ion-select formControlName="duracion">
+        <ion-select-option value="15">15 minutos</ion-select-option>
+        <ion-select-option value="30">30 minutos</ion-select-option>
+        <ion-select-option value="60">1 hora</ion-select-option>
+        <ion-select-option value="90">1h 30min</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Cupos -->
+    <ion-item>
+      <ion-label>Cupos máximos (opcional)</ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="outline" (click)="decrementCupos()">-</ion-button>
+        <ion-input [value]="cupos" readonly class="cupos-input"></ion-input>
+        <ion-button fill="outline" (click)="incrementCupos()">+</ion-button>
+      </ion-buttons>
+    </ion-item>
+
+
+    <!-- Visibilidad -->
+    <ion-item>
+      <ion-label>Privacidad</ion-label>
+
+      <ion-radio-group formControlName="privacidad">
+        <ion-item>
+          <ion-label>Público</ion-label>
+          <ion-radio slot="start" value="publico"></ion-radio>
+        </ion-item>
+        <ion-item>
+          <ion-label>Privado</ion-label>
+          <ion-radio slot="start" value="privado"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+
+    </ion-item>
+
+    <!-- Botón -->
+    <ion-button class="boton-verde" expand="block" type="submit">
+      Lanzar evento
+    </ion-button>
+
+  </form>
+</ion-content>
+
+
+
+<app-navbar></app-navbar>

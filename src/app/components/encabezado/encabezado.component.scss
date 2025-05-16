@@ -1,16 +1,19 @@
-.encabezado-toolbar {
-    --background: #1e1e1e; /* color oscuro */
-    justify-content: center;
+:host ::ng-deep ion-toolbar {
+    padding-top: env(safe-area-inset-top); //ajusta el padding superior para dispositivos con notch
+  }
+  
+  .encabezado-toolbar {
+    --background: #1e1e1e;
   }
   
   .encabezado-buttons {
-    width: 25%;
     display: flex;
     justify-content: space-around;
+    width: 25%;
   }
   
   .encabezado-icon {
-    color: white; /* color de íconos normales */
+    color: white;
     font-size: 33px;
   }
   .footer-toolbar {

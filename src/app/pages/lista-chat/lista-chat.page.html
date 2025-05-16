@@ -1,22 +1,53 @@
-<ion-content fullscreen="true" class="ajustado">
+<app-encabezado></app-encabezado>
+
+<ion-content>
   <!-- Barra de búsqueda -->
   <ion-searchbar [debounce]="1000" (ionInput)="handleInput($event)" placeholder="Buscar chat"></ion-searchbar>
   <!-- chats -->
   <ion-list [inset]="true" lines="full">
-    <ion-text color="primary" class="ion-text-center">
-      <h1>Mensajes</h1>
-    </ion-text>
+
+    <ion-toolbar class="chat-header">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="home"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Mensajes</ion-title>
+    </ion-toolbar>
     <!-- Lista de chat -->
-    <ion-item *ngFor="let post of posts" class="chat-item" [routerLink]="['/chat-privado', post.id]">
+    <ion-item *ngFor="let chat of chats" class="chat-item" [routerLink]="['/chat-privado', chat.id]">
       <ion-avatar slot="start">
-        <img [src]="post.userAvatar" />
+        <img [src]="chat.participante.userAvatar" />
       </ion-avatar>
       <ion-label>
-        <!-- Nombre de usuario -->
-        <h5>{{ post.username }}</h5>
+        <!-- Nombre de usuario y punto verde si hay mensaje no leído -->
+        <div class="user-info">
+          <h5>{{ chat.participante.username }}</h5>
+          <div *ngIf="chat.ultimoMensaje?.leido === false" class="no-visto"></div>
+        </div>
         <!-- Último mensaje -->
-        <p class="message-text">{{ post.mensage }}</p>
+        <p class="message-text">
+          <ng-container *ngIf="chat.ultimoMensaje?.imagen; else checkAudio">
+            📷 Imagen enviada
+          </ng-container>
+
+          <ng-template #checkAudio>
+            <ng-container *ngIf="chat.ultimoMensaje?.audio; else checkVideo">
+              🎧 Audio enviado
+            </ng-container>
+          </ng-template>
+
+          <ng-template #checkVideo>
+            <ng-container *ngIf="chat.ultimoMensaje?.video; else texto">
+              🎥 Video enviado
+            </ng-container>
+          </ng-template>
+
+          <ng-template #texto>
+            {{ chat.ultimoMensaje?.contenido }}
+          </ng-template>
+        </p>
       </ion-label>
     </ion-item>
   </ion-list>
 </ion-content>
+
+<app-navbar></app-navbar>

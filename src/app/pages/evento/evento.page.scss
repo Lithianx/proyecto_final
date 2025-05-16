@@ -1,0 +1,57 @@
+.fila-eventos {
+  display: flex; /* Activa Flexbox */
+  align-items: center; /* Alinea verticalmente */
+  gap: 15px; /* Espacio entre la flecha y el texto */
+}
+.boton-volver{
+  /* --background: var(--verde-neon); */
+  --color: rgb(0, 252, 0);
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+}
+
+
+  :host {
+    --verde-neon: #39ff14;
+    --verde-oscuro: #2ecc71;
+    --fondo-tarjeta: #1a1a1a;
+  }
+  
+  ion-card.evento-card {
+    background-color: var(--fondo-tarjeta);
+    border-left: 5px solid var(--verde-neon);
+    color: white;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+  
+    ion-card-title {
+      color: var(--verde-neon);
+    }
+  
+    ion-card-subtitle {
+      color: var(--verde-oscuro);
+    }
+  
+    .botones-evento {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+  
+      ion-button {
+        font-weight: bold;
+      }
+  
+      .boton-unirse {
+        --background: var(--verde-neon);
+        --color: black;
+        flex: 1;
+        margin-right: 10px;
+      }
+  
+      .boton-detalles {
+        --color: var(--verde-neon);
+        padding: 0;
+      }
+    }
+  }

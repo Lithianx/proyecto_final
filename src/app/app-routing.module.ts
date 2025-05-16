@@ -86,6 +86,27 @@ const routes: Routes = [
     path: 'evento-creado',
     loadChildren: () => import('./pages/evento-creado/evento-creado.module').then( m => m.EventoCreadoPageModule)
   },
+  {
+    path: 'crear-evento-flash',
+    loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
+  },
+  {
+    path: 'evento',
+    loadChildren: () => import('./pages/evento/evento.module').then( m => m.EventoPageModule)
+  },
+  {
+    path: 'reportar/:id',
+    loadChildren: () => import('./pages/reportar/reportar.module').then( m => m.ReportarPageModule)
+  },
+  {
+    path: 'detalle-evento/:id',
+    loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
+  },
+
+
+
+ 
+
 
 
 

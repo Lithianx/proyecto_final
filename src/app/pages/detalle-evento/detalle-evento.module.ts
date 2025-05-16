@@ -4,20 +4,20 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ChatPrivadoPageRoutingModule } from './chat-privado-routing.module';
+import { DetalleEventoPageRoutingModule } from './detalle-evento-routing.module';
 
-import { ChatPrivadoPage } from './chat-privado.page';
-
+import { DetalleEventoPage } from './detalle-evento.page';
 import { ComponentsModule } from '../../components/components.module';
+
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ChatPrivadoPageRoutingModule,
-    ComponentsModule
+    DetalleEventoPageRoutingModule,
+    ComponentsModule,
   ],
-  declarations: [ChatPrivadoPage]
+  declarations: [DetalleEventoPage]
 })
-export class ChatPrivadoPageModule {}
+export class DetalleEventoPageModule {}

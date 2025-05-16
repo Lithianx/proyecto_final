@@ -23,7 +23,7 @@ export class NavbarComponent  implements OnInit {
     this.router.navigate(['/perfil']);
   }
   irEvento() {
-    this.router.navigate(['/perfil']);
+    this.router.navigate(['/evento']);
   }
   irHome() {
     this.router.navigate(['/home']);
@@ -54,7 +54,7 @@ export class NavbarComponent  implements OnInit {
           text: 'Crear Evento',
           icon: 'flash-outline',
           handler: () => {
-            this.router.navigate(['/crear-evento']);
+            this.router.navigate(['/crear-evento-flash']);
           }
         },
         {

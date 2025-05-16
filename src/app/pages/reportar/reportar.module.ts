@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ChatPrivadoPageRoutingModule } from './chat-privado-routing.module';
+import { ReportarPageRoutingModule } from './reportar-routing.module';
 
-import { ChatPrivadoPage } from './chat-privado.page';
+import { ReportarPage } from './reportar.page';
 
 import { ComponentsModule } from '../../components/components.module';
 
@@ -15,9 +15,9 @@ import { ComponentsModule } from '../../components/components.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    ChatPrivadoPageRoutingModule,
+    ReportarPageRoutingModule,
     ComponentsModule
   ],
-  declarations: [ChatPrivadoPage]
+  declarations: [ReportarPage]
 })
-export class ChatPrivadoPageModule {}
+export class ReportarPageModule {}

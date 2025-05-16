@@ -1,94 +1,183 @@
-.ajustado {
-    --padding-top: 56px; 
-    --padding-bottom: 80px;  
+.chat-header {
+  position: fixed;
+  color: #f2f2f2;
+  z-index: 10;
+  padding: 4px 16px;
+  /* Reduce el padding general para hacerlo más compacto */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  ion-back-button {
+    color: #3fe520;
+  }
+}
+
+.chat-header .avatar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-avatar {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+}
+
+ion-title {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.spacer-header {
+  height: 56px;
+}
+
+.chat-container {
+  margin-right: 20px;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  padding-bottom: 40px;
+  margin-top: 18px;
+
+  p {
+    color: #f2f2f2;
   }
 
+  span {
+    color: #d9d9d9;
+  }
+}
 
-  .chat-header {
-    position: fixed;
-    background-color: white;
-    z-index: 10;
-    border-bottom: 1px solid #ccc;
-    padding: 8px;
-    
-  }
-  
-  .spacer-header {
-    height: 56px; 
-  }
-  
-  .chat-container {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    padding-bottom: 40px;
-    margin-top: 18px;
-  }
+.message {
+  display: flex;
+  margin-bottom: 10px;
+  max-width: 80%;
+}
+
+.sent {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.received {
+  align-self: flex-start;
+  justify-content: flex-start;
+}
+
+.bubble {
+  border-radius: 18px;
+  padding: 10px 14px;
+  word-wrap: break-word;
+  /* Permite el salto de línea si el texto es largo */
+  overflow-wrap: break-word;
+  /* Asegura que el texto largo se ajuste dentro del contenedor */
+  white-space: pre-wrap;
+  /* Asegura que los saltos de línea se respeten y se ajuste el texto */
+  max-width: 100%;
+  /* Asegura que la burbuja no se salga de los límites */
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.sent .bubble {
+  background-color: #1cb400;
+}
+
+.received .bubble {
+  background-color: #494848;
+}
+
+.hora {
+  font-size: 10px;
+  color: gray;
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+}
 
 
-  .barra-fija {
-    position: fixed;
-    bottom: 60px;
-    width: 100%;
-    background: white;
-    border-top: 1px solid #ccc;
-    z-index: 100;
-  }
+
+
+.imagen-chat {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+
+.video-chat {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+
+.audio-chat {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  margin-top: 5px;
+}
 
 
 
-  
-  .message {
-    display: flex;
-    margin-bottom: 10px;
-    max-width: 80%;
-  }
-  
-  .sent {
-    align-self: flex-end;
-    justify-content: flex-end;
-  }
-  
-  .received {
-    align-self: flex-start;
-    justify-content: flex-start;
-  }
-  
-  .bubble {
-    background-color: var(--ion-color-light);
-    border-radius: 18px;
-    padding: 10px 14px;
-    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-  }
-  
-  .sent .bubble {
-    background-color: #dcf8c6;
-  }
-  
-  .hora {
-    font-size: 10px;
-    color: gray;
-    display: block;
-    text-align: right;
-    margin-top: 4px;
-  }
-  
+ion-item {
+  display: flex;
+  flex: 1; // Permite que los elementos ocupen el espacio disponible
+  align-items: center;
+  justify-content: space-between; // Asegura que los botones no se amontonen
+  position: relative; // Mantiene la estructura dentro del footer
+}
+
+ion-button {
+  position: fixed;
+  bottom: 10px;
+  width: 50px; // Ajusta el tamaño del botón para evitar solapamiento
+}
+
+ion-button:first-of-type {
+  left: 15px; // Asegura que el botón de imagen/audio esté a la izquierda
+}
+
+ion-button:last-of-type {
+  right: 4px; // Mantiene el botón de enviar alineado a la derecha
+}
+
+ion-icon {
+  color: #3fe520;
+  font-size: 30px;
+}
+
+.grabar {
+  position: fixed;
+  bottom: 10px;
+  left: 70px;
+  transition: transform 0.2s ease;
+}
+
+/* Efecto cuando se presiona */
+.grabar:active {
+  transform: scale(1.9); /* Mantiene el crecimiento centrado */
+}
+
   .mensaje-input {
-    width: 100%;
-  }
-
-
-  .imagen-chat {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
-    margin-top: 5px;
-  }
-  
-  .video-chat {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
-    margin-top: 5px;
+    position: relative;
+    left: auto; /* Evita desajustes horizontales */
+    margin-left: 110px; /* Empuja el input hacia la derecha */
+    margin-right: 50px; /* Espacio para el botón de grabar */
+    width: calc(100% - 120px); /* Mantiene el espacio para los botones */
+    max-height: 80px;
+    min-height: 40px;
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.4;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: black;
   }

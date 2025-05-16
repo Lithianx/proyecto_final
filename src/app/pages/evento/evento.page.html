@@ -1,0 +1,38 @@
+<app-encabezado></app-encabezado>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content 
+      pullingIcon="game-controller"
+      refreshingIcon="game-controller"> 
+    </ion-refresher-content>
+</ion-refresher>
+  <div class="fila-eventos">
+  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+    <ion-icon name="arrow-back"></ion-icon>
+  </ion-button>
+  <h2 class="titulo">Eventos Disponibles</h2>
+</div>
+<ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar evento"></ion-searchbar>
+
+
+    <ion-card *ngFor="let evento of eventosFiltrados" class="evento-card">
+    <ion-card-header>
+      <ion-card-title>{{ evento.nombre }}</ion-card-title>
+      <ion-card-subtitle>{{ evento.tipo }}</ion-card-subtitle>
+    </ion-card-header>
+  
+    <ion-card-content>
+      <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
+      <p><strong>Hora:</strong> {{ evento.hora }}</p>
+  
+      <div class="botones-evento">
+        <ion-button expand="block" class="boton-unirse" [routerLink]="['/detalle-evento', evento.id]">VER EVENTO</ion-button>
+          
+        
+  
+       
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<app-navbar></app-navbar>

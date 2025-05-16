@@ -8,12 +8,15 @@ import { ListaChatPageRoutingModule } from './lista-chat-routing.module';
 
 import { ListaChatPage } from './lista-chat.page';
 
+import { ComponentsModule } from '../../components/components.module';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ListaChatPageRoutingModule
+    ListaChatPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [ListaChatPage]
 })

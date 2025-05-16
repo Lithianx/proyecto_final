@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonButton, IonTitle, ActionSheetController } from "@ionic/angular"; // Asegúrate de importar ActionSheetController
-import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-encabezado',

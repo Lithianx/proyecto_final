@@ -1,0 +1,81 @@
+.boton-volver{
+  color: #16fc02;
+  background-color: #000;
+  
+}
+.header-title{
+  justify-content: center;
+}
+ 
+
+  
+  
+  ion-item {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    padding: 8px;
+    color: #fff;
+  }
+  
+  ion-label {
+    color: #00ff15;
+    font-weight: bold;
+  }
+  
+  ion-input,
+  ion-textarea,
+  ion-select,
+  ion-datetime {
+    color: #fff;
+    width: 100%;
+  }
+  
+  ion-button {
+    margin-top: 24px;
+    margin-bottom: 40px;
+    background: #20ff02;
+    color: #000;
+    font-weight: bold;
+    border-radius: 12px; 
+    font-size: 15px;
+  }
+
+  .cupos-input {
+    width: 50px;
+    text-align: center;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  .boton-verde {
+    --background: #15ff00;              /* fondo verde */
+    --background-hover: #218838;        /* cuando el cursor está encima */
+    --background-activated: #1e7e34;    /* cuando se hace clic */
+    --color: rgb(0, 0, 0);                     /* color del texto */
+    --border-radius: 6px;               /* opcional: bordes redondeados */
+    --box-shadow: none;                 /* opcional: quitar sombras */
+  }
+  
+  /* RESPONSIVIDAD */
+  @media (max-width: 768px) {
+    ion-content {
+      padding: 8px;
+    }
+  
+    ion-item {
+      margin-bottom: 12px;
+      margin-top: 20px;
+      padding: 10px;
+    }
+  
+    ion-label,
+    ion-input,
+    ion-textarea,
+    ion-select,
+    ion-datetime {
+      font-size: 14px;
+    }
+  
+    
+  }

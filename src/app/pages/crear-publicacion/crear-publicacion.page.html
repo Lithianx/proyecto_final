@@ -1,47 +1,103 @@
-<ion-content fullscreen="true" class="ajustado">
+<app-encabezado></app-encabezado>
 
+<ion-content>
+
+  <ion-toolbar class="chat-header">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Crear Publicación</ion-title>
+  </ion-toolbar>
 
   <ion-card class="crear-publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+        <img [src]="usuario.userAvatar" />
       </ion-avatar>
       <ion-label>
-        <h2>{{ usuario }}</h2>
+        <h2>{{usuario.username}}</h2>
       </ion-label>
     </ion-item>
 
     <ion-textarea auto-grow="true" placeholder="¿Qué estás pensando?" [(ngModel)]="contenido"
-      class="textarea-publicacion"></ion-textarea>
-
+      class="textarea-publicacion">
+    </ion-textarea>
+ 
+    <!-- Mostrar imagen seleccionada -->
+    <img *ngIf="imagenBase64" [src]="imagenBase64" class="media-item" />
+    
     <ion-row class="acciones-publicacion">
-      <ion-col size="4">
-        <ion-button fill="clear" expand="full">
+      <ion-col size="12">
+        <ion-button fill="clear" expand="full" (click)="seleccionarArchivo()">
           <ion-icon name="image-outline" slot="start"></ion-icon>
-          Foto
+          Agregar Foto
         </ion-button>
-      </ion-col>
-
-
-
-      <ion-col size="4">
-        <ion-button fill="clear" expand="full">
-          <ion-icon name="happy-outline" slot="start"></ion-icon>
-          Estado
-        </ion-button>
-      </ion-col>
-
-      
-      <ion-col size="4">
-        <ion-button fill="clear" expand="full">
-          <ion-icon name="location-outline" slot="start"></ion-icon>
-          Ubicación
-        </ion-button>
+        <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
       </ion-col>
     </ion-row>
 
-    <ion-button expand="block" (click)="publicar()" [disabled]="!contenido">
+    <ion-button class="publicar" expand="block" (click)="publicar()" [disabled]="!contenido && !imagenBase64">
       Publicar
     </ion-button>
   </ion-card>
+
+
+
+
+
+
+
+
+
+
+  <!-- Sección donde mostramos las publicaciones para ver  si todo funciona bien -->
+  <ion-list lines="none">
+    <ion-card *ngFor="let publicacion of publicaciones">
+      <ion-item>
+        <ion-avatar slot="start">
+          <img [src]="publicacion.usuario.userAvatar" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ publicacion.usuario.username }}</h2>
+          <p>{{ publicacion.time }}</p>
+        </ion-label>
+        <ion-chip (click)="modificar(publicacion)">
+          <ion-label>Editar</ion-label>
+        </ion-chip>
+      </ion-item>
+  
+      <!-- Parte donde se muestra imagen o descripción -->
+      <ng-container *ngIf="publicacion.image; else soloDescripcion">
+        <!-- Si hay imagen, mostrar imagen -->
+        <img [src]="publicacion.image" class="post-image" />
+      </ng-container>
+  
+      <!-- En caso que NO haya imagen -->
+      <ng-template #soloDescripcion>
+        <ion-card-content>
+          <p class="descripcion-sola">{{ publicacion.description }}</p>
+          <p><strong>{{ publicacion.likes }} likes</strong></p>
+        </ion-card-content>
+      </ng-template>
+  
+      <!-- Siempre muestra acciones y descripción si hay imagen -->
+      <ng-container *ngIf="publicacion.image">
+        <ion-card-content>
+          <p><strong>{{ publicacion.likes }} likes</strong></p>
+  
+          <p>
+            {{ mostrarDescripcion ? publicacion.description : (publicacion.description | slice:0:100) + (publicacion.description.length > 100 ? '...' : '') }}
+            <ion-button *ngIf="publicacion.description.length > 100" fill="clear" size="small"
+              (click)="mostrarDescripcion = !mostrarDescripcion">
+              {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
+            </ion-button>
+          </p>
+        </ion-card-content>
+      </ng-container>
+  
+    </ion-card>
+  </ion-list>
+
 </ion-content>
+
+<app-navbar></app-navbar>

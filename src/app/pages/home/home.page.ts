@@ -1,5 +1,30 @@
 import { Component, OnInit } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { ActionSheetController, ModalController } from '@ionic/angular';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
+
+
+
+// interfaz para el Usuario
+interface Usuario {
+  id: string;
+  username: string;
+  userAvatar: string;
+  following: boolean; // Estado de seguimiento
+}
+
+//  interfaz para el Post
+interface Post {
+  id: number;
+  image: string;
+  time: string;
+  description: string;
+  likes: number;
+  liked: boolean;
+  guardar: boolean;
+  usuario: Usuario; // Relacionar el Post con el Usuario
+}
 
 @Component({
   selector: 'app-home',
@@ -9,107 +34,185 @@ import { ActionSheetController } from '@ionic/angular';
 })
 export class HomePage implements OnInit {
 
-  posts: any[] = [];
-  // mostrarModalComentarios = false;
-  // comentariosSeleccionados: string[] = [];
-  postActual: any;
-  // nuevoComentario = '';
+  posts: Post[] = [];
+  postActual: Post | null = null;
   mostrarDescripcion: boolean = false;
 
-  constructor(private actionSheetCtrl: ActionSheetController) {}
+  followers: Usuario[] = [
+    { id: '1', username: 'PedritoGamer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '2', username: 'Pan_con_queso', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '3', username: 'GamerPro', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '4', username: 'ChocoLover', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '5', username: 'PixelMaster', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '6', username: 'CodeWizard', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '7', username: 'EpicPlayer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+  ];
 
-  ngOnInit() {
+
+  isModalOpen: boolean = false;
+  selectedPost: Post | undefined;
+
+
+
+  modalCompartirAbierto: boolean = false;
+  postCompartir: Post | null = null;
+
+  constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) { }
+
+
+  loadPosts() {
+    // cargar los posts desde Firebase a futuro
     this.posts = [
       {
         id: 1,
-        username: 'johndoe',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
         image: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-        time: '2 horas atrás',
-        description: '¡Esa victoria fue épica! 🎮💥dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+        time: 'Hace 2 horas',
+        description: '¡Esa victoria fue épica! 🎮💥',
         likes: 12,
         liked: false,
         guardar: false,
-        // comments: [
-        //   '¡Increíble jugada, ¿cómo lo hiciste?!',
-        //   'Esa estrategia es legendaria 🔥',
-        //   '¡Te vi en el stream! ¡Fue brutal! 😎',
-        //   '¿Cuál es tu equipo favorito en ese juego? ⚔️',
-        //   '¡GG! Nos vemos en la próxima partida!',
-        // ]
+        usuario: {
+          id: '1',
+          username: 'johndoe',
+          userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          following: false
+        }
       },
       {
         id: 2,
-        username: 'gamer123',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-        time: '1 hora atrás',
+        image: '',
+        time: 'Hace 3 hora',
         description: '¡Acabamos de ganar una partida en squad! 🏆🎮',
         likes: 20,
         liked: false,
         guardar: false,
-        // comments: [
-        //   '¡Eso fue épico, me quedé sin palabras! 🤯',
-        //   'Estuve a punto de morir, ¡pero tu resucitación fue perfecta! 👏',
-        //   '¿Cuál es tu configuración de armas? Necesito mejorar mi loadout 🔫',
-        //   '¡Nunca había visto un combo tan rápido! 🏃‍♂️⚡',
-        //   '¿Alguien más siente que el juego está mucho más difícil desde la última actualización? 😅',
-        // ]
+        usuario: {
+          id: '2',
+          username: 'gamer123',
+          userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          following: true
+        }
       },
       {
         id: 3,
-        username: 'gamer123',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
         image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-        time: '1 hora atrás',
+        time: 'Hace 3 hora',
         description: '¡Acabamos de ganar una partida en squad! 🏆🎮',
         likes: 20,
         liked: false,
         guardar: false,
-        // comments: [
-        //   '¡Eso fue épico, me quedé sin palabras! 🤯',
-        //   'Estuve a punto de morir, ¡pero tu resucitación fue perfecta! 👏',
-        //   '¿Cuál es tu configuración de armas? Necesito mejorar mi loadout 🔫',
-        //   '¡Nunca había visto un combo tan rápido! 🏃‍♂️⚡',
-        //   '¿Alguien más siente que el juego está mucho más difícil desde la última actualización? 😅',
-        // ]
+        usuario: {
+          id: '2',
+          username: 'gamer123',
+          userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          following: false
+        }
       }
     ];
   }
 
 
+
+
+  ngOnInit() {
+    this.loadPosts();
+    this.followersfriend = [...this.followers];
+  }
+
+
+
+  // Método para refrescar la lista de publicaciones
+  doRefresh(event: any) {
+    console.log('Recargando publicaciones...');
+    setTimeout(() => {
+      // Aquí actualizar desde Firebase
+      this.loadPosts(); // Recarga los posts como ejemplo sin reiniciar todo el componente
+      event.target.complete(); // Detiene el refresher
+      console.log('Recarga completada');
+    }, 1500); // Simula un tiempo de espera
+  }
+
+  followersfriend: Usuario[] = [];
+  // Filtrado por texto
+  handleInput(event: any): void {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    console.log('Valor ingresado en el input:', searchTerm);
+    this.followersfriend = this.followers.filter(user =>
+      user.username.toLowerCase().includes(searchTerm)
+    );
+    console.log('Usuarios filtrados:', this.followersfriend);
+  }
+
+
+
+
+
   imagenSeleccionada: string | null = null;
 
-  verImagen(post: any) {
+  verImagen(post: Post) {
     this.imagenSeleccionada = post.image;
   }
-  
+
   cerrarVisor() {
     this.imagenSeleccionada = null;
   }
 
-
-  // verComentarios(post: any) {
-  //   this.postActual = post;
-  //   this.comentariosSeleccionados = [...post.comments];
-  //   this.mostrarModalComentarios = true;
-  // }
-
-  likes(post: any) {
+  likes(post: Post) {
     post.liked = !post.liked;
     post.liked ? post.likes++ : post.likes--;
   }
 
-  enviar(post: any) {
-    console.log('Enviar post');
+
+
+
+  enviar(post: Post) {
+    this.isModalOpen = true;
+    this.selectedPost = post;
   }
 
-  guardar(post: any) {
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
+  sendPostToUser(user: Usuario) {
+    if (this.selectedPost) {  // Aseguramos que selectedPost no sea undefined
+      const post = this.selectedPost;
+      console.log(`Enviando post con id ${post.id} a ${user.username}`);
+      console.log(`Descripción: ${post.description}`);
+      console.log(`Imagen: ${post.image}`);
+      console.log(`Tiempo: ${post.time}`);
+      console.log(`Likes: ${post.likes}`);
+      console.log(`Guardado: ${post.guardar}`);
+      console.log(`Usuario: ${post.usuario.username}`);
+      console.log(`Avatar del usuario: ${post.usuario.userAvatar}`);
+      console.log(`¿Seguido por el usuario? ${post.usuario.following ? 'Sí' : 'No'}`);
+    } else {
+      console.log('No hay un post seleccionado');
+    }
+    this.closeModal();
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  guardar(post: Post) {
     post.guardar = !post.guardar;
     console.log(post.guardar ? 'Guardado' : 'Desguardado');
   }
 
-  opcion(post: any) {
+  seguir(post: Post) {
+    post.usuario.following = !post.usuario.following;
+  }
+
+  opcion(post: Post) {
     this.actionSheetCtrl.create({
       header: 'Opciones',
       buttons: [
@@ -117,6 +220,7 @@ export class HomePage implements OnInit {
           text: 'Compartir',
           icon: 'share-outline',
           handler: () => {
+            this.compartir(post);
             console.log('Compartir post');
           },
         },
@@ -125,14 +229,8 @@ export class HomePage implements OnInit {
           icon: 'alert-circle-outline',
           role: 'destructive',
           handler: () => {
+            this.irAReportar(post);
             console.log('Post reportado');
-          },
-        },
-        {
-          text: 'Seguir',
-          icon: 'person-add-outline',
-          handler: () => {
-            console.log('Seguir post');
           },
         },
         {
@@ -141,20 +239,41 @@ export class HomePage implements OnInit {
           role: 'cancel',
         },
       ],
+      cssClass: 'custom-action-sheet'
     }).then(actionSheet => actionSheet.present());
   }
 
-  // cerrarModal() {
-  //   this.mostrarModalComentarios = false;
-  //   this.nuevoComentario = '';
-  // }
 
-  // publicarComentario() {
-  //   const texto = this.nuevoComentario.trim();
-  //   if (texto) {
-  //     this.postActual.comments.push(texto);
-  //     this.comentariosSeleccionados.push(texto);
-  //     this.nuevoComentario = '';
-  //   }
-  // }
+
+  async compartir(post: Post) {
+
+    const urlConMetadatos = `http://localhost:8100/comentario/${post.id}`;
+    const mensaje = `${post.description}\n\n¡Tienes que ver esto!\n`;
+
+    if (Capacitor.getPlatform() !== 'web') {
+      await Share.share({
+        title: 'Descubre esto',
+        text: mensaje,
+        url: urlConMetadatos,
+        dialogTitle: 'Compartir publicación',
+      });
+    } else {
+      // Prueba para navegador: abrir WhatsApp web
+      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
+      const url = `https://wa.me/?text=${mensajeCodificado}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  comentario(post: Post) {
+    this.router.navigate(['/comentario', post.id]);
+  }
+
+  irAReportar(post: Post) {
+    this.router.navigate(['/reportar', post.id]);
+  }
+
+
+
+
 }

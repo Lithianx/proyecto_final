@@ -1,7 +1,24 @@
-.ajustado {
-    --padding-top: 56px;     // Ajusta según el alto de tu header (usa 56px si es estándar)
-    --padding-bottom: 60px;  // Ajusta según el alto de tu navbar/footer
+::ng-deep ion-chip {
+  --ion-color-primary: #3fe520; /* Verde para el color primario */
+  --ion-color-chip-background: #3fe520; /* Color de fondo de chip si es necesario */
+  --ion-color-chip-text: white; /* Para que el texto dentro del chip sea blanco */
+}
+
+::ng-deep .custom-modal-enviar .modal-scrollable-content {
+  --overflow: auto;
+  height: 100%;
+}
+.custom-modal-enviar {
+
+  ion-searchbar {
+    color: #f2f2f2;
+    --icon-color: #3fe520;
   }
+  ion-title{
+    color: #f2f2f2;
+    text-align: center;
+  }
+}
 
   .post-image {
     width: 100%;
@@ -11,6 +28,14 @@
     padding: 10px;
   }
   
+  .descripcion-sola {
+    font-size: 1.1rem;
+    padding: 1rem;
+    text-align: center;
+    color: #f2f2f2;
+  }
+
+
   .action-row {
     align-items: center;
     padding-left: 10px;
@@ -35,3 +60,59 @@
     object-fit: contain;
     border-radius: 10px;
   }
+
+  ion-button {
+    color: #3fe520;
+  }
+
+  ion-chip {
+    border:  #3fe520 !important;
+    box-shadow: inset 0 0 5px rgba(63, 229, 32, 0.5) !important;
+    color: #3fe520;
+  }
+
+  .etiqueta-usuario{
+    h2{
+      color: #3fe520;
+    }
+    p{
+      color: #a6a6a6;
+    }
+
+  }
+
+  ion-card{
+    p{
+      color: #f2f2f2;
+    }
+  }
+
+  ::ng-deep .custom-action-sheet .action-sheet-group {
+    max-width: 300px;         // ancho máximo del ActionSheet
+    margin: 0 auto;           // centra horizontalmente
+    width: 90%;               // ancho relativo para móviles
+  }
+  
+  ::ng-deep .custom-action-sheet .action-sheet-button {
+    color: #a6a6a6; // color de texto de los botones
+    justify-content: center;  // centra el texto e ícono
+    text-align: center;
+  }
+  
+  ::ng-deep .custom-action-sheet .action-sheet-icon {
+    margin-left: 25%;
+    margin-right: 10% !important;
+    color: #3fe520; // color de texto de los botones
+  }
+  
+  ::ng-deep .custom-action-sheet .action-sheet-title {
+    text-align: center;
+    color: #f2f2f2; // color del título
+  }
+
+  ::ng-deep .custom-action-sheet .action-sheet-cancel {
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  

@@ -1,0 +1,67 @@
+::ng-deep ion-alert {
+
+  --ion-color-primary: #3fe520; /* Verde para el color primario */
+
+
+  .alert-button {
+    color: #3fe520 !important;
+    font-weight: bold;
+  }
+
+  .alert-button-role-cancel {
+    color: #ee1818 !important;
+  }
+
+  .alert-button-role-confirm {
+    color: #3fe520 !important;
+  }
+
+  .alert-radio-group .alert-radio-button.alert-radio-checked .alert-radio-icon::after {
+    background-color: #3fe520 !important;
+    border-color: #3fe520 !important;
+  }
+
+  .alert-radio-group .alert-radio-button .alert-radio-icon {
+    border-color: #3fe520 !important;
+  }
+}
+
+
+
+
+.publicacion-card{
+  h2{
+    color: #3fe520;
+  }
+  h3{
+    color: #f2f2f2;
+  }
+  p{
+    color: #a6a6a6;
+  }
+  small{
+    color: #a6a6a6;
+  }
+}
+  .reportar-container {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+    padding-top: 40px;
+    ion-title{
+      color: #3fe520;
+    }
+    ion-icon{
+      color: #3fe520;
+    }
+    ion-label{
+      color: #a6a6a6;
+    }
+  }
+
+  .ion-padding {
+    --background: #3fe520;
+    --color: #f2f2f2;
+    font-weight: bold;
+  }
+  

@@ -1,20 +1,19 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { HomePage } from './home.page';
-import { HomePageRoutingModule } from './home-routing.module';
+import { IonicModule } from '@ionic/angular';
+import { EventoPageRoutingModule } from './evento-routing.module';
+import { EventoPage } from './evento.page';
 import { ComponentsModule } from '../../components/components.module';
-
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    HomePageRoutingModule,
+    EventoPageRoutingModule,
     ComponentsModule
   ],
-  declarations: [HomePage]
+  declarations: [EventoPage]
 })
-export class HomePageModule {}
+export class EventoPageModule {}
