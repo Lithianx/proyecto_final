@@ -5,7 +5,8 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
 
-// Definir la interfaz para el Usuario
+
+// interfaz para el Usuario
 interface Usuario {
   id: string;
   username: string;
@@ -13,7 +14,7 @@ interface Usuario {
   following: boolean; // Estado de seguimiento
 }
 
-// Definir la interfaz para el Post
+//  interfaz para el Post
 interface Post {
   id: number;
   image: string;
@@ -37,13 +38,30 @@ export class HomePage implements OnInit {
   postActual: Post | null = null;
   mostrarDescripcion: boolean = false;
 
+  followers: Usuario[] = [
+    { id: '1', username: 'PedritoGamer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '2', username: 'Pan_con_queso', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '3', username: 'GamerPro', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '4', username: 'ChocoLover', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '5', username: 'PixelMaster', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+    { id: '6', username: 'CodeWizard', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: true },
+    { id: '7', username: 'EpicPlayer', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', following: false },
+  ];
+
+
+  isModalOpen: boolean = false;
+  selectedPost: Post | undefined;
+
+
+
   modalCompartirAbierto: boolean = false;
   postCompartir: Post | null = null;
 
-  constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) {}
+  constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) { }
 
-  ngOnInit() {
-    // Ejemplo de datos de posts para simular la información que recibirías de Firebase
+
+  loadPosts() {
+    // cargar los posts desde Firebase a futuro
     this.posts = [
       {
         id: 1,
@@ -72,7 +90,7 @@ export class HomePage implements OnInit {
           id: '2',
           username: 'gamer123',
           userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          following: false
+          following: true
         }
       },
       {
@@ -95,17 +113,35 @@ export class HomePage implements OnInit {
 
 
 
+
+  ngOnInit() {
+    this.loadPosts();
+    this.followersfriend = [...this.followers];
+  }
+
+
+
   // Método para refrescar la lista de publicaciones
   doRefresh(event: any) {
     console.log('Recargando publicaciones...');
     setTimeout(() => {
-      // Aquí podrías actualizar los datos, por ejemplo, desde Firebase
-      this.ngOnInit(); // Recarga los posts como ejemplo
+      // Aquí actualizar desde Firebase
+      this.loadPosts(); // Recarga los posts como ejemplo sin reiniciar todo el componente
       event.target.complete(); // Detiene el refresher
       console.log('Recarga completada');
     }, 1500); // Simula un tiempo de espera
   }
 
+  followersfriend: Usuario[] = [];
+  // Filtrado por texto
+  handleInput(event: any): void {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    console.log('Valor ingresado en el input:', searchTerm);
+    this.followersfriend = this.followers.filter(user =>
+      user.username.toLowerCase().includes(searchTerm)
+    );
+    console.log('Usuarios filtrados:', this.followersfriend);
+  }
 
 
 
@@ -126,9 +162,46 @@ export class HomePage implements OnInit {
     post.liked ? post.likes++ : post.likes--;
   }
 
+
+
+
   enviar(post: Post) {
-    console.log('Enviar post');
+    this.isModalOpen = true;
+    this.selectedPost = post;
   }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
+  sendPostToUser(user: Usuario) {
+    if (this.selectedPost) {  // Aseguramos que selectedPost no sea undefined
+      const post = this.selectedPost;
+      console.log(`Enviando post con id ${post.id} a ${user.username}`);
+      console.log(`Descripción: ${post.description}`);
+      console.log(`Imagen: ${post.image}`);
+      console.log(`Tiempo: ${post.time}`);
+      console.log(`Likes: ${post.likes}`);
+      console.log(`Guardado: ${post.guardar}`);
+      console.log(`Usuario: ${post.usuario.username}`);
+      console.log(`Avatar del usuario: ${post.usuario.userAvatar}`);
+      console.log(`¿Seguido por el usuario? ${post.usuario.following ? 'Sí' : 'No'}`);
+    } else {
+      console.log('No hay un post seleccionado');
+    }
+    this.closeModal();
+  }
+
+
+
+
+
+
+
+
+
+
+
 
   guardar(post: Post) {
     post.guardar = !post.guardar;
@@ -166,24 +239,27 @@ export class HomePage implements OnInit {
           role: 'cancel',
         },
       ],
+      cssClass: 'custom-action-sheet'
     }).then(actionSheet => actionSheet.present());
   }
 
 
 
   async compartir(post: Post) {
-    const mensaje = `${post.description}\n\nImagen: ${post.image}\n\nVer más: http://localhost:8100/comentario/${post.id}`;
-  
+
+    const urlConMetadatos = `http://localhost:8100/comentario/${post.id}`;
+    const mensaje = `${post.description}\n\n¡Tienes que ver esto!\n`;
+
     if (Capacitor.getPlatform() !== 'web') {
       await Share.share({
-        title: 'Mira esto',
+        title: 'Descubre esto',
         text: mensaje,
-        url: `http://localhost:8100/comentario/${post.id}`,
-        dialogTitle: 'Compartir con',
+        url: urlConMetadatos,
+        dialogTitle: 'Compartir publicación',
       });
     } else {
       // Prueba para navegador: abrir WhatsApp web
-      const mensajeCodificado = encodeURIComponent(mensaje);
+      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
       const url = `https://wa.me/?text=${mensajeCodificado}`;
       window.open(url, '_blank');
     }

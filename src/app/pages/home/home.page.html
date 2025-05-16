@@ -21,7 +21,7 @@
         <ion-avatar slot="start">
           <img [src]="post.usuario.userAvatar" />
         </ion-avatar>
-        <ion-label>
+        <ion-label class="etiqueta-usuario">
           <h2>{{ post.usuario.username }}</h2>
           <p>{{ post.time }}</p>
         </ion-label>
@@ -75,7 +75,7 @@
         <ion-col size="auto">
           <ion-button fill="clear" size="small" (click)="likes(post)">
             <!-- Cambia el icono según el estado de me gusta -->
-            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large" color="danger"></ion-icon>
+            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large"></ion-icon>
           </ion-button>
         </ion-col>
 
@@ -88,7 +88,7 @@
 
         <!-- Botón de compartir a chat -->
         <ion-col size="auto">
-          <ion-button fill="clear" size="small" (click)="enviar(post)">
+          <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(post)">
             <ion-icon name="paper-plane-outline" size="large"></ion-icon>
           </ion-button>
         </ion-col>
@@ -115,6 +115,37 @@
   <div *ngIf="imagenSeleccionada" class="overlay" (click)="cerrarVisor()">
     <img [src]="imagenSeleccionada" class="imagen-expandida" />
   </div>
+
+
+
+
+ <!-- Modal para seleccionar amigos (Sheet Modal) -->
+ <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26" [breakpoints]="[0, 0.26, 0.51]">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Enviar publicación</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
+      <ion-list class="modal-scrollable-content" scroll-y="true">
+        <ion-item *ngFor="let user of followersfriend">
+          <ion-avatar slot="start">
+            <img [src]="user.userAvatar" />
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ user.username }}</h2>
+          </ion-label>
+          <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+
+
 
 
 </ion-content>

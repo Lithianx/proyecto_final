@@ -10,7 +10,7 @@
         <ion-title>Editar Publicación</ion-title>
     </ion-toolbar>
 
-    <ion-card class="crear-publicacion-card">
+    <ion-card class="editar-publicacion-card">
         <ion-item lines="none">
             <ion-avatar slot="start">
                 <img [src]="usuario.userAvatar" />
@@ -28,15 +28,15 @@
         <ng-container *ngIf="imagenBase64">
             <img [src]="imagenBase64" class="media-item" />
           
-            <ion-button color="danger" fill="clear" size="small" expand="block" (click)="eliminarImagen()">
-              <ion-icon name="trash-outline" slot="start"></ion-icon>
-              Eliminar Imagen
-            </ion-button>
-          </ng-container>
-
+        </ng-container>
+        
         <ion-row class="acciones-publicacion">
-            <ion-col size="12">
-                <ion-button fill="clear" expand="full" (click)="seleccionarArchivo()">
+            <ion-col>
+                <ion-button class="btn-eliminar" fill="clear" size="small" expand="block" (click)="eliminarImagen()">
+                  <ion-icon name="trash-outline" slot="start"></ion-icon>
+                  Eliminar Imagen
+                </ion-button>
+                <ion-button class="btn-cambiar" fill="clear" expand="full" (click)="seleccionarArchivo()">
                     <ion-icon name="image-outline" slot="start"></ion-icon>
                     Cambiar Foto
                 </ion-button>
@@ -44,7 +44,7 @@
             </ion-col>
         </ion-row>
 
-        <ion-button expand="block" (click)="guardarCambios()" [disabled]="!contenido && !imagenBase64">
+        <ion-button class="publicar" expand="block" (click)="guardarCambios()" [disabled]="!contenido && !imagenBase64">
             Guardar Cambios
         </ion-button>
     </ion-card>
