@@ -1,0 +1,66 @@
+.boton-volver{
+  /* --background: var(--verde-neon); */
+  --color: rgb(0, 252, 0);
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+}
+
+.fondo-negro {
+  --background: #000;
+  color: #39ff14;
+}
+
+.boton-volver {
+  color: #39ff14;
+  margin: 10px 0 0 10px;
+}
+
+.contenedor-evento {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.card-monster {
+  width: 100%;
+  max-width: 500px;
+  background: #111;
+  border: 2px solid #39ff14;
+  border-radius: 16px;
+  box-shadow: 0 0 15px #39ff14;
+  color: #39ff14;
+}
+
+.titulo-monster {
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  color: #39ff14;
+}
+
+.campo-evento {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #39ff14;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    margin: 0;
+    color: #fff;
+  }
+}
+
+.boton-monster {
+  --background: #39ff14;
+  --color: #000;
+  font-weight: bold;
+  margin-top: 24px;
+  border-radius: 8px;
+}

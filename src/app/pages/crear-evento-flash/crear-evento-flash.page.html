@@ -1,8 +1,84 @@
 <app-encabezado></app-encabezado>
-<ion-content class="ion-padding" scroll="true" fullscreen="true"> <!-- Agregado scroll-y="true" -->
-  <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
+<ion-content class="ion-padding fondo-negro">
 
-    <!-- Botón de volver atrás -->
+  <div class="fila-eventos">
+    <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+      <ion-icon name="arrow-back"></ion-icon>
+    </ion-button>
+    <h2 class="titulo">Crear Evento Flash</h2>
+  </div>
+
+  <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
+    <ion-input fill="outline" label="Nombre del Evento" label-placement="floating" formControlName="nombre_evento"
+      placeholder="Ej: Torneo relámpago" class="input-monster"></ion-input>
+
+    <ion-textarea fill="outline" label="Descripción" label-placement="floating" formControlName="descripcion"
+      placeholder="Breve descripción del evento" class="input-monster"></ion-textarea>
+
+    <ion-input fill="outline" label="Tipo de Evento" label-placement="floating" formControlName="tipo_evento"
+      placeholder="Deporte, juego de mesa, videojuego..." class="input-monster"></ion-input>
+
+
+    <!-- Fecha de Inicio -->
+    <ion-item class="input-monster">
+      <ion-label>Fecha de Inicio</ion-label>
+      <ion-datetime-button datetime="fechaInicio"></ion-datetime-button>
+    </ion-item>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="fechaInicio" presentation="date-time" prefer-wheel="true" [min]="fechaMinima"
+          formControlName="fecha_inicio"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Fecha Término -->
+    <ion-item class="input-monster">
+      <ion-label>Fecha de Término</ion-label>
+      <ion-datetime-button datetime="fechaTermino"></ion-datetime-button>
+    </ion-item>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="fechaTermino" presentation="date-time" prefer-wheel="true" [min]="fechaMinima"
+          formControlName="fecha_termino"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <ion-button expand="block" type="submit" class="boton-monster">
+      Crear Evento
+    </ion-button>
+  </form>
+</ion-content>
+<app-navbar></app-navbar>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
+
+    
     <div class="header-row" style="display: flex; align-items: center;">
       <ion-button fill="clear" class="boton-volver" (click)="volverAtras()" style="margin-right: 8px;">
         <ion-icon name="arrow-back"></ion-icon>
@@ -12,13 +88,13 @@
     
 
 
-    <!-- Título -->
+    
     <ion-item>
       <ion-label position="floating">Evento</ion-label>
       <ion-input formControlName="titulo" type="text"></ion-input>
     </ion-item>
 
-    <!-- Descripción -->
+    
     <ion-item>
       <ion-label position="floating">Descripción</ion-label>
       <ion-textarea formControlName="descripcion"></ion-textarea>
@@ -26,13 +102,13 @@
 
 
 
-    <!-- Lugar -->
+  
     <ion-item>
       <ion-label position="floating">Lugar</ion-label>
       <ion-input formControlName="lugar" type="text"></ion-input>
     </ion-item>
 
-    <!-- Hora de inicio -->
+    
     <ion-item>
       <ion-label>Fecha</ion-label>
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
@@ -44,7 +120,7 @@
       </ion-modal>
     </ion-item>
 
-    <!-- Duración -->
+    
     <ion-item>
       <ion-label>Duración estimada</ion-label>
       <ion-select formControlName="duracion">
@@ -55,9 +131,9 @@
       </ion-select>
     </ion-item>
 
-    <!-- Cupos -->
+    
     <ion-item>
-      <ion-label>Cupos máximos (opcional)</ion-label>
+      <ion-label>Cupos máximos</ion-label>
       <ion-buttons slot="end">
         <ion-button fill="outline" (click)="decrementCupos()">-</ion-button>
         <ion-input [value]="cupos" readonly class="cupos-input"></ion-input>
@@ -66,7 +142,7 @@
     </ion-item>
 
 
-    <!-- Visibilidad -->
+    
     <ion-item>
       <ion-label>Privacidad</ion-label>
 
@@ -83,14 +159,9 @@
 
     </ion-item>
 
-    <!-- Botón -->
+   
     <ion-button class="boton-verde" expand="block" type="submit">
       Lanzar evento
     </ion-button>
 
-  </form>
-</ion-content>
-
-
-
-<app-navbar></app-navbar>
+  </form> -->
