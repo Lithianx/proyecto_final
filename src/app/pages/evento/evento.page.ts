@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 
 @Component({
@@ -22,7 +23,7 @@ export class EventoPage implements OnInit {
   eventosFiltrados = [...this.eventos];
   
 
-  constructor(public router: Router) { }
+  constructor(public router: Router,private navCtrl: NavController) { }
 
   ngOnInit() {
   }
@@ -46,9 +47,7 @@ doRefresh(event: any) {
     }, 1500); // Simula un tiempo de espera
   }
   volverAtras() {
-    console.log('Volviendo atrás...');
-    // Aquí puedes agregar lógica para navegar hacia atrás
-    window.history.back();
+    this.navCtrl.back();
   }
   filtrarEventos(event: any) {
   const texto = event.target.value?.toLowerCase().trim(); // Captura el texto de búsqueda

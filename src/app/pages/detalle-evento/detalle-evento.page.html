@@ -1,49 +1,49 @@
 <app-encabezado></app-encabezado>
 
+<ion-content [fullscreen]="true" class="fondo-negro">
 
-<ion-content [fullscreen]="true">
-  <ion-card *ngIf="evento">
-    <ion-card-header>
-      <ion-card-title>Detalles del Evento</ion-card-title>
-    </ion-card-header>
+  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+    <ion-icon name="arrow-back"></ion-icon>
+  </ion-button>
 
-    <ion-card-content>
-      <ion-item>
-        <ion-label>Título:</ion-label>
-        <p>{{ evento.nombre }}</p>
-      </ion-item>
+  <div class="contenedor-evento">
+    <ion-card class="card-monster" *ngIf="evento">
+      <ion-card-header>
+        <ion-card-title class="titulo-monster">🎮 {{ evento.nombre }}</ion-card-title>
+      </ion-card-header>
 
-      <ion-item>
-        <ion-label>Descripción:</ion-label>
-        <p>{{ evento.descripcion }}</p>
-      </ion-item>
+      <ion-card-content>
+        <div class="campo-evento">
+          <label>Descripción:</label>
+          <p>{{ evento.descripcion }}</p>
+        </div>
 
-      <ion-item>
-        <ion-label>Lugar:</ion-label>
-        <p>{{ evento.lugar }}</p>
-      </ion-item>
+        <div class="campo-evento">
+          <label>Lugar:</label>
+          <p>{{ evento.lugar }}</p>
+        </div>
 
-      <ion-item>
-        <ion-label>Fecha:</ion-label>
-        <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
-      </ion-item>
+        <div class="campo-evento">
+          <label>Fecha:</label>
+          <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
+        </div>
 
-      <ion-item>
-        <ion-label>Duración:</ion-label>
-        <p>{{ evento.duracion }} minutos</p>
-      </ion-item>
+        <div class="campo-evento">
+          <label>Duración:</label>
+          <p>{{ evento.duracion }} minutos</p>
+        </div>
 
-      <ion-item *ngIf="evento.cupos">
-        <ion-label>Cupos máximos:</ion-label>
-        <p>{{ evento.cupos }}</p>
-      </ion-item>
+        <div class="campo-evento" *ngIf="evento.cupos">
+          <label>Cupos máximos:</label>
+          <p>{{ evento.cupos }}</p>
+        </div>
 
-      <ion-item lines="none">
-        <ion-button expand="block" color="primary" (click)="unirseAlEvento()">
-          Unirse
+        <ion-button expand="block" class="boton-monster" (click)="unirseAlEvento()">
+          TOMAR EVENTO
         </ion-button>
-      </ion-item>
-    </ion-card-content>
-  </ion-card>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
+
 <app-navbar></app-navbar>
