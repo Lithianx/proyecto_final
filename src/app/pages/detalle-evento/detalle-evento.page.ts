@@ -37,8 +37,14 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const thumb = this.swipeThumb.nativeElement;
-    const track = this.swipeArea.nativeElement;
+  setTimeout(() => {
+    const thumb = this.swipeThumb?.nativeElement;
+    const track = this.swipeArea?.nativeElement;
+    const fill = this.swipeFill?.nativeElement;
+    const text = this.swipeText?.nativeElement;
+
+    if (!thumb || !track || !fill || !text) return;
+
     const maxX = track.offsetWidth - thumb.offsetWidth;
 
     const gesture = this.gestureCtrl.create({
@@ -47,28 +53,38 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
       gestureName: 'slide-button',
       onMove: (ev) => {
         const delta = Math.max(0, Math.min(ev.deltaX, maxX));
+        const progress = (delta / maxX) * 100;
+
         thumb.style.transform = `translateX(${delta}px)`;
+        fill.style.width = `${progress}%`;
+        text.textContent = progress > 90 ? '¡Listo!' : 'Desliza para tomar evento';
 
         if (delta >= maxX) {
           this.unirseAlEvento();
-          gesture.destroy(); // evitar múltiples ejecuciones
+          gesture.destroy(); // evita múltiples ejecuciones
         }
       },
       onEnd: () => {
         thumb.style.transition = 'transform 0.3s ease-out';
+        fill.style.transition = 'width 0.3s ease-out';
+        text.textContent = 'Desliza para tomar evento';
         thumb.style.transform = 'translateX(0px)';
+        fill.style.width = '0%';
+
         setTimeout(() => {
           thumb.style.transition = '';
+          fill.style.transition = '';
         }, 300);
       },
     });
 
     gesture.enable();
-  }
+  }, 0); // <- clave para esperar render completo
+}
 
   unirseAlEvento() {
     console.log('🎯 Te uniste al evento:', this.evento.nombre);
-    // Aquí puedes poner un toast, guardar en Firestore, redirigir, etc.
+    // Aquí puedes mostrar un toast o redireccionar si quieres
   }
 
   volverAtras() {
