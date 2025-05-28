@@ -1,0 +1,46 @@
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="container">
+    <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Logo de la aplicación" class="app-logo" />
+    <h1 class="app-title">Nombre de la Aplicación</h1>
+
+    <div class="login-box">
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="text"
+          placeholder="Usuario"
+          class="custom-input"
+          aria-label="Usuario">
+        </ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="password"
+          placeholder="Contraseña"
+          class="custom-input"
+          aria-label="Contraseña">
+        </ion-input>
+      </ion-item>
+
+      <div class="options-row">
+        <div class="account-links">
+          <a [routerLink]="['/crear-usuario']" class="link-option">Registrate</a>
+          <a [routerLink]="['/olvido-contrasena']" class="link-option forgot-link">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+      </div>
+
+      <ion-button expand="block" class="login-button" [routerLink]="['/home']">
+        Iniciar sesión
+      </ion-button>
+      <ion-button  [routerLink]="['/home']">
+        <ion-icon name="logo-google"></ion-icon>
+        Iniciar sesion con gmail
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

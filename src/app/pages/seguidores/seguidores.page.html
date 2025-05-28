@@ -1,0 +1,43 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Fila superior: flecha + título centrado -->
+  <div class="header-row">
+    <ion-button fill="clear" class="back-button" routerLink="/perfil">
+      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+    <h1 class="page-title">Todos tus seguidores</h1>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Buscador -->
+  <ion-searchbar
+    placeholder="Buscar usuario"
+    class="search-bar"
+  ></ion-searchbar>
+
+  <hr class="section-divider">
+
+  <!-- Lista de seguidores -->
+<ion-list class="followers-list">
+  <ion-item *ngFor="let user of seguidores" (click)="verPerfil(user.id)">
+    <ion-avatar slot="start">
+      <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="{{ user.nombre }}" />
+    </ion-avatar>
+    <ion-label>{{ user.nombre }}</ion-label>
+    <ion-button
+      fill="outline"
+      [color]="user.siguiendo ? 'danger' : 'success'"
+      class="follow-button"
+      (click)="alternarSeguimiento(user); $event.stopPropagation();">
+      {{ user.siguiendo ? 'Dejar de seguir' : 'Seguir' }}
+    </ion-button>
+  </ion-item>
+</ion-list>
+
+
+</ion-content>
+
+<app-navbar></app-navbar>

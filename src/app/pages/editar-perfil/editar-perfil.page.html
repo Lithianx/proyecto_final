@@ -1,0 +1,81 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+  <div class="edit-profile-container">
+    <div class="profile-form-box">
+
+      <div class="header-row">
+        <ion-button fill="clear" class="back-button" [routerLink]="['/configuracion']" aria-label="Volver atrás">
+          <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+        </ion-button>
+        <h1 class="app-title">Edición de perfil</h1>
+      </div>
+
+      <div class="profile-picture-edit-section">
+        <div class="profile-picture-container">
+          <ion-avatar class="profile-avatar">
+            <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Foto de perfil actual">
+          </ion-avatar>
+          <div class="edit-overlay">
+            <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+          </div>
+        </div>
+      </div>
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="text"
+          placeholder="Nombre de usuario"
+          class="custom-input"
+          aria-label="Nombre de usuario">
+        </ion-input>
+      </ion-item>
+      
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="email"
+          placeholder="Correo electrónico"
+          aria-label="Correo electrónico">
+        </ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-textarea
+          rows="4"
+          placeholder="Descripción del perfil"
+          aria-label="Descripción del perfil">
+        </ion-textarea>
+      </ion-item>
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="password"
+          placeholder="Nueva contraseña"
+          aria-label="Nueva contraseña">
+        </ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="password"
+          placeholder="Confirmar nueva contraseña"
+          aria-label="Confirmar nueva contraseña">
+        </ion-input>
+      </ion-item>
+
+      <div class="save-button-container">
+        <ion-button expand="block" class="save-button" [routerLink]="['/perfil']">
+          Guardar Cambios
+        </ion-button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>
+
+<app-navbar></app-navbar>

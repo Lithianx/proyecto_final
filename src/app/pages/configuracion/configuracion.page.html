@@ -1,0 +1,62 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+  <div class="settings-container">
+    <div class="header-row">
+      <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
+        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+      </ion-button>
+      <h1 class="app-title">Configuracion</h1>
+    </div>
+    <ion-list [inset]="true" class="settings-list">
+
+      <ion-item button detail="false" class="settings-item" [routerLink]="['/editar-perfil']">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-label>Editar perfil</ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+      </ion-item>
+
+      <ion-item button detail="false" class="settings-item" [routerLink]="['/historial-eventos']">
+        <ion-icon name="time-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-label>Historial de eventos</ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+      </ion-item>
+
+       <ion-item button detail="false" class="settings-item" [routerLink]="['/publicaciones-guardadas']">
+        <ion-icon name="bookmark" slot="start" aria-hidden="true"></ion-icon>
+        <ion-label>Guardados</ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+      </ion-item>
+
+      <ion-item button detail="false" class="settings-item" [routerLink]="['/info-cuenta-institucional']">
+        <ion-icon name="school-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-label>Validar cuenta institucional</ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+      </ion-item>
+
+        <!--
+        <ion-item class="settings-item">
+          <ion-icon name="contrast-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-label>Modo oscuro</ion-label>
+          <ion-toggle
+            slot="end"
+            [(ngModel)]="paletteToggle"
+            (ionChange)="toggleChange($event)"
+            aria-label="Activar modo oscuro">
+          </ion-toggle>
+        </ion-item>
+        -->
+
+
+    </ion-list>
+
+    <div class="logout-button-container">
+       <ion-button expand="block" color="danger" class="logout-button" [routerLink]="['/login']">
+         Cerrar sesión
+         <ion-icon name="log-out-outline" slot="end" aria-hidden="true"></ion-icon>
+       </ion-button>
+    </div>
+
+  </div>
+</ion-content>
+<app-navbar></app-navbar>

@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -32,6 +32,62 @@ const routes: Routes = [
     loadChildren: () => import('./pages/comentario/comentario.module').then( m => m.ComentarioPageModule)
   },
   {
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'crear-usuario',
+    loadChildren: () => import('./pages/crear-usuario/crear-usuario.module').then( m => m.CrearUsuarioPageModule)
+  },
+  {
+    path: 'olvido-contrasena',
+    loadChildren: () => import('./pages/olvido-contrasena/olvido-contrasena.module').then( m => m.OlvidoContrasenaPageModule)
+  },
+  {
+    path: 'perfil',
+    loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
+  },
+  {
+    path: 'configuracion',
+    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
+  },
+  {
+    path: 'editar-perfil',
+    loadChildren: () => import('./pages/editar-perfil/editar-perfil.module').then( m => m.EditarPerfilPageModule)
+  },
+  {
+    path: 'info-cuenta-institucional',
+    loadChildren: () => import('./pages/info-cuenta-institucional/info-cuenta-institucional.module').then( m => m.InfoCuentaInstitucionalPageModule)
+  },
+  {
+    path: 'validar-cuenta',
+    loadChildren: () => import('./pages/validar-cuenta/validar-cuenta.module').then( m => m.ValidarCuentaPageModule)
+  },
+  {
+    path: 'seguidores',
+    loadChildren: () => import('./pages/seguidores/seguidores.module').then( m => m.SeguidoresPageModule)
+  },
+  {
+    path: 'seguidos',
+    loadChildren: () => import('./pages/seguidos/seguidos.module').then( m => m.SeguidosPageModule)
+  },
+  {
+    path: 'historial-eventos',
+    loadChildren: () => import('./pages/historial-eventos/historial-eventos.module').then( m => m.HistorialEventosPageModule)
+  },
+  {
+    path: 'perfil-user/:id',
+    loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
+  },
+  {
+    path: 'evento-inscrito',
+    loadChildren: () => import('./pages/evento-inscrito/evento-inscrito.module').then( m => m.EventoInscritoPageModule)
+  },
+  {
+    path: 'evento-creado',
+    loadChildren: () => import('./pages/evento-creado/evento-creado.module').then( m => m.EventoCreadoPageModule)
+  },
+  {
     path: 'crear-evento-flash',
     loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
@@ -47,10 +103,24 @@ const routes: Routes = [
     path: 'detalle-evento/:id',
     loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
   },
+  {
+    path: 'publicaciones-guardadas',
+    loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
+  },
+  {
+    path: 'detalles-publicacion-personal',
+    loadChildren: () => import('./pages/detalles-publicacion-personal/detalles-publicacion-personal.module').then( m => m.DetallesPublicacionPersonalPageModule)
+  },
+  {
+    path: 'notificaciones',
+    loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
+  },
 
 
 
  
+
+
 
 
 ];
