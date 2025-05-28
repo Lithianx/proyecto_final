@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 // No necesitas importar los componentes de Ionic aquí si standalone es false,
 // se importan en el módulo de la página.
+
 // import { FormsModule } from '@angular/forms'; // Se importa en el módulo
 
 // Si usas addIcons aquí, asegúrate de tener ionicons instalado
@@ -25,21 +26,22 @@ import {
 export class ConfiguracionPage implements OnInit {
 
   // Usa el nombre de variable del toggle en tu HTML (paletteToggle)
-  paletteToggle = false;
+  // paletteToggle = false;
 
   constructor() {
-     // Registrar iconos usados en este componente (aunque a menudo se hace globalmente)
-     addIcons({
-       personOutline,
-       timeOutline,
-       schoolOutline,
-       contrastOutline,
-       chevronForwardOutline,
-       logOutOutline
-     });
+    // Registrar iconos usados en este componente (aunque a menudo se hace globalmente)
+    addIcons({
+      personOutline,
+      timeOutline,
+      schoolOutline,
+      contrastOutline,
+      chevronForwardOutline,
+      logOutOutline
+    });
   }
 
   ngOnInit() {
+    /*
     // Usa matchMedia para verificar la preferencia del usuario del sistema operativo
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -47,17 +49,20 @@ export class ConfiguracionPage implements OnInit {
     const savedPreference = localStorage.getItem('ion-palette-dark'); // Usa la clase CSS como clave
 
     if (savedPreference !== null) {
-       // Si hay una preferencia guardada, úsala para inicializar
-       const isDark = savedPreference === 'true'; // localStorage guarda strings
-       this.initializeDarkPalette(isDark);
+      // Si hay una preferencia guardada, úsala para inicializar
+      const isDark = savedPreference === 'true'; // localStorage guarda strings
+      this.initializeDarkPalette(isDark);
     } else {
-       // Si no hay preferencia guardada, usa la del sistema operativo como valor inicial
-       this.initializeDarkPalette(prefersDark.matches);
+      // Si no hay preferencia guardada, usa la del sistema operativo como valor inicial
+      this.initializeDarkPalette(prefersDark.matches);
     }
+
     // Puedes ajustar esta lógica si la preferencia manual debe tener prioridad total.
     prefersDark.addEventListener('change', (mediaQuery) => this.initializeDarkPalette(mediaQuery.matches));
+    */
   }
 
+  /*
   // Verifica/desmarca el toggle y actualiza la paleta basado en isDark
   initializeDarkPalette(isDark: boolean) {
     this.paletteToggle = isDark; // Actualiza el estado del toggle en la UI
@@ -74,11 +79,8 @@ export class ConfiguracionPage implements OnInit {
 
   // Añade o remueve la clase "ion-palette-dark" en el elemento html
   toggleDarkPalette(shouldAdd: boolean) {
-     // Aplica la clase al elemento raíz (<html>)
+    // Aplica la clase al elemento raíz (<html>)
     document.documentElement.classList.toggle('ion-palette-dark', shouldAdd);
-     // Nota: 'ion-palette-dark' es una clase común usada en ejemplos,
-     // pero podrías usar 'ion-color-scheme-dark' o tu propia clase personalizada.
-     // Asegúrate de que tus CSS (en configacion.page.scss o global.scss)
-     // usen esta misma clase en sus selectores (ej: html.ion-palette-dark { ... })
   }
+  */
 }

@@ -13,6 +13,7 @@ import { StatusBar } from '@capacitor/status-bar';
 export class AppComponent {
   constructor(private platform: Platform) {
     this.initializeApp();
+    
   }
 
   initializeApp() {
