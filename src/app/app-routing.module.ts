@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -42,7 +42,8 @@ const routes: Routes = [
   {
     path: 'olvido-contrasena',
     loadChildren: () => import('./pages/olvido-contrasena/olvido-contrasena.module').then( m => m.OlvidoContrasenaPageModule)
-  },  {
+  },
+  {
     path: 'perfil',
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
@@ -75,7 +76,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/historial-eventos/historial-eventos.module').then( m => m.HistorialEventosPageModule)
   },
   {
-    path: 'perfil-user',
+    path: 'perfil-user/:id',
     loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
   },
   {
@@ -101,6 +102,18 @@ const routes: Routes = [
   {
     path: 'detalle-evento/:id',
     loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
+  },
+  {
+    path: 'publicaciones-guardadas',
+    loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
+  },
+  {
+    path: 'detalles-publicacion-personal',
+    loadChildren: () => import('./pages/detalles-publicacion-personal/detalles-publicacion-personal.module').then( m => m.DetallesPublicacionPersonalPageModule)
+  },
+  {
+    path: 'notificaciones',
+    loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
   },
 
 

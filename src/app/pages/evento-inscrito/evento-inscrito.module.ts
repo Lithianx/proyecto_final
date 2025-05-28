@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { EventoInscritoPageRoutingModule } from './evento-inscrito-routing.module';
 
 import { EventoInscritoPage } from './evento-inscrito.page';
+import { ComponentsModule } from 'src/app/components/components.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EventoInscritoPageRoutingModule
+    EventoInscritoPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [EventoInscritoPage]
 })

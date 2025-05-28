@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NavController } from '@ionic/angular'; // ✅ Importar NavController
 
 @Component({
   selector: 'app-perfil-user',
@@ -16,18 +18,30 @@ export class PerfilUserPage implements OnInit {
   set vistaSeleccionada(value: string) {
     this._vistaSeleccionada = value;
 
-    // Cierra el modal si se cambia a otra vista que no sea publicaciones
     if (value !== 'publicaciones') {
       this.mostrarModal = false;
     }
   }
 
   mostrarModal: boolean = false;
-  siguiendo: boolean = false; // Nuevo estado para seguir/dejar de seguir
+  siguiendo: boolean = false;
+  nombreUsuario: string = 'nombre_de_usuario';
+  userId: string | null = null;
 
-  constructor() {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController // ✅ Inyectar NavController
+  ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      this.userId = params.get('id');
+      if (this.userId) {
+        this.cargarInformacionUsuario(this.userId);
+      }
+    });
+  }
 
   abrirModal() {
     console.log('Se abrió el modal');
@@ -41,9 +55,28 @@ export class PerfilUserPage implements OnInit {
     this.mostrarModal = false;
   }
 
-  // Cambia entre seguir y dejar de seguir
   toggleSeguir() {
     this.siguiendo = !this.siguiendo;
     console.log(this.siguiendo ? 'Ahora sigues al usuario' : 'Has dejado de seguir al usuario');
+  }
+
+  verPerfil(id: string) {
+    this.router.navigate(['/perfil-user', id]);
+  }
+
+  cargarInformacionUsuario(id: string) {
+    this.nombreUsuario = `Usuario ${id}`;
+  }
+
+  irAlChatPrivado() {
+    if (this.userId) {
+      this.router.navigate(['/chat-privado', this.userId]);
+    } else {
+      console.error('ID de usuario no encontrado.');
+    }
+  }
+
+  volver() {
+    this.navCtrl.back(); // ✅ Ahora funciona
   }
 }

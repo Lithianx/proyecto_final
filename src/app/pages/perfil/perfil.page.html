@@ -1,3 +1,5 @@
+<app-encabezado></app-encabezado>
+
 <ion-content class="perfil-content">
   <div class="perfil-container">
 
@@ -50,7 +52,7 @@
     <!-- Publicaciones (modo grid) -->
     <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
       <!-- Aquí podrían ir las publicaciones -->
-      <div class="post-thumbnail" (click)="abrirModal()">
+      <div class="post-thumbnail" [routerLink]="['/detalles-publicacion-personal']">
         <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 1">
       </div>
        <div class="post-thumbnail">
@@ -87,67 +89,6 @@
         <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 6">
       </div>
     </div>
-<!-- Modal publicación -->
-<div class="modal" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    
-    <!-- Primera fila: Flecha y Título -->
-    <div class="modal-header">
-      <div class="close-button" (click)="cerrarModal($event)">
-        <ion-icon style="color: black;"name="arrow-back-outline" size="large"></ion-icon>
-      </div>
-      <div class="modal-title">
-        <strong style="color: black;">Publicaciones</strong>
-      </div>
-    </div>
-
-    <!-- Segunda fila: Foto de perfil, nombre y tres puntos -->
-    <div class="modal-user-info">
-      <div class="profile-info">
-        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Perfil">
-        <strong style="color: black;">nombre_de_usuario</strong>
-      </div>
-      <div class="options">
-        <ion-icon style="color: black;"name="ellipsis-horizontal-outline"></ion-icon>
-      </div>
-    </div>
-
-    <!-- Imagen del cuerpo -->
-    <div class="modal-body">
-      <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Imagen de publicación">
-    </div>
-
-    <!-- Íconos -->
-    <div class="modal-footer">
-      <div class="left-icons">
-        <!-- Me gusta -->
-        <ion-button fill="clear" size="small">
-          <ion-icon name="heart-outline" size="large" color="danger"></ion-icon>
-        </ion-button>
-        <!-- Comentarios -->
-        <ion-button fill="clear" size="small">
-          <ion-icon name="chatbubble-outline" size="large"></ion-icon>
-        </ion-button>
-        <!-- Compartir -->
-        <ion-button fill="clear" size="small">
-          <ion-icon name="paper-plane-outline" size="large"></ion-icon>
-        </ion-button>
-      </div>
-      <div class="right-icon">
-        <!-- Guardar -->
-        <ion-button fill="clear" size="small">
-          <ion-icon name="bookmark-outline" size="large"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-
-    <!-- Descripción -->
-    <div class="modal-description">
-      <p>Este es un ejemplo de una publicación. Puedes darle "me gusta", comentar, compartir o guardar esta publicación.</p>
-    </div>
-
-  </div>
-</div>
 
 
  <!------------------------------------------------------------------------------------------>
@@ -214,3 +155,4 @@
 
   </div>
 </ion-content>
+<app-navbar></app-navbar>

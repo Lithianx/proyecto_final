@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { SeguidoresPageRoutingModule } from './seguidores-routing.module';
 
 import { SeguidoresPage } from './seguidores.page';
+import { ComponentsModule } from 'src/app/components/components.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SeguidoresPageRoutingModule
+    SeguidoresPageRoutingModule,
+    ComponentsModule
   ],
   declarations: [SeguidoresPage]
 })

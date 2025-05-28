@@ -24,4 +24,7 @@ export class EncabezadoComponent implements OnInit {
   irEvento() {
     this.router.navigate(['/perfil']);  // Cambié 'this.Router' por 'this.router'
   }
+    irNotificaciones() {
+    this.router.navigate(['/notificaciones']);
+  }
 }

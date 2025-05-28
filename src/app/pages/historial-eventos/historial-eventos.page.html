@@ -1,3 +1,5 @@
+<app-encabezado></app-encabezado>
+
 <ion-content fullscreen="true" class="ajustado">
   <ion-searchbar class="searchbar-gris" placeholder="Buscar evento" disabled></ion-searchbar>
 
@@ -24,7 +26,7 @@
         <p class="detalle">Fecha: 12/05/2025</p>
         <p class="detalle">Juego: League of Legends</p>
       </ion-label>
-      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/detalle-his-event']"></ion-icon>
+      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
     </ion-item>
 
     <ion-item class="chat-item grande">
@@ -36,7 +38,8 @@
         <p class="detalle">Fecha: 19/05/2025</p>
         <p class="detalle">Juego: Valorant</p>
       </ion-label>
-      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/detalle-his-event']"></ion-icon>
+      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
     </ion-item>
   </ion-list>
 </ion-content>
+<app-navbar></app-navbar>

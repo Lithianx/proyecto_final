@@ -1,0 +1,23 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+
+  <div class="header-row">
+    <ion-button fill="clear" class="back-button" routerLink="/perfil">
+      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+    <h1 class="page-title">Publicaciones guardadas</h1>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="publicaciones-grid">
+    <div class="post-thumbnail"[routerLink]="['/detalles-publicacion-personal']" *ngFor="let post of publicacionesGuardadas">
+      <img [src]="post.img" [alt]="post.alt" />
+      <ion-icon name="bookmark" class="bookmark-icon"></ion-icon>
+    </div>
+  </div>
+
+</ion-content>
+
+<app-navbar></app-navbar>

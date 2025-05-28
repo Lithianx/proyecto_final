@@ -1,0 +1,33 @@
+.notificaciones-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notificacion {
+  display: flex;
+  align-items: center;
+  background-color: #f4f4f4;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid #ccc;
+}
+
+.contenido {
+  font-size: 15px;
+}
+.tiempo {
+  font-size: 0.8rem;
+  color: gray;
+  margin-top: 4px;
+}

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-evento-inscrito',
@@ -8,9 +9,23 @@ import { Component, OnInit } from '@angular/core';
 })
 export class EventoInscritoPage implements OnInit {
 
-  constructor() { }
+  eventData = {
+    tournamentName: 'Torneo Épico de Vóley',
+    game: 'Vóley 3D',
+    description: 'Un torneo para los mejores jugadores de vóley virtual.',
+    gameMode: '5v5',
+    rules: 'Sin trampas, buena conducta, puntualidad obligatoria.',
+    date: '2025-06-15',
+    time: '18:00',
+    location: 'Gimnasio Central',
+    owner: 'Organizador UC'
+  };
 
-  ngOnInit() {
+  constructor(private navCtrl: NavController) { }
+
+  ngOnInit() {}
+
+  volver() {
+    this.navCtrl.back();
   }
-
 }

@@ -1,4 +1,4 @@
-
+<app-encabezado></app-encabezado>
 
 <ion-content [fullscreen]="true">
   <div class="settings-container">
@@ -19,6 +19,12 @@
       <ion-item button detail="false" class="settings-item" [routerLink]="['/historial-eventos']">
         <ion-icon name="time-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-label>Historial de eventos</ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+      </ion-item>
+
+       <ion-item button detail="false" class="settings-item" [routerLink]="['/publicaciones-guardadas']">
+        <ion-icon name="bookmark" slot="start" aria-hidden="true"></ion-icon>
+        <ion-label>Guardados</ion-label>
         <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
       </ion-item>
 
@@ -48,3 +54,4 @@
 
   </div>
 </ion-content>
+<app-navbar></app-navbar>

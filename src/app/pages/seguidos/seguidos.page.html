@@ -1,12 +1,6 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title class="centered-title">Seguidores</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-encabezado></app-encabezado>
 
 <ion-content [fullscreen]="true">
-
-  <!-- Fila superior: flecha + título centrado -->
   <div class="header-row">
     <ion-button fill="clear" class="back-button" routerLink="/perfil">
       <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
@@ -16,39 +10,25 @@
 
   <hr class="section-divider">
 
-  <!-- Buscador -->
-  <ion-searchbar
-    placeholder="Buscar usuario"
-    class="search-bar"
-  ></ion-searchbar>
+  <ion-searchbar placeholder="Buscar usuario" class="search-bar"></ion-searchbar>
 
   <hr class="section-divider">
 
-  <!-- Lista de seguidores -->
   <ion-list class="followers-list">
-    <ion-item>
+    <ion-item *ngFor="let user of seguidos; let i = index" (click)="verPerfil(user.id)">
       <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 1" />
+        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="{{ user.nombre }}" />
       </ion-avatar>
-      <ion-label>usuario_1</ion-label>
-      <ion-button color="danger" class="follow-button">Dejar de seguir</ion-button>
-    </ion-item>
-
-    <ion-item>
-      <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 2" />
-      </ion-avatar>
-      <ion-label>usuario_2</ion-label>
-      <ion-button color="danger" class="follow-button">Dejar de seguir</ion-button>
-    </ion-item>
-
-    <ion-item>
-      <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Usuario 3" />
-      </ion-avatar>
-      <ion-label>usuario_3</ion-label>
-      <ion-button color="danger" class="follow-button">Dejar de seguir</ion-button>
+      <ion-label>{{ user.nombre }}</ion-label>
+      <ion-button
+        fill="outline"
+        color="danger"
+        class="follow-button"
+        (click)="dejarDeSeguir(i); $event.stopPropagation();">
+        Dejar de seguir
+      </ion-button>
     </ion-item>
   </ion-list>
-
 </ion-content>
+
+<app-navbar></app-navbar>
