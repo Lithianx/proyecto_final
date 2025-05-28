@@ -1,6 +1,6 @@
 <app-encabezado></app-encabezado>
 
-<ion-content [fullscreen]="true" class="fondo-negro">
+<ion-content [fullscreen]="true" scroll-y="false" class="fondo-negro">
 
   <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
     <ion-icon name="arrow-back"></ion-icon>
@@ -38,9 +38,19 @@
           <p>{{ evento.cupos }}</p>
         </div>
 
-        <ion-button expand="block" class="boton-monster" (click)="unirseAlEvento()">
+        <div class="swipe-button-container" #swipeArea>
+          <div class="swipe-track">
+            
+            <div class="swipe-thumb" #swipeThumb>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+            <span class="swipe-text">Desliza para tomar evento</span>
+          </div>
+        </div>
+
+        <!-- <ion-button expand="block" class="boton-monster" (click)="unirseAlEvento()">
           TOMAR EVENTO
-        </ion-button>
+        </ion-button> -->
       </ion-card-content>
     </ion-card>
   </div>

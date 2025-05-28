@@ -12,12 +12,12 @@ import { NavController } from '@ionic/angular';
 export class EventoPage implements OnInit {
 
   eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', tipo: 'Videojuego' },
-    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00', tipo: 'Juego de mesa' },
-    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30', tipo: 'Videojuego' },
-    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', tipo: 'Videojuego' },
-    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00', tipo: 'Juego de mesa' },
-    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', tipo: 'Juego de mesa' },
+    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX'},
+    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' },
+    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' },
+    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666' },
+    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00',usuario: 'KANGURUU' },
+    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' },
   ];
 
   eventosFiltrados = [...this.eventos];
@@ -59,7 +59,6 @@ doRefresh(event: any) {
 
   this.eventosFiltrados = this.eventos.filter(evento =>
     evento.nombre.toLowerCase().includes(texto) ||
-    evento.tipo.toLowerCase().includes(texto) ||
     evento.lugar.toLowerCase().includes(texto)
   );
 }
