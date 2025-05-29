@@ -5,8 +5,11 @@
     <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
       <ion-icon name="arrow-back"></ion-icon>
     </ion-button>
-    <h2 class="titulo">Crear Evento Flash</h2>
+    <h2 class="titulo">Crear Evento</h2>
+    <ion-icon name="people-outline" size="large" style="margin-left: 130px;"></ion-icon>
   </div>
+
+
 
   <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
     <ion-input fill="outline" label="Nombre del Evento" label-placement="floating" formControlName="nombre_evento"
@@ -26,7 +29,7 @@
     </ion-item>
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="fechaInicio" presentation="date-time" prefer-wheel="true" [min]="fechaMinima"
+        <ion-datetime id="fechaInicio" presentation="date-time" prefer-wheel="false" [min]="fechaMinima"
           formControlName="fecha_inicio"></ion-datetime>
       </ng-template>
     </ion-modal>
@@ -38,12 +41,29 @@
     </ion-item>
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="fechaTermino" presentation="date-time" prefer-wheel="true" [min]="fechaMinima"
+        <ion-datetime id="fechaTermino" presentation="date-time" prefer-wheel="false" [min]="fechaMinima"
           formControlName="fecha_termino"></ion-datetime>
       </ng-template>
     </ion-modal>
 
-    <ion-button expand="block" type="submit" class="boton-monster">
+    <div class="campo-cupos input-monster">
+      <ion-label class="label-cupos">Cupos</ion-label>
+      <div class="cupos-selector">
+        <ion-button fill="outline" shape="round" (click)="modificarCupos(-1)">
+          <ion-icon name="remove-outline"></ion-icon>
+        </ion-button>
+
+        <span class="cupos-numero">{{ eventoForm.get('cupos')?.value }}</span>
+
+        <ion-button fill="outline" shape="round" (click)="modificarCupos(1)">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+
+
+    <ion-button expand="block" type="submit" class="boton-monster" (click)="crearEvento()">
       Crear Evento
     </ion-button>
   </form>

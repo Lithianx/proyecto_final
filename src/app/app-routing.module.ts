@@ -104,6 +104,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
   },
   {
+    path : 'sala-evento/:id',
+    loadChildren: () => import('./pages/sala-evento/sala-evento.module').then( m => m.SalaEventoPageModule)
+  },
+  {
     path: 'publicaciones-guardadas',
     loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
   },

@@ -1,6 +1,6 @@
 <app-encabezado></app-encabezado>
 
-<ion-content [fullscreen]="true" class="fondo-negro">
+<ion-content [fullscreen]="true" scroll-y="false" class="fondo-negro">
 
   <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
     <ion-icon name="arrow-back"></ion-icon>
@@ -13,34 +13,47 @@
       </ion-card-header>
 
       <ion-card-content>
-        <div class="campo-evento">
-          <label>Descripción:</label>
-          <p>{{ evento.descripcion }}</p>
+
+        <div class="contenido-evento">
+          <div class="campo-evento">
+            <label>Descripción:</label>
+            <p>{{ evento.descripcion }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Lugar:</label>
+            <p>{{ evento.lugar }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Fecha:</label>
+            <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Duración:</label>
+            <p>{{ evento.duracion }} minutos</p>
+          </div>
+
+          <div class="campo-evento" *ngIf="evento.cupos">
+            <label>Cupos máximos:</label>
+            <p>{{ evento.cupos }}</p>
+          </div>
         </div>
 
-        <div class="campo-evento">
-          <label>Lugar:</label>
-          <p>{{ evento.lugar }}</p>
+        <!-- Botón deslizable separado -->
+        <div class="swipe-button-container" #swipeArea>
+          <div class="swipe-track">
+            <div class="swipe-fill" #swipeFill></div>
+
+            <div class="swipe-thumb" #swipeThumb>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+
+            <span class="swipe-text" #swipeText>Desliza para tomar evento</span>
+          </div>
         </div>
 
-        <div class="campo-evento">
-          <label>Fecha:</label>
-          <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
-        </div>
-
-        <div class="campo-evento">
-          <label>Duración:</label>
-          <p>{{ evento.duracion }} minutos</p>
-        </div>
-
-        <div class="campo-evento" *ngIf="evento.cupos">
-          <label>Cupos máximos:</label>
-          <p>{{ evento.cupos }}</p>
-        </div>
-
-        <ion-button expand="block" class="boton-monster" (click)="unirseAlEvento()">
-          TOMAR EVENTO
-        </ion-button>
       </ion-card-content>
     </ion-card>
   </div>

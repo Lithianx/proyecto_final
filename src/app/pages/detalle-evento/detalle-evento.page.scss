@@ -8,7 +8,9 @@
 
 .fondo-negro {
   --background: #000;
-  color: #39ff14;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .boton-volver {
@@ -17,11 +19,15 @@
 }
 
 .contenedor-evento {
+  flex: 1;
+  width: 100%;
   display: flex;
   justify-content: center;
+  align-items: start;
   padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto; 
 }
-
 .card-monster {
   width: 100%;
   max-width: 500px;
@@ -30,6 +36,9 @@
   border-radius: 16px;
   box-shadow: 0 0 15px #39ff14;
   color: #39ff14;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px; // espacio para que el botón no quede pegado
 }
 
 .titulo-monster {
@@ -40,7 +49,7 @@
 }
 
 .campo-evento {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 
   label {
     display: block;
@@ -61,6 +70,81 @@
   --background: #39ff14;
   --color: #000;
   font-weight: bold;
-  margin-top: 24px;
+  margin-top: 350px;
   border-radius: 8px;
+}
+
+.contenido-evento {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px; // separa visualmente del botón deslizable
+}
+
+
+
+
+
+
+
+
+.swipe-button-container {
+  width: 100%;
+  max-width: 500px;
+  height: 60px;
+  position: relative;
+  user-select: none;
+  margin-top: 30px;
+}
+
+.swipe-track {
+  width: 100%;
+  height: 100%;
+  background-color: #39ff14;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 0 12px;
+  color: black;
+  z-index: 0;
+  
+}
+
+.swipe-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #0f0;
+  opacity: 0.2;
+  z-index: 0;
+  width: 0%;
+  transition: width 0.1s;
+}
+
+.swipe-text {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  z-index: 1;
+  transition: color 0.2s;
+}
+
+.swipe-thumb {
+  width: 50px;
+  height: 50px;
+  background-color: #000;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #39ff14;
+  position: absolute;
+  left: 0;
+  z-index: 2;
+  transition: transform 0.1s ease;
 }
