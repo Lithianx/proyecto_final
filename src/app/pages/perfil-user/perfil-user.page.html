@@ -20,15 +20,25 @@
 
       <!-- Estadísticas -->
       <div class="estadisticas">
-        <div class="stat-item"><strong>12</strong><br>Publicaciones</div>
+        <div class="stat-item">
+          <strong class="color-verde">12</strong><br>
+          <span class="texto-secundario">Publicaciones</span>
+        </div>
         <ion-button fill="" size="small" [routerLink]="['/seguidores']">
-          <div class="stat-item"><strong>340</strong><br>Seguidores</div>
+         <div class="stat-item">
+          <strong class="color-verde">300</strong><br>
+          <span class="texto-secundario">Seguidores</span>
+        </div>
         </ion-button>
         <ion-button fill="" size="small" [routerLink]="['/seguidos']">
-          <div class="stat-item"><strong>180</strong><br>Seguidos</div>
+          <div class="stat-item">
+            <strong class="color-verde">180</strong><br>
+            <span class="texto-secundario">Seguidos</span>
+          </div>
         </ion-button>
       </div>
     </div>
+
 
     <!-- Bio -->
 <!-- Bio del perfil -->
@@ -50,8 +60,9 @@
   </ion-button>
 </div>
 <!-- Segmento de navegación -->
+    <!-- Navegación de publicaciones/eventos -->
 <div class="publicaciones-nav">
-  <ion-segment [(ngModel)]="vistaSeleccionada">
+  <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
     <ion-segment-button value="publicaciones">
       <ion-icon name="grid-outline"></ion-icon>
     </ion-segment-button>

@@ -17,12 +17,21 @@
 
       <!-- Estadísticas -->
       <div class="estadisticas">
-        <div class="stat-item"><strong>12</strong><br>Publicaciones</div>
+        <div class="stat-item">
+          <strong class="color-verde">12</strong><br>
+          <span class="texto-secundario">Publicaciones</span>
+        </div>
         <ion-button fill="" size="small" [routerLink]="['/seguidores']">
-          <div class="stat-item"><strong>340</strong><br>Seguidores</div>
+         <div class="stat-item">
+          <strong class="color-verde">300</strong><br>
+          <span class="texto-secundario">Seguidores</span>
+        </div>
         </ion-button>
         <ion-button fill="" size="small" [routerLink]="['/seguidos']">
-          <div class="stat-item"><strong>180</strong><br>Seguidos</div>
+          <div class="stat-item">
+            <strong class="color-verde">180</strong><br>
+            <span class="texto-secundario">Seguidos</span>
+          </div>
         </ion-button>
       </div>
     </div>
@@ -35,19 +44,21 @@
     </div>
 
     <!-- Navegación de publicaciones/eventos -->
-    <div class="publicaciones-nav">
-      <ion-segment [(ngModel)]="vistaSeleccionada">
-        <ion-segment-button value="publicaciones">
-          <ion-icon name="grid-outline"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button value="eventos-inscritos">
-          <ion-icon name="flash-outline"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button value="eventos-creados">
-          <ion-icon name="game-controller-outline"></ion-icon>
-        </ion-segment-button>
-      </ion-segment>
-    </div>
+<div class="publicaciones-nav">
+  <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="publicaciones">
+      <ion-icon name="grid-outline"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="eventos-inscritos">
+      <ion-icon name="flash-outline"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="eventos-creados">
+      <ion-icon name="game-controller-outline"></ion-icon>
+    </ion-segment-button>
+  </ion-segment>
+</div>
+
+
  <!------------------------------------------------------------------------------------------>
     <!-- Publicaciones (modo grid) -->
     <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
@@ -106,7 +117,7 @@
             <p class="detalle">Fecha: 12/05/2025</p>
             <p class="detalle">Juego: League of Legends</p>
           </ion-label>
-          <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
+          <ion-icon name="chevron-forward-outline"class="color-verde" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
         </ion-item>
     
         <ion-item class="chat-item grande">
@@ -118,11 +129,12 @@
             <p class="detalle">Fecha: 19/05/2025</p>
             <p class="detalle">Juego: Valorant</p>
           </ion-label>
-          <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
+          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
         </ion-item>
       </ion-list>
     </div>
-
+ <!------------------------------------------------------------------------------------------>
+    <!-- Eventoscreados  -->
     <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
       <!-- Aquí podrían ir los eventos inscritos -->
       <p>Eventos creados</p>
@@ -136,7 +148,7 @@
             <p class="detalle">Fecha: 12/05/2025</p>
             <p class="detalle">Juego: League of Legends</p>
           </ion-label>
-          <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-creado']"></ion-icon>
+          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-creado']"></ion-icon>
         </ion-item>
     
         <ion-item class="chat-item grande">
@@ -148,7 +160,7 @@
             <p class="detalle">Fecha: 19/05/2025</p>
             <p class="detalle">Juego: Valorant</p>
           </ion-label>
-          <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-creado']"></ion-icon>
+          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-creado']"></ion-icon>
         </ion-item>
       </ion-list>
     </div>

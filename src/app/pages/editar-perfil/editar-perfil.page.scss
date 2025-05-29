@@ -31,7 +31,7 @@
     color: var(--text-color);
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 10px rgba(48, 47, 47, 0.3);
     margin-top: 20px;
   }
   
@@ -82,13 +82,14 @@
   
   .edit-overlay ion-icon {
     font-size: 1.2rem;
+    color: var(--color-iconos); 
   }
   
   /* ==========================
      CAMPOS DE ENTRADA
      ========================== */
      .input-item {
-        border: 1px solid #666666; /* borde gris */
+        border: 1px solid #45a834; /* borde gris */
         margin-bottom: 10px;       /* separación entre inputs */
         padding: 8px;              /* espacio interno opcional para que se vean mejor */
         border-radius: 10px;        /* opcional: bordes redondeados */
@@ -141,5 +142,7 @@
 
   
   
-  
+  .color-verde {
+  color: var(--ion-color-primary); // ✅ Correcto: dos guiones
+}
   

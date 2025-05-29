@@ -136,31 +136,61 @@ ion-content.perfil-content {
 }
 
 
+
 /* Barra de navegación de publicaciones */
 .publicaciones-nav {
-    border-top: 1px solid var(--ion-color-instagram-border); /* Borde superior */
-    border-bottom: 1px solid var(--ion-color-instagram-border); /* Borde inferior */
-    margin-bottom: 1px; /* Espacio mínimo antes del grid */
+  position: relative; /* importante para ::after */
+  border-top: 1px solid var(--ion-color-instagram-border);
+  border-bottom: 1px solid var(--ion-color-instagram-border);
+  margin-bottom: 1px;
 }
 
 .publicaciones-nav ion-segment {
-    --background: var(--ion-color-instagram-dark); /* Fondo del segmento */
-    --background-checked: var(--ion-color-instagram-dark); /* Fondo del botón activo */
+  --background: var(--ion-color-instagram-dark);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
 }
 
 .publicaciones-nav ion-segment-button {
-    --color: var(--ion-color-instagram-secondary-text); /* Color del ícono inactivo */
-    --color-checked: var(--ion-color-instagram-text); /* Color del ícono activo */
-    --indicator-color: var(--ion-color-instagram-text); /* Color del indicador de botón activo */
-    --padding-start: 0;
-    --padding-end: 0;
-    --padding-top: 12px;
-    --padding-bottom: 12px;
+  --color: #ffffff99;
+  --color-checked: var(--ion-color-success);
+  --indicator-color: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 12px;
+  --padding-bottom: 6px;
+  border-radius: 8px;
+  margin: 4px;
+  z-index: 2;
+  position: relative;
+  transition: color 0.3s ease;
+  flex: 1; /* Que los botones tengan igual ancho */
+  text-align: center;
 }
 
 .publicaciones-nav ion-segment-button ion-icon {
-    font-size: 1.4rem;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
 }
+
+/* Deslizador */
+.publicaciones-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  height: 36px;
+  width: calc((100% / 3) - 8px); /* ancho = ancho botón - margen total */
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--ion-color-success);
+  border-radius: 8px;
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease;
+  transform: var(--slider-transform, translateX(0%));
+}
+
 
 
 /* Área de Publicaciones (Cuadrícula) */
@@ -249,67 +279,12 @@ body {
   border-radius: 8px;
 }
 /* ----------------------------------------------------------------------------------------*/
-/* Modal */
-.modal {
-  display: flex;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro */
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-}
-
-/* Contenido del modal */
-.modal-content {
-  background-color: #fff;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 300px;
-  margin-bottom: 20px;
-}
-
-/* Encabezado: flecha + título */
-.modal-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #ddd;
-  position: relative;
-}
-
 .close-button {
   position: absolute;
   left: 15px;
   cursor: pointer;
 }
 
-.modal-title {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  flex-grow: 1;
-}
-
-/* Segunda fila: usuario y opciones */
-.modal-user-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #ddd;
-}
 
 .profile-info {
   display: flex;
@@ -323,31 +298,13 @@ body {
   margin-right: 10px;
 }
 
-.modal-user-info strong {
-  font-size: 16px;
-}
 
 .options ion-icon {
   font-size: 20px;
   cursor: pointer;
+  
 }
 
-/* Imagen principal */
-.modal-body img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 15px;
-}
-
-/* Pie del modal con íconos */
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-top: 1px solid #ddd;
-}
 
 .left-icons {
   display: flex;
@@ -359,41 +316,9 @@ body {
   align-items: center;
 }
 
-.modal-footer ion-icon {
-  font-size: 22px;
-  cursor: pointer;
+.texto-secundario {
+  color: var(--color-text-secundary);
 }
-
-/* Descripción */
-.modal-description {
-  padding: 10px 15px;
-  font-size: 14px;
-  color: #555;
-  text-align: center;
-  border-top: 1px solid #ddd;
-}
-
-/* Responsive */
-@media (max-width: 767px) {
-  .modal-content {
-    width: 95%;
-    padding: 10px;
-  }
-
-  .modal-header {
-    padding: 10px;
-  }
-
-  .modal-title {
-    font-size: 16px;
-  }
-
-  .modal-description {
-    font-size: 12px;
-    padding: 8px 10px;
-  }
-
-  .modal-body img {
-    margin-top: 10px;
-  }
+.color-verde {
+  color: var(--color-iconos); // ✅ Correcto: dos guiones
 }

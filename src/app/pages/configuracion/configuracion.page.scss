@@ -19,7 +19,7 @@
     background: var(--settings-list-background); /* Usa la variable para el fondo de la lista */
     border-radius: 8px; /* Bordes redondeados para la lista */
     overflow: hidden; /* Asegura que los bordes redondeados corten el contenido */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra sutil (ajustar opacidad para modo oscuro si es necesario) */
+    box-shadow: 0 2px 5px rgba(115, 115, 115, 0.3); /* Sombra sutil (ajustar opacidad para modo oscuro si es necesario) */
     margin-bottom: 20px; /* Espacio entre la lista y el botón de cerrar sesión */
   }
   
@@ -39,14 +39,14 @@
   /* Estilos para los iconos dentro de las opciones */
   .settings-item ion-icon[slot="start"] {
     font-size: 1.4rem; /* Tamaño del icono inicial */
-    color: var(--settings-item-icon-color); /* Usa la variable para el color del icono */
+  color: var(--color-iconos); 
     margin-right: 10px; /* Espacio a la derecha del icono */
   }
   
   /* Estilos para la flecha al final */
   .settings-item ion-icon[slot="end"] {
     font-size: 1.2rem; /* Tamaño de la flecha */
-    color: var(--settings-item-arrow-color); /* Usa la variable para el color de la flecha */
+  color: var(--color-iconos); 
   }
   
   /* Estilos para el texto de la opción */
@@ -81,4 +81,6 @@
     position: absolute;
     left: 16px;
   }
-  
+  .color-verde {
+  color: var(--color-iconos); // ✅ Correcto: dos guiones
+}
