@@ -85,11 +85,6 @@ ion-chip {
   --color: #3fe520 ;
 }
 
-::ng-deep .custom-action-sheet .action-sheet-group {
-  max-width: 300px;         // ancho máximo del ActionSheet
-  margin: 0 auto;           // centra horizontalmente
-  width: 90%;               // ancho relativo para móviles
-}
 
 ::ng-deep .custom-action-sheet .action-sheet-button {
   color: #a6a6a6; // color de texto de los botones
