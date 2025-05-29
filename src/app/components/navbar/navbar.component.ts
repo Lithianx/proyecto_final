@@ -20,7 +20,7 @@ export class NavbarComponent  implements OnInit {
   ngOnInit() {}
 
   irBuscar() {
-    this.router.navigate(['/perfil']);
+    this.router.navigate(['/buscar-persona']);
   }
   irEvento() {
     this.router.navigate(['/evento']);

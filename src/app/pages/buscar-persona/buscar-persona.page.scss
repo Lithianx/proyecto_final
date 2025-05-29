@@ -1,0 +1,23 @@
+ion-searchbar {
+    color: #f2f2f2;
+    --icon-color: #3fe520;
+}
+
+.mensaje{
+    color: #f2f2f2;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 20px;
+    ion-icon{
+        color: #3fe520;
+        font-size: 4rem;
+        animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}
+

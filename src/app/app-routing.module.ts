@@ -118,7 +118,11 @@ const routes: Routes = [
   {
     path: 'notificaciones',
     loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
+  },  {
+    path: 'buscar-persona',
+    loadChildren: () => import('./pages/buscar-persona/buscar-persona.module').then( m => m.BuscarPersonaPageModule)
   },
+
 
 
 
