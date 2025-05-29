@@ -17,6 +17,7 @@ import { ComponentsModule } from '../../components/components.module';
     IonicModule,
     SalaEventoPageRoutingModule,
     ComponentsModule,
+    
   ],
   declarations: [SalaEventoPage]
 })

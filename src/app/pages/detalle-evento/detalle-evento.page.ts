@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController, GestureController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -28,7 +29,8 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
-    private gestureCtrl: GestureController
+    private gestureCtrl: GestureController,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -83,8 +85,8 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
 }
 
   unirseAlEvento() {
-    console.log('🎯 Te uniste al evento:', this.evento.nombre);
-    // Aquí puedes mostrar un toast o redireccionar si quieres
+    const id = this.evento.id; // ← Asegúrate que `evento` tenga `.id`
+    this.router.navigate(['/sala-evento', id]);
   }
 
   volverAtras() {

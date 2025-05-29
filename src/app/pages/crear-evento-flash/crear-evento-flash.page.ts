@@ -25,6 +25,7 @@ export class CrearEventoFlashPage {
       tipo_evento: ['', Validators.required],
       fecha_inicio: [new Date().toISOString(), Validators.required],
       fecha_termino: [new Date().toISOString(), Validators.required],
+      cupos: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
     });
   }
 
@@ -58,6 +59,12 @@ export class CrearEventoFlashPage {
       await toast.present();
     }
   }
+
+  modificarCupos(valor: number) {
+  const actual = this.eventoForm.get('cupos')?.value || 1;
+  const nuevo = Math.min(10, Math.max(1, actual + valor)); // entre 1 y 10
+  this.eventoForm.get('cupos')?.setValue(nuevo);
+}
 
   volverAtras() {
     this.navCtrl.back();

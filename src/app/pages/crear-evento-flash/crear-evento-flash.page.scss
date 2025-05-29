@@ -31,7 +31,7 @@ ion-label {
   --background: #39ff14;
   --color: #000;
   font-weight: bold;
-  margin-top: 325px;
+  margin-top: 280px;
 
 }
 .boton-volver{
@@ -40,4 +40,41 @@ ion-label {
   margin-top: 10px;
   margin-bottom: 10px;
 
+}
+
+
+
+
+
+
+.campo-cupos {
+  display: flex;
+  flex-direction: column;
+  margin: 16px 0;
+
+  label-cupos {
+    font-weight: bold;
+    margin-bottom: 100px;
+    color: #39ff14;
+  }
+
+  .cupos-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+
+    ion-button {
+      --border-color: #39ff14;
+      --color: #39ff14;
+    }
+
+    .cupos-numero {
+      font-size: 1.5rem;
+      font-weight: bold;
+      width: 40px;
+      text-align: center;
+      color: white;
+    }
+  }
 }
