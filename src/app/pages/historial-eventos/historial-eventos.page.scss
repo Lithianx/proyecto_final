@@ -1,0 +1,46 @@
+.cuadro-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+  
+  .cuadro-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .chat-item.grande {
+    --min-height: 100px;
+    padding: 16px 10px;
+  }
+  
+  .searchbar-gris {
+    --background: #e0e0e0; 
+    --color: #333;
+    --placeholder-color: #666;
+  }
+  .header-historial {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 10px 16px;
+  
+    .back-button {
+      z-index: 1;
+    }
+  
+    .titulo-centro {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      pointer-events: none; 
+    }
+  }
+  
+  
+
+  

@@ -1,0 +1,45 @@
+<app-encabezado></app-encabezado>
+
+<ion-content fullscreen="true" class="ajustado">
+  <ion-searchbar class="searchbar-gris" placeholder="Buscar evento" disabled></ion-searchbar>
+
+
+  <ion-list [inset]="true" lines="full">
+    <div class="header-historial">
+      <ion-button fill="clear" class="back-button" [routerLink]="['/configuracion']" aria-label="Volver atrás">
+        <ion-icon name="chevron-back-circle-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+      </ion-button>
+    
+      <div class="titulo-centro">
+        <ion-text color="primary">
+          <h1>Historial de Eventos</h1>
+        </ion-text>
+      </div>
+    </div>
+    
+    <ion-item class="chat-item grande">
+      <div slot="start" class="cuadro-avatar">
+        <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
+      </div>
+      <ion-label>
+        <h3>Nombre del Evento</h3>
+        <p class="detalle">Fecha: 12/05/2025</p>
+        <p class="detalle">Juego: League of Legends</p>
+      </ion-label>
+      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
+    </ion-item>
+
+    <ion-item class="chat-item grande">
+      <div slot="start" class="cuadro-avatar">
+        <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
+      </div>
+      <ion-label>
+        <h3>Nombre del Evento</h3>
+        <p class="detalle">Fecha: 19/05/2025</p>
+        <p class="detalle">Juego: Valorant</p>
+      </ion-label>
+      <ion-icon name="chevron-forward-outline" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<app-navbar></app-navbar>

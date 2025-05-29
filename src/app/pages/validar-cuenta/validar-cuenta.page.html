@@ -1,0 +1,79 @@
+<ion-content [fullscreen]="true">
+  <div class="edit-profile-container">
+    <div class="profile-form-box">
+
+      <!-- Fila con flecha y título -->
+      <div class="header-row">
+        <ion-button fill="clear" class="back-button" [routerLink]="['/configuracion']" aria-label="Volver atrás">
+          <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+        </ion-button>
+        <h1 class="app-title">Enviar solicitud</h1>
+      </div>
+
+      <!-- Campo de mensaje -->
+      <ion-item lines="inset">
+        <ion-label position="stacked">
+          <ion-icon name="chatbox-ellipses-outline" class="icon-inline"></ion-icon>
+          Mensaje o justificación
+        </ion-label>
+        <ion-textarea
+          [(ngModel)]="mensaje"
+          placeholder="Explique por qué solicita la validación, su rol en la institución, etc."
+          autoGrow="true">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Subida de documentos -->
+      <ion-item lines="none" class="file-upload-item">
+        <ion-label position="stacked" style="padding: 3%;">
+          <ion-icon name="document-attach-outline" class="icon-inline"></ion-icon>
+          Documentos requeridos
+        </ion-label>
+        <input type="file" multiple (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" />
+        <ion-text color="medium" class="file-note">Formatos aceptados: PDF, JPG, PNG</ion-text>
+      </ion-item>
+
+      <!-- Lista de archivos seleccionados -->
+      <div class="archivo-listado" *ngIf="archivos.length > 0">
+        <ion-chip *ngFor="let archivo of archivos">
+          <ion-icon name="attach" color="primary" class="archivo-icono"></ion-icon>
+          <ion-label>{{ archivo.name }}</ion-label>
+        </ion-chip>
+      </div>
+
+      <!-- Recordatorio -->
+      <div class="reminder-box">
+        <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+        <p>
+          Su solicitud será revisada en un plazo de una semana. Una vez validada, su cuenta se actualizará automáticamente
+          y recibirá una notificación con los resultados.
+        </p>
+      </div>
+
+      <!-- Botón de envío -->
+      <div class="save-button-container">
+        <ion-button expand="block" class="save-button" color="success" (click)="enviarSolicitud()">
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+          Enviar solicitud
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de alerta -->
+  <ion-alert
+    [isOpen]="showAlert"
+    [header]="alertHeader"
+    [message]="alertMessage"
+    [buttons]="['OK']"
+    (didDismiss)="showAlert = false">
+  </ion-alert>
+
+  <!-- Loader -->
+  <ion-loading
+    [isOpen]="showLoading"
+    message="Enviando solicitud..."
+    spinner="crescent"
+    duration="2000">
+  </ion-loading>
+</ion-content>

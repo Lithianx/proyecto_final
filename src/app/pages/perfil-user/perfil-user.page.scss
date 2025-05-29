@@ -1,0 +1,434 @@
+
+
+/* Estilo para el contenido principal */
+ion-content.perfil-content {
+  --padding-bottom: 70px;
+  --padding-start: 0; /* El padding se maneja dentro del contenedor */
+  --padding-end: 0;
+}
+
+.perfil-container {
+  width: 100%;
+  max-width: 600px; /* Ancho máximo típico de un perfil en escritorio */
+  margin: 0 auto; /* Centra el contenedor */
+  padding: 0 15px; /* Padding horizontal para no tocar los bordes */
+  box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
+/* Sección superior del perfil (Foto, Usuario, Stats) */
+.perfil-header-section {
+  margin-bottom: 20px;
+}
+
+.perfil-top {
+  display: flex; /* Activa Flexbox */
+  margin-bottom: 20px;
+  align-items: center; /* Alinea verticalmente los elementos al centro */
+  padding: 10px 15px; /* Añade padding interno (arriba/abajo, izquierda/derecha) */
+  width: 100%; /* Asegura que ocupe el ancho completo */
+  /* justify-content: space-between; // NO usar si intentas centrar un elemento con margen auto */
+}
+/* Nombre de usuario (Segundo elemento - center) */
+.perfil-top h2 {
+  font-size: 1.2rem; /* Tamaño del nombre (ajustar) */
+  font-weight: bold;
+  margin: 0 auto; /* ESTO CENTRA EL ELEMENTO: los márgenes automáticos toman el espacio disponible */
+  text-align: center; /* Asegura que el texto dentro del h2 esté centrado */
+  flex-grow: 0; /* Evita que crezca */
+  flex-shrink: 0; /* Evita que se encoja */
+}
+/* Estilo de la foto de perfil (Primer elemento - start) */
+.foto-perfil {
+  width: 60px; /* Tamaño de la foto (ajustar según diseño) */
+  height: 60px;
+  flex-shrink: 0; /* Evita que la foto se encoja */
+  /* No necesita márgenes especiales, se alinea al inicio por defecto en flex */
+}
+/* Botón/Icono de opciones (Tercer elemento - end) */
+.perfil-top ion-button {
+   flex-shrink: 0; /* Evita que se encoja */
+   /* No necesita márgenes especiales, se alinea después del h2 centrado */
+   padding: 0; /* Eliminar padding extra del botón si lo tiene por defecto */
+   height: auto; /* Altura automática basada en contenido */
+}
+
+.perfil-top ion-button ion-icon {
+    font-size: 1.5rem; /* Tamaño del icono (ajustar) */
+}
+/* Info de usuario (nombre, etc.) */
+.usuario-info {
+  display: flex;
+
+  justify-content: center;
+  flex-grow: 1; /* Permite que ocupe el espacio restante */
+}
+
+.usuario-info h2 {
+  font-size: 1.4rem;
+  font-weight: normal; /* Nombre de usuario no tan negrita */
+  margin: 0 0 5px 0; /* Espacio debajo del nombre */
+  color: var(--ion-color-instagram-text);
+}
+
+.usuario-info ion-button {
+    /* Estilos para el botón de opciones */
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --inner-padding-start: 0;
+    height: auto; /* Altura automática */
+    text-align: left;
+    justify-content: flex-start;
+    color: var(--ion-color-instagram-text);
+}
+.usuario-info ion-button ion-icon {
+     font-size: 1.5rem; /* Tamaño del icono de opciones */
+}
+
+
+/* Sección de estadísticas */
+.estadisticas {
+  display: flex; /* Alinea las estadísticas horizontalmente */
+  justify-content: space-around; /* Distribuye el espacio uniformemente */
+  text-align: center; /* Centra el texto dentro de cada estadística */
+  margin-bottom: 20px; /* Espacio debajo de las estadísticas */
+}
+
+.stat-item strong {
+  display: block; /* Pone el número en su propia línea */
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: var(--ion-color-instagram-text);
+}
+
+.stat-item br {
+    display: none; /* Oculta el <br> para usar flex-direction column implícito o margin */
+}
+.stat-item {
+    font-size: 0.9rem;
+    color: var(--ion-color-instagram-secondary-text);
+    display: flex;
+    flex-direction: column; /* Apila número y texto verticalmente */
+    align-items: center; /* Centra horizontalmente contenido */
+}
+
+
+/* Sección de Biografía */
+.perfil-bio {
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ion-color-instagram-text);
+}
+
+.perfil-bio p {
+    margin: 0 0 5px 0; /* Espacio entre párrafos de la bio */
+}
+
+.perfil-bio strong {
+    font-weight: bold;
+}
+
+.perfil-bio .bio-link {
+    color: #3897f0; /* Color de enlace típico de Instagram */
+    text-decoration: none;
+}
+
+
+/* Barra de navegación de publicaciones */
+.publicaciones-nav {
+    border-top: 1px solid var(--ion-color-instagram-border); /* Borde superior */
+    border-bottom: 1px solid var(--ion-color-instagram-border); /* Borde inferior */
+    margin-bottom: 1px; /* Espacio mínimo antes del grid */
+}
+
+.publicaciones-nav ion-segment {
+    --background: var(--ion-color-instagram-dark); /* Fondo del segmento */
+    --background-checked: var(--ion-color-instagram-dark); /* Fondo del botón activo */
+}
+
+.publicaciones-nav ion-segment-button {
+    --color: var(--ion-color-instagram-secondary-text); /* Color del ícono inactivo */
+    --color-checked: var(--ion-color-instagram-text); /* Color del ícono activo */
+    --indicator-color: var(--ion-color-instagram-text); /* Color del indicador de botón activo */
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+}
+
+.publicaciones-nav ion-segment-button ion-icon {
+    font-size: 1.4rem;
+}
+
+
+/* Área de Publicaciones (Cuadrícula) */
+.publicaciones-grid {
+  display: grid; /* Activa CSS Grid */
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas de igual ancho */
+  gap: 1px; /* Espacio pequeño entre las imágenes (imitando Instagram) */
+}
+
+.post-thumbnail {
+  width: 100%;
+  height: 0; /* Se usa padding-bottom para mantener la proporción */
+  padding-bottom: 100%; /* Crea un cuadrado (1:1 aspect ratio) */
+  position: relative; /* Necesario para posicionar la imagen dentro */
+  overflow: hidden; /* Oculta partes de la imagen que se salgan */
+}
+
+.post-thumbnail img {
+  position: absolute; /* Posiciona la imagen dentro del contenedor */
+  top: 0;
+  left: 0;
+  width: 100%; /* La imagen cubre todo el contenedor */
+  height: 100%;
+  object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+  display: block; /* Evita espacio extra debajo de la imagen */
+}
+
+/* Ajustes responsivos menores */
+@media (max-width: 480px) {
+  .perfil-container {
+    padding: 0 10px; /* Menos padding en pantallas pequeñas */
+  }
+
+  .foto-perfil {
+    width: 70px; /* Foto más pequeña en móviles */
+    height: 70px;
+    margin-right: 20px;
+  }
+
+  .usuario-info h2 {
+    font-size: 1.2rem; /* Nombre más pequeño */
+  }
+
+  .estadisticas {
+      margin-bottom: 15px;
+  }
+   .stat-item strong {
+        font-size: 1rem;
+   }
+   .stat-item {
+        font-size: 0.8rem;
+   }
+
+
+  .perfil-bio {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+  
+}
+.cuadro-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.cuadro-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-item.grande {
+  --min-height: 100px;
+
+}
+body {
+  font-family: Arial, sans-serif;
+}
+
+.post-thumbnail img {
+  width: 200px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+/* ----------------------------------------------------------------------------------------*/
+/* Modal */
+.modal {
+  display: flex;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro */
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+/* Contenido del modal */
+.modal-content {
+  background-color: #fff;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 300px;
+  margin-bottom: 20px;
+}
+
+/* Encabezado: flecha + título */
+.modal-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  left: 15px;
+  cursor: pointer;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 1;
+}
+
+/* Segunda fila: usuario y opciones */
+.modal-user-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+}
+
+.profile-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.modal-user-info strong {
+  font-size: 16px;
+}
+
+.options ion-icon {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Imagen principal */
+.modal-body img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+/* Pie del modal con íconos */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-top: 1px solid #ddd;
+}
+
+.left-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.right-icon {
+  display: flex;
+  align-items: center;
+}
+
+.modal-footer ion-icon {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* Descripción */
+.modal-description {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  border-top: 1px solid #ddd;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .modal-content {
+    width: 95%;
+    padding: 10px;
+  }
+
+  .modal-header {
+    padding: 10px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
+
+  .modal-description {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .modal-body img {
+    margin-top: 10px;
+  }
+}
+.perfil-acciones {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+
+  .accion-btn {
+    --border-radius: 20px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: none;
+  }
+
+  .accion-btn.ion-color-success {
+    --background: #2dd36f;
+    --background-hover: #28ba62;
+    --color: white;
+  }
+
+  .accion-btn.ion-color-danger {
+    --background: #eb445a;
+    --background-hover: #cf3c4f;
+    --color: white;
+  }
+
+  .accion-btn.ion-color-primary {
+    --background: #3880ff;
+    --background-hover: #3171e0;
+    --color: white;
+  }
+}
+
