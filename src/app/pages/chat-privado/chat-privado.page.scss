@@ -3,32 +3,39 @@
   color: #f2f2f2;
   z-index: 10;
   padding: 4px 16px;
-  /* Reduce el padding general para hacerlo más compacto */
   display: flex;
-  justify-content: center;
   align-items: center;
+  height: 70px; // o el alto que uses en tu app
 
   ion-back-button {
     color: #3fe520;
   }
+
+  .avatar-container {
+    position: absolute;
+    top: 6px; // sube el contenedor
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none; // evita bloquear clics como el botón atrás
+  }
+
+  ion-title {
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 2px;
+  }
+
+  ion-avatar {
+    width: 32px;
+    height: 32px;
+  }
 }
 
-.chat-header .avatar-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-ion-avatar {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
-}
-
-ion-title {
-  font-size: 16px;
-  font-weight: normal;
-}
 
 .spacer-header {
   height: 56px;
@@ -91,12 +98,21 @@ ion-title {
   background-color: #494848;
 }
 
-.hora {
-  font-size: 10px;
-  color: gray;
-  display: block;
+
+.hora-visto{
   text-align: right;
-  margin-top: 4px;
+  .hora {
+    font-size: 10px;
+    color: white;
+    display: block;
+    text-align: right;
+    margin-top: 4px;
+  }
+  ion-icon{
+    font-size: 15px;
+    color: white;
+    margin-top: 4px;
+  }
 }
 
 
@@ -177,7 +193,6 @@ ion-icon {
     line-height: 1.4;
     font-size: 1rem;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-    color: black;
+    border: 1px solid #3fe520;
+    color: white;
   }

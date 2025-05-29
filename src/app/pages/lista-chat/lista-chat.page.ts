@@ -6,6 +6,7 @@ interface Usuario {
   id: string;
   username: string;
   userAvatar: string;
+  estado: boolean; // Indica si el usuario está en línea o no
 }
 
 interface Mensaje {
@@ -43,6 +44,7 @@ export class ListaChatPage implements OnInit {
         id: 'u123',
         username: 'johndoe',
         userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado: true, // Usuario en línea
       },
       ultimoMensaje: {
         id: 'm1',
@@ -59,6 +61,7 @@ export class ListaChatPage implements OnInit {
         id: 'u124',
         username: 'gamer123',
         userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado: false, // Usuario fuera de línea
       },
       ultimoMensaje: {
         id: 'm2',
@@ -75,6 +78,7 @@ export class ListaChatPage implements OnInit {
         id: 'u125',
         username: 'petterpan',
         userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado: true, // Usuario en línea
       },
       ultimoMensaje: {
         id: 'm3',
@@ -92,6 +96,7 @@ export class ListaChatPage implements OnInit {
         id: 'u126',
         username: 'videofan',
         userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado: false, // Usuario fuera de línea
       },
       ultimoMensaje: {
         id: 'm4',
@@ -109,6 +114,7 @@ export class ListaChatPage implements OnInit {
         id: 'u127',
         username: 'audiolover',
         userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado: true, // Usuario en línea
       },
       ultimoMensaje: {
         id: 'm5',

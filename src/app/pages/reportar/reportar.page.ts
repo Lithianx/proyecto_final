@@ -105,7 +105,7 @@ export class ReportarPage implements OnInit {
     // Mostrar Toast
     const toast = await this.toastCtrl.create({
       message: 'Tu reporte ha sido enviado. Gracias por ayudarnos a mantener la comunidad segura.',
-      duration: 1000, 
+      duration: 3000, 
       position: 'bottom', 
       color: 'success' 
     });

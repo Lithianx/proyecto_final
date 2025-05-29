@@ -14,14 +14,17 @@
     </ion-toolbar>
     <!-- Lista de chat -->
     <ion-item *ngFor="let chat of chats" class="chat-item" [routerLink]="['/chat-privado', chat.id]">
-      <ion-avatar slot="start">
-        <img [src]="chat.participante.userAvatar" />
-      </ion-avatar>
+      <div class="chat-avatar-icon">
+        <ion-avatar slot="start">
+          <img [src]="chat.participante.userAvatar" />
+        </ion-avatar>
+        <ion-icon [name]="chat.participante.estado ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
+      </div>
       <ion-label>
-        <!-- Nombre de usuario y punto verde si hay mensaje no leído -->
+        <!-- Nombre de usuario y icono si hay mensaje no leído -->
         <div class="user-info">
           <h5>{{ chat.participante.username }}</h5>
-          <div *ngIf="chat.ultimoMensaje?.leido === false" class="no-visto"></div>
+          <ion-icon [name]="chat.ultimoMensaje?.leido ? 'mail-unread' : 'mail-open-outline'"></ion-icon>
         </div>
         <!-- Último mensaje -->
         <p class="message-text">

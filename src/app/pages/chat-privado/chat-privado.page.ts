@@ -53,8 +53,8 @@ export class ChatPrivadoPage implements OnInit {
 
   mensajes: Mensaje[] = [
     { id: 'm1', emisorId: '1', receptorId: 'yo', contenido: '¡Hola!', timestamp: '10:00', leido: true },
-    { id: 'm2', emisorId: 'yo', receptorId: '1', contenido: '¿Cómo estás?', timestamp: '10:01', leido: false },
-    { id: 'm3', emisorId: '1', receptorId: 'yo', contenido: 'Todo bien, ¿y tú?', timestamp: '10:02', leido: true }
+    { id: 'm2', emisorId: 'yo', receptorId: '1', contenido: '¿Cómo estás?', timestamp: '10:01', leido: true },
+    { id: 'm3', emisorId: '1', receptorId: 'yo', contenido: 'Todo bien, ¿y tú?', timestamp: '10:02', leido: false }
   ];
 
   usuariosMock: Usuario[] = [
@@ -134,42 +134,6 @@ export class ChatPrivadoPage implements OnInit {
       reader.readAsDataURL(file);
     }
   }
-
-
-  /* 
-  // Método para seleccionar un archivo de audio desde el dispositivo
-
-  seleccionarAudio() {
-    this.audioInput.nativeElement.click();
-  }
-
-  onAudioSeleccionado(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const audioBase64 = reader.result as string;
-        const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        this.mensajes.push({
-          id: new Date().getTime().toString(),
-          emisorId: 'yo',
-          receptorId: this.chatId!,
-          contenido: '',
-          timestamp: horaActual,
-          audio: audioBase64,
-          leido: false,
-        });
-        // Resetear input para permitir reelección del mismo archivo
-        this.scrollToBottom(); // 👈 Desplazarse al final
-        event.target.value = '';
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-*/
-
 
   
   async iniciarGrabacion() {

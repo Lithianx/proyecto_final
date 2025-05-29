@@ -32,13 +32,20 @@
           (canplay)="onMediaLoad()"></video>
 
         <!-- Audio (si existe) -->
-        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" class="audio-chat" (canplay)="onMediaLoad()"></audio>
+        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" class="audio-chat"
+          (canplay)="onMediaLoad()"></audio>
 
         <!-- Texto (si existe) -->
         <p *ngIf="mensaje.contenido">{{ mensaje.contenido }}</p>
 
         <!-- Hora -->
-        <span class="hora">{{ mensaje.timestamp }}</span>
+
+        <div class="hora-visto">
+          <span class="hora">{{ mensaje.timestamp }}</span>
+          <ion-icon [name]="mensaje.leido ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
+        </div>
+
+
       </div>
     </div>
     <div #endOfMessages></div>
@@ -53,28 +60,21 @@
     <ion-item lines="none">
 
       <!-- Botón para seleccionar imagen y video -->
-      <ion-button  fill="clear" (click)="seleccionarArchivo()">
+      <ion-button fill="clear" (click)="seleccionarArchivo()">
         <ion-icon name="image-outline"></ion-icon>
       </ion-button>
 
       <!-- Input oculto para subir imagen -->
       <input type="file" #fileInput accept="image/*,video/*" hidden (change)="onArchivoSeleccionado($event)" />
 
-      <!-- Botón para seleccionar audio 
-      <ion-button (click)="seleccionarAudio()" fill="clear">
-        <ion-icon name="mic-outline"></ion-icon>
-      </ion-button>
-
-      <input type="file" accept="audio/*" hidden #audioInput (change)="onAudioSeleccionado($event)" />
-      -->
-      
       <!-- Botón para grabar audio -->
-      <ion-button class="grabar" fill="clear" (mousedown)="iniciarGrabacion()" (mouseup)="detenerGrabacion()" (mouseleave)="detenerGrabacion()"  
-        (touchstart)="iniciarGrabacion()" (touchend)="detenerGrabacion()">
+      <ion-button class="grabar" fill="clear" (mousedown)="iniciarGrabacion()" (mouseup)="detenerGrabacion()"
+        (mouseleave)="detenerGrabacion()" (touchstart)="iniciarGrabacion()" (touchend)="detenerGrabacion()">
         <ion-icon [name]="grabando ? 'stop-circle' : 'mic-circle'"></ion-icon>
       </ion-button>
 
-      <textarea [placeholder]="grabando ? 'Enviando audio...' : 'Enviar mensaje...'"  [(ngModel)]="nuevoMensaje" (input)="autoResize($event)" class="mensaje-input"></textarea>
+      <textarea [placeholder]="grabando ? 'Enviando audio...' : 'Enviar mensaje...'" [(ngModel)]="nuevoMensaje"
+        (input)="autoResize($event)" class="mensaje-input"></textarea>
       <ion-button fill="clear" (click)="enviarMensaje()">
         <ion-icon name="send-outline"></ion-icon>
       </ion-button>

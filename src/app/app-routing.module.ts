@@ -24,7 +24,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/crear-publicacion/crear-publicacion.module').then( m => m.CrearPublicacionPageModule)
   },
   {
-    path: 'editar-publicacion',
+    path: 'editar-publicacion/:id',
     loadChildren: () => import('./pages/editar-publicacion/editar-publicacion.module').then( m => m.EditarPublicacionPageModule)
   },
   {

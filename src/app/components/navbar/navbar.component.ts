@@ -19,7 +19,7 @@ export class NavbarComponent  implements OnInit {
 
   ngOnInit() {}
 
-  irTorneo() {
+  irBuscar() {
     this.router.navigate(['/perfil']);
   }
   irEvento() {
