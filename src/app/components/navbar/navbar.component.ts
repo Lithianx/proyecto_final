@@ -44,13 +44,6 @@ export class NavbarComponent  implements OnInit {
           }
         },
         {
-          text: 'Crear Torneo',
-          icon: 'trophy-outline',
-          handler: () => {
-            this.router.navigate(['/crear-torneo']);
-          }
-        },
-        {
           text: 'Crear Evento',
           icon: 'flash-outline',
           handler: () => {
