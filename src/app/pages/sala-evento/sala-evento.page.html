@@ -1,13 +1,17 @@
 <app-encabezado></app-encabezado>
-<h1>SALA EVENTO</h1>
+
 
 <ion-content class="fondo-negro ion-padding">
-  
 
-  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+
+  <div class="header-contenedor">
+    <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
       <ion-icon name="arrow-back"></ion-icon>
     </ion-button>
-    
+    <h1 class="titulo">SALA EVENTO</h1>
+  </div>
+
+
   <div class="espera-contenedor">
     <ion-card class="espera-card">
       <ion-card-header>
@@ -40,11 +44,50 @@
         </ion-list>
 
         <div class="acciones">
-          <ion-button expand="block" color="success">Iniciar Evento</ion-button>
-          <ion-button expand="block" color="danger">Salir</ion-button>
+          <ion-button expand="block" color="success" (click)="iniciarEvento()" [disabled]="cargandoEvento">
+            <ion-spinner *ngIf="cargandoEvento" name="dots"></ion-spinner>
+            <span *ngIf="!cargandoEvento && !eventoEnCurso">Iniciar Evento</span>
+            <span *ngIf="eventoEnCurso">Finalizar Evento</span>
+          </ion-button>
+
+          <div *ngIf="eventoEnCurso" class="temporizador">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ tiempoTranscurrido }}</span>
+          </div>
+
+          <ion-button [routerLink]="['/home']" expand="block" color="danger">Salir</ion-button>
         </div>
       </ion-card-content>
     </ion-card>
+  </div>
+
+
+  <!-- Botón flotante para abrir chat -->
+  <div class="chat-fab" (click)="toggleChat()" *ngIf="!chatAbierto">
+    <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+  </div>
+
+  <!-- Ventana de chat flotante -->
+  <div class="chat-flotante" *ngIf="chatAbierto">
+    <div class="chat-header">
+      <span>Chat de la Sala</span>
+      <ion-icon name="close-outline" class="cerrar-icono" (click)="toggleChat()"></ion-icon>
+    </div>
+
+    <div class="chat-cuerpo">
+      <div *ngFor="let msg of mensajes" [ngClass]="{'msg-yo': msg.usuario === 'Tú', 'msg-otro': msg.usuario !== 'Tú'}">
+        <strong>{{ msg.usuario }}:</strong> <span>{{ msg.texto }}</span>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <ion-item lines="none">
+        <ion-input [(ngModel)]="mensaje" placeholder="Escribe..."></ion-input>
+        <ion-button fill="clear" (click)="enviarMensaje()">
+          <ion-icon name="send-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </div>
   </div>
 </ion-content>
 

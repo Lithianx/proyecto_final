@@ -99,6 +99,10 @@ const routes: Routes = [
     path: 'reportar/:id',
     loadChildren: () => import('./pages/reportar/reportar.module').then( m => m.ReportarPageModule)
   },
+  { 
+    path: 'sala-evento/:id',
+    loadChildren: () => import('./pages/sala-evento/sala-evento.module').then( m => m.SalaEventoPageModule)
+  },
   {
     path: 'detalle-evento/:id',
     loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)

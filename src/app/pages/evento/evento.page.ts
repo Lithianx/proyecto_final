@@ -12,12 +12,12 @@ import { NavController } from '@ionic/angular';
 export class EventoPage implements OnInit {
 
   eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX'},
-    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' },
-    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' },
-    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666' },
-    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00',usuario: 'KANGURUU' },
-    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' },
+    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX', cupos: '9'},
+    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' ,cupos: ' 2'},
+    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' ,cupos: ' 2'},
+    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666',cupos: '8' },
+    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00',usuario: 'KANGURUU',cupos: '1' },
+    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' ,cupos: '3'},
   ];
 
   eventosFiltrados = [...this.eventos];
