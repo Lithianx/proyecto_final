@@ -144,3 +144,7 @@ ion-item.sc-ion-input-md-h, ion-item.sc-ion-input-ios-h {
 }
 
 /* --- FIN: CSS Actualizado --- */
+.input-item.error {
+  --border-color: #ff4d4d !important; /* Rojo para error */
+  border-width: 2px !important;
+}

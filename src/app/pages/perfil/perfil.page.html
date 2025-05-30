@@ -7,10 +7,10 @@
     <div class="perfil-header-section">
       <div class="perfil-top">
         <ion-avatar class="foto-perfil">
-          <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil del usuario">
+          <img [src]="fotoPerfil" alt="Foto de perfil del usuario">
         </ion-avatar>
-        <h2>nombre_de_usuario</h2>
-        <ion-button fill="clear" size="small" [routerLink]="['/configuracion']">
+        <h2>{{ nombreUsuario }}</h2>
+        <ion-button fill="clear" size="small" (click)="abrirOpciones()">
           <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
         </ion-button>
       </div>
@@ -18,29 +18,27 @@
       <!-- Estadísticas -->
       <div class="estadisticas">
         <div class="stat-item">
-          <strong class="color-verde">12</strong><br>
+          <strong class="stat-button">{{ estadisticas.publicaciones }}</strong>
           <span class="texto-secundario">Publicaciones</span>
         </div>
-        <ion-button fill="" size="small" [routerLink]="['/seguidores']">
-         <div class="stat-item">
-          <strong class="color-verde">300</strong><br>
+
+        <div class="stat-item" [routerLink]="['/seguidores']">
+          <strong class="color-verde">{{ estadisticas.seguidores }}</strong>
           <span class="texto-secundario">Seguidores</span>
         </div>
-        </ion-button>
-        <ion-button fill="" size="small" [routerLink]="['/seguidos']">
-          <div class="stat-item">
-            <strong class="color-verde">180</strong><br>
-            <span class="texto-secundario">Seguidos</span>
-          </div>
-        </ion-button>
+
+        <div class="stat-item" [routerLink]="['/seguidos']">
+          <strong class="color-verde">{{ estadisticas.seguidos }}</strong>
+          <span class="texto-secundario">Seguidos</span>
+        </div>
       </div>
     </div>
 
+
     <!-- Bio -->
     <div class="perfil-bio">
-      <p><strong>Nombre Completo</strong></p>
-      <p>Esta es mi biografía. ¡Bienvenido a mi perfil!</p>
-
+      <p><strong>{{ nombreCompleto }}</strong></p>
+      <p>{{ descripcionBio }}</p>
     </div>
 
     <!-- Navegación de publicaciones/eventos -->
@@ -61,109 +59,71 @@
 
  <!------------------------------------------------------------------------------------------>
     <!-- Publicaciones (modo grid) -->
-    <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
-      <!-- Aquí podrían ir las publicaciones -->
-      <div class="post-thumbnail" [routerLink]="['/detalles-publicacion-personal']">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 1">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 2">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 3">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 4">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 5">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 6">
-      </div>
-      <div class="post-thumbnail">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 1">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 2">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 3">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 4">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png" alt="Publicación 5">
-      </div>
-       <div class="post-thumbnail">
-        <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Publicación 6">
-      </div>
+  <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
+    <div 
+      class="post-thumbnail" 
+      *ngFor="let post of publicaciones"
+      [routerLink]="post.link ? [post.link] : null"
+      [class.linked]="post.link"
+    >
+      <img [src]="post.img" [alt]="post.alt" />
     </div>
+  </div>
+
 
 
  <!------------------------------------------------------------------------------------------>
-    <!-- Eventos inscritos (modo reels) -->
-    <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
-      <!-- Aquí podrían ir los eventos inscritos -->
-      <p>Eventos isncritos</p>
-      <ion-list [inset]="true" lines="full"> 
-        <ion-item class="chat-item grande">
-          <div slot="start" class="cuadro-avatar">
-            <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
-          </div>
-          <ion-label>
-            <h3>Nombre del Evento</h3>
-            <p class="detalle">Fecha: 12/05/2025</p>
-            <p class="detalle">Juego: League of Legends</p>
-          </ion-label>
-          <ion-icon name="chevron-forward-outline"class="color-verde" size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
-        </ion-item>
-    
-        <ion-item class="chat-item grande">
-          <div slot="start" class="cuadro-avatar">
-            <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
-          </div>
-          <ion-label>
-            <h3>Nombre del Evento</h3>
-            <p class="detalle">Fecha: 19/05/2025</p>
-            <p class="detalle">Juego: Valorant</p>
-          </ion-label>
-          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-inscrito']"></ion-icon>
-        </ion-item>
-      </ion-list>
-    </div>
- <!------------------------------------------------------------------------------------------>
-    <!-- Eventoscreados  -->
-    <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
-      <!-- Aquí podrían ir los eventos inscritos -->
-      <p>Eventos creados</p>
-      <ion-list [inset]="true" lines="full">  
-        <ion-item class="chat-item grande">
-          <div slot="start" class="cuadro-avatar">
-            <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
-          </div>
-          <ion-label>
-            <h3>Nombre del Evento</h3>
-            <p class="detalle">Fecha: 12/05/2025</p>
-            <p class="detalle">Juego: League of Legends</p>
-          </ion-label>
-          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-creado']"></ion-icon>
-        </ion-item>
-    
-        <ion-item class="chat-item grande">
-          <div slot="start" class="cuadro-avatar">
-            <img src="https://ionicframework.com/docs/img/demos/card-media.png" />
-          </div>
-          <ion-label>
-            <h3>Nombre del Evento</h3>
-            <p class="detalle">Fecha: 19/05/2025</p>
-            <p class="detalle">Juego: Valorant</p>
-          </ion-label>
-          <ion-icon name="chevron-forward-outline" class="color-verde"size="large" [routerLink]="['/evento-creado']"></ion-icon>
-        </ion-item>
-      </ion-list>
-    </div>
+<!-- Eventos inscritos (modo reels) -->
+<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
+  <h2 class="titulo-seccion">Eventos en los que estás inscrito</h2>
+  
+  <div *ngFor="let evento of eventosinscritos" class="tarjeta-evento">
+    <ion-card>
+      <ion-card-content class="contenido-tarjeta">
+        <div class="texto-tarjeta">
+          <h3 class="titulo-evento">{{ evento.nombre }}</h3>
+          <p class="detalle">Creador: {{ evento.creador }}</p>
+          <p class="detalle">Fecha: {{ evento.fecha }}</p>
+          <p class="detalle">Juego: {{ evento.juego }}</p>
+        </div>
+        <ion-icon 
+          name="chevron-forward-outline" 
+          class="color-verde icono-forward" 
+          size="large" 
+          [routerLink]="['/evento-inscrito', evento.id]">
+        </ion-icon>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>
+
+<!-- Eventos creados -->
+<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
+  <h2 class="titulo-seccion">Eventos que tú has creado</h2>
+  
+  <div *ngFor="let evento of eventosCreados" class="tarjeta-evento">
+    <ion-card>
+      <ion-card-content class="contenido-tarjeta">
+        <div class="texto-tarjeta">
+          <h3 class="titulo-evento">{{ evento.nombre }}</h3>
+          <p class="detalle">Fecha: {{ evento.fecha }}</p>
+          <p class="detalle">Juego: {{ evento.juego }}</p>
+        </div>
+      <ion-icon 
+        name="chevron-forward-outline" 
+        class="color-verde icono-forward" 
+        size="large" 
+        [routerLink]="['/evento-creado']">
+      </ion-icon>
+
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>
+
+
+
+
 
   </div>
 </ion-content>

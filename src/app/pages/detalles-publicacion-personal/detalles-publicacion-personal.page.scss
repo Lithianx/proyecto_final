@@ -1,0 +1,28 @@
+.chat-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 56px; /* altura estándar de header Ionic */
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.back-button {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  --padding-start: 0;
+  --padding-end: 0;
+  --min-width: 40px; 
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 56px; /* centra verticalmente el texto */
+  margin: 0;
+  pointer-events: none; /* para que no interfiera con el botón */
+}

@@ -6,54 +6,55 @@
       </ion-button>
       <h1 class="app-title">Registrarse</h1>
     </div>
-    <div class="login-box">
-      <ion-item lines="none" class="input-item">
-        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
 
+    <div class="login-box">
+      <ion-item lines="none" class="input-item" [class.error]="nombreInvalid">
+        <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-input
           type="text"
           placeholder="Nombre de usuario"
           class="custom-input"
           aria-label="Nombre de usuario"
+          [(ngModel)]="nombre"
         ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-item">
+      <ion-item lines="none" class="input-item" [class.error]="correoInvalid">
         <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
-
         <ion-input
           type="email"
           placeholder="Correo electrónico"
           class="custom-input"
           aria-label="Correo electrónico"
+          [(ngModel)]="correo"
         ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-item">
+      <ion-item lines="none" class="input-item" [class.error]="contrasenaInvalid">
         <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
-
         <ion-input
           type="password"
           placeholder="Contraseña"
           class="custom-input"
           aria-label="Contraseña"
+          [(ngModel)]="contrasena"
         ></ion-input>
       </ion-item>
 
-      <ion-item lines="none" class="input-item">
+      <ion-item lines="none" class="input-item" [class.error]="confirmaContrasenaInvalid">
         <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
-
         <ion-input
           type="password"
           placeholder="Confirma contraseña"
           class="custom-input"
           aria-label="Confirmar contraseña"
+          [(ngModel)]="confirmaContrasena"
         ></ion-input>
       </ion-item>
 
-      <ion-button expand="block" class="login-button" [routerLink]="['/login']">
+      <ion-button expand="block" class="login-button" (click)="crearCuenta()">
         Crear cuenta
       </ion-button>
-      </div>
+    </div>
   </div>
 </ion-content>

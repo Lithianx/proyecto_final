@@ -1,11 +1,13 @@
 <app-encabezado></app-encabezado>
 
 <ion-content>
-    <ion-toolbar class="chat-header">
-      <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
-        <ion-icon name="arrow-back-outline"></ion-icon> </ion-button>
-          <ion-title>Detalles publicacion</ion-title>
-    </ion-toolbar>
+  <div class="chat-header">
+    <ion-button class="back-button" (click)="volver()" expand="block" fill="clear" shape="round">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <ion-title class="title">Detalles publicación</ion-title>
+  </div>
+
   <!-- MOSTRAR PUBLICACIÓN -->
   <ion-card *ngIf="post" class="publicacion-card">
     <ion-item lines="none">

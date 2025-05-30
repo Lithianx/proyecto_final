@@ -8,10 +8,11 @@
 .notificacion {
   display: flex;
   align-items: center;
-  background-color: #f4f4f4;
+  background-color: var(--color-fondo-gris);
   padding: 12px;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  color: var(--color-text-primary);
 }
 
 .avatar {
@@ -20,14 +21,44 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 12px;
-  border: 2px solid #ccc;
+
 }
 
 .contenido {
   font-size: 15px;
+  color: var(--color-text-primary);
 }
+
 .tiempo {
   font-size: 0.8rem;
-  color: gray;
+  color: var(--color-text-secundary);
   margin-top: 4px;
+}
+.usuario {
+  color: var(--color-text-dato);
+  cursor: pointer;
+}
+
+.usuario:hover {
+  text-decoration: underline;
+}
+
+.avatar {
+  cursor: pointer;
+}
+.chat-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 56px; /* altura estándar de header Ionic */
+  padding: 0 16px;
+  box-sizing: border-box;
+}.title {
+  flex: 1;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 56px; /* centra verticalmente el texto */
+  margin: 0;
+  pointer-events: none; /* para que no interfiera con el botón */
 }

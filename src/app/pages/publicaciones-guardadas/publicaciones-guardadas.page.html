@@ -2,12 +2,12 @@
 
 <ion-content [fullscreen]="true">
 
-  <div class="header-row">
-    <ion-button fill="clear" class="back-button" routerLink="/perfil">
-      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
-    </ion-button>
-    <h1 class="page-title">Publicaciones guardadas</h1>
-  </div>
+    <div class="header-row">
+      <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
+        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+      </ion-button>
+      <h1 class="app-title">Publicaciones guardadas</h1>
+    </div>
 
   <hr class="section-divider">
 

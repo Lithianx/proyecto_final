@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActionSheetController } from '@ionic/angular';
 
 @Component({
   selector: 'app-perfil',
@@ -8,6 +9,69 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PerfilPage implements OnInit {
 
+  // Lista de eventos inscritos
+  eventosinscritos = [
+    {
+      id: 1,
+      nombre: 'Campeonato de LoL',
+      fecha: '12/05/2025',
+      juego: 'League of Legends',
+      creador: 'usuario1'
+    },
+    {
+      id: 2,
+      nombre: 'Torneo Valorant',
+      fecha: '19/05/2025',
+      juego: 'Valorant',
+      creador: 'usuario2'
+    },
+  ];
+
+  // Lista de eventos creados
+  eventosCreados = [
+    {
+      id: 1,
+      nombre: 'Campeonato de LoL',
+      fecha: '12/05/2025',
+      juego: 'League of Legends'
+    },
+    {
+      id: 2,
+      nombre: 'Torneo Valorant',
+      fecha: '19/05/2025',
+      juego: 'Valorant'
+    }
+  ];
+
+  // Información del perfil
+  fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  nombreUsuario: string = 'nombre_de_usuario';
+  nombreCompleto: string = 'Nombre Completo';
+  descripcionBio: string = `🌍 Amante de los viajes | 📸 Capturando momentos\n☕ Café y libros | 🎧 Música 24/7\n📍Chile`;
+
+  // Publicaciones
+  publicaciones = [
+    { id: 1, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 1', link: '/detalles-publicacion-personal' },
+    { id: 2, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 2', link: '/detalles-publicacion-personal' },
+    { id: 3, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 3', link: '/detalles-publicacion-personal' },
+    { id: 4, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 4', link: '/detalles-publicacion-personal' },
+    { id: 5, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 5', link: '/detalles-publicacion-personal' },
+    { id: 6, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 6', link: '/detalles-publicacion-personal' },
+  ];
+
+  // Estadísticas del perfil
+  estadisticas = {
+    publicaciones: this.publicaciones.length,
+    seguidores: 300,
+    seguidos: 180
+  };
+
+  // Getters
+  get numeroPublicaciones(): number {
+    return this.publicaciones.length;
+  }
+
+  // Vista actual seleccionada (por defecto: publicaciones)
   private _vistaSeleccionada: string = 'publicaciones';
 
   get vistaSeleccionada(): string {
@@ -17,18 +81,17 @@ export class PerfilPage implements OnInit {
   set vistaSeleccionada(value: string) {
     this._vistaSeleccionada = value;
 
-    // Cierra el modal si se cambia a otra vista que no sea publicaciones
     if (value !== 'publicaciones') {
       this.mostrarModal = false;
     }
   }
 
+  // Control de modal
   mostrarModal: boolean = false;
 
-  constructor() {}
+  constructor(private actionSheetCtrl: ActionSheetController) {}
 
   ngOnInit() {
-    // Inicializamos el deslizador con el valor por defecto
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
@@ -44,31 +107,82 @@ export class PerfilPage implements OnInit {
     this.mostrarModal = false;
   }
 
-  // Función para mover el deslizador animado según la opción seleccionada
-segmentChanged(event: any) {
-  const value = event.detail.value;
-  const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
+  // Cambiar deslizador según vista seleccionada
+  segmentChanged(event: any) {
+    const value = event.detail.value;
+    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
 
-  let position = 0; // valor para translateX en %
+    let position = 0;
 
-  switch (value) {
-    case 'publicaciones':
-      position = 5;
-      break;
-    case 'eventos-inscritos':
-      position = 340 / 3; // ~33.33%
-      break;
-    case 'eventos-creados':
-      position = (330 / 3) * 2; // ~66.66%
-      break;
+    switch (value) {
+      case 'publicaciones':
+        position = 3;
+        break;
+      case 'eventos-inscritos':
+        position = 320 / 3;
+        break;
+      case 'eventos-creados':
+        position = (315 / 3) * 2;
+        break;
+    }
+
+    const adjustedPosition = position - 1;
+    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
   }
 
-  // Ajusta la posición para que se mueva correctamente con margen:
-  // Como el ancho del deslizador es un poco menor, puede que necesites mover un poco menos.
-  // Puedes probar restando un pequeño % para que quede centrado en el botón:
-  const adjustedPosition = position - 1; // ajustar valor si es necesario
+  // Menú de opciones (action sheet)
+// Menú de opciones (action sheet)
+async abrirOpciones() {
+  const actionSheet = await this.actionSheetCtrl.create({
+    header: 'Opciones',
+    buttons: [
+      {
+        text: 'Editar perfil',
+        icon: 'person-outline',
+        handler: () => {
+          console.log('Editar perfil');
+          // Redirigir a la vista de edición de perfil
+          window.location.href = '/editar-perfil';
+        }
+      },
+      {
+        text: 'Historial de eventos',
+        icon: 'time-outline',
+        handler: () => {
+          console.log('Historial de eventos');
+          window.location.href = '/historial-eventos';
+        }
+      },
+      {
+        text: 'Guardados',
+        icon: 'bookmark',
+        handler: () => {
+          console.log('Publicaciones guardadas');
+          window.location.href = '/publicaciones-guardadas';
+        }
+      },
+      {
+        text: 'Validar cuenta institucional',
+        icon: 'school-outline',
+        handler: () => {
+          console.log('Validar cuenta institucional');
+          window.location.href = '/info-cuenta-institucional';
+        }
+      },
 
-  segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
+      {
+        text: 'Cerrar sesión',
+        icon: 'log-out-outline',
+        role: 'destructive',
+        handler: () => {
+          console.log('Cerrar sesión');
+          window.location.href = '/login';
+        }
+      }
+    ]
+  });
+
+  await actionSheet.present();
 }
 
 }

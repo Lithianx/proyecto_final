@@ -1,22 +1,18 @@
 <app-encabezado></app-encabezado>
 
-
 <ion-content class="event-details-container">
-    <ion-toolbar class="chat-header">
-      <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
-        <ion-icon name="arrow-back-outline"></ion-icon> </ion-button>
-          <ion-title>Detalle evento</ion-title>
-    </ion-toolbar>
-  <!-- Header Image -->
-  <div class="header">
+  <ion-toolbar class="chat-header">
+    <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <ion-title>Detalle evento</ion-title>
+  </ion-toolbar>
 
-    <ion-icon name="game-controller-outline" class="header-icon"></ion-icon>
-  </div>
 
   <!-- Tournament Name -->
   <div class="section-title">
-    <h1>{{ eventData.tournamentName }}</h1>
-    <h2>{{ eventData.game }}</h2>
+    <h1>{{ eventData?.tournamentName }}</h1>
+    <h2>{{ eventData?.game }}</h2>
   </div>
 
   <!-- Event Details -->
@@ -25,7 +21,7 @@
       <ion-icon name="information-circle-outline"></ion-icon>
       <div>
         <h3>Descripción</h3>
-        <p>{{ eventData.description }}</p>
+        <p>{{ eventData?.description }}</p>
       </div>
     </div>
 
@@ -33,7 +29,7 @@
       <ion-icon name="game-controller-outline"></ion-icon>
       <div>
         <h3>Modo de juego</h3>
-        <p>{{ eventData.gameMode }}</p>
+        <p>{{ eventData?.gameMode }}</p>
       </div>
     </div>
 
@@ -41,7 +37,7 @@
       <ion-icon name="book-outline"></ion-icon>
       <div>
         <h3>Reglas</h3>
-        <p>{{ eventData.rules }}</p>
+        <p>{{ eventData?.rules }}</p>
       </div>
     </div>
 
@@ -49,7 +45,7 @@
       <ion-icon name="calendar-outline"></ion-icon>
       <div>
         <h3>Fecha</h3>
-        <p>{{ eventData.date }}</p>
+        <p>{{ eventData?.date }}</p>
       </div>
     </div>
 
@@ -57,7 +53,7 @@
       <ion-icon name="time-outline"></ion-icon>
       <div>
         <h3>Hora</h3>
-        <p>{{ eventData.time }}</p>
+        <p>{{ eventData?.time }}</p>
       </div>
     </div>
 
@@ -65,7 +61,7 @@
       <ion-icon name="location-outline"></ion-icon>
       <div>
         <h3>Lugar</h3>
-        <p>{{ eventData.location }}</p>
+        <p>{{ eventData?.location }}</p>
       </div>
     </div>
 
@@ -73,7 +69,7 @@
       <ion-icon name="person-outline"></ion-icon>
       <div>
         <h3>Dueño del evento</h3>
-        <p>{{ eventData.owner }}</p>
+        <p>{{ eventData?.owner }}</p>
       </div>
     </div>
   </div>

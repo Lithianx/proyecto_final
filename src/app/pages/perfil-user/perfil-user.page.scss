@@ -1,101 +1,112 @@
-
-
-/* Estilo para el contenido principal */
+/* ========== ESTRUCTURA GENERAL ========== */
 ion-content.perfil-content {
   --padding-bottom: 70px;
-  --padding-start: 0; /* El padding se maneja dentro del contenedor */
-  --padding-end: 0;
 }
 
+body {
+  font-family: Arial, sans-serif;
+}
+
+.texto-secundario {
+  color: var(--color-text-secundary);
+}
+
+.color-verde {
+  color: var(--color-iconos);
+}
+
+/* ========== CONTENEDOR PRINCIPAL ========== */
 .perfil-container {
   width: 100%;
-  max-width: 600px; /* Ancho máximo típico de un perfil en escritorio */
-  margin: 0 auto; /* Centra el contenedor */
-  padding: 0 15px; /* Padding horizontal para no tocar los bordes */
-  box-sizing: border-box; /* Incluye padding en el ancho */
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 15px;
+  box-sizing: border-box;
 }
 
-/* Sección superior del perfil (Foto, Usuario, Stats) */
 .perfil-header-section {
   margin-bottom: 20px;
 }
 
+/* ========== ENCABEZADO DEL PERFIL ========== */
 .perfil-top {
-  display: flex; /* Activa Flexbox */
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
   margin-bottom: 20px;
-  align-items: center; /* Alinea verticalmente los elementos al centro */
-  padding: 10px 15px; /* Añade padding interno (arriba/abajo, izquierda/derecha) */
-  width: 100%; /* Asegura que ocupe el ancho completo */
-  /* justify-content: space-between; // NO usar si intentas centrar un elemento con margen auto */
+  width: 100%;
 }
-/* Nombre de usuario (Segundo elemento - center) */
+
 .perfil-top h2 {
-  font-size: 1.2rem; /* Tamaño del nombre (ajustar) */
+  font-size: 1.2rem;
   font-weight: bold;
-  margin: 0 auto; /* ESTO CENTRA EL ELEMENTO: los márgenes automáticos toman el espacio disponible */
-  text-align: center; /* Asegura que el texto dentro del h2 esté centrado */
-  flex-grow: 0; /* Evita que crezca */
-  flex-shrink: 0; /* Evita que se encoja */
+  margin: 0 auto;
+  text-align: center;
 }
-/* Estilo de la foto de perfil (Primer elemento - start) */
-.foto-perfil {
-  width: 60px; /* Tamaño de la foto (ajustar según diseño) */
-  height: 60px;
-  flex-shrink: 0; /* Evita que la foto se encoja */
-  /* No necesita márgenes especiales, se alinea al inicio por defecto en flex */
-}
-/* Botón/Icono de opciones (Tercer elemento - end) */
+
 .perfil-top ion-button {
-   flex-shrink: 0; /* Evita que se encoja */
-   /* No necesita márgenes especiales, se alinea después del h2 centrado */
-   padding: 0; /* Eliminar padding extra del botón si lo tiene por defecto */
-   height: auto; /* Altura automática basada en contenido */
+  flex-shrink: 0;
+  padding: 0;
+  height: auto;
 }
 
 .perfil-top ion-button ion-icon {
-    font-size: 1.5rem; /* Tamaño del icono (ajustar) */
+  font-size: 1.5rem;
 }
-/* Info de usuario (nombre, etc.) */
+
+.foto-perfil {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+/* ========== INFORMACIÓN DEL USUARIO ========== */
 .usuario-info {
   display: flex;
-
   justify-content: center;
-  flex-grow: 1; /* Permite que ocupe el espacio restante */
+  flex-grow: 1;
 }
 
 .usuario-info h2 {
   font-size: 1.4rem;
-  font-weight: normal; /* Nombre de usuario no tan negrita */
-  margin: 0 0 5px 0; /* Espacio debajo del nombre */
+  font-weight: normal;
+  margin: 0 0 5px 0;
   color: var(--ion-color-instagram-text);
 }
 
 .usuario-info ion-button {
-    /* Estilos para el botón de opciones */
-    --padding-start: 0;
-    --padding-end: 0;
-    --inner-padding-end: 0;
-    --inner-padding-start: 0;
-    height: auto; /* Altura automática */
-    text-align: left;
-    justify-content: flex-start;
-    color: var(--ion-color-instagram-text);
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  height: auto;
+  text-align: left;
+  justify-content: flex-start;
+  color: var(--ion-color-instagram-text);
 }
+
 .usuario-info ion-button ion-icon {
-     font-size: 1.5rem; /* Tamaño del icono de opciones */
+  font-size: 1.5rem;
 }
 
-
-/* Sección de estadísticas */
+/* ========== ESTADÍSTICAS ========== */
 .estadisticas {
-  display: flex; /* Alinea las estadísticas horizontalmente */
-  justify-content: space-around; /* Distribuye el espacio uniformemente */
-  text-align: center; /* Centra el texto dentro de cada estadística */
-  margin-bottom: 20px; /* Espacio debajo de las estadísticas */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--ion-color-instagram-secondary-text);
 }
 
 .stat-item strong {
-  display: block; /* Pone el número en su propia línea */
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 2px;
@@ -103,71 +114,48 @@ ion-content.perfil-content {
 }
 
 .stat-item br {
-    display: none; /* Oculta el <br> para usar flex-direction column implícito o margin */
-}
-.stat-item {
-    font-size: 0.9rem;
-    color: var(--ion-color-instagram-secondary-text);
-    display: flex;
-    flex-direction: column; /* Apila número y texto verticalmente */
-    align-items: center; /* Centra horizontalmente contenido */
+  display: none;
 }
 
 
-/* Sección de Biografía */
+/* ========== BIO DEL PERFIL ========== */
 .perfil-bio {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: var(--ion-color-instagram-text);
-}
-
-.perfil-bio p {
-    margin: 0 0 5px 0; /* Espacio entre párrafos de la bio */
-}
-
-.perfil-bio strong {
-    font-weight: bold;
 }
 
 .perfil-bio .bio-link {
-    color: #3897f0; /* Color de enlace típico de Instagram */
-    text-decoration: none;
+  color: #3897f0;
+  text-decoration: none;
 }
 
-
-
-/* Barra de navegación de publicaciones */
+/* ========== NAVEGACIÓN DE PUBLICACIONES ========== */
 .publicaciones-nav {
-  position: relative; /* importante para ::after */
+  position: relative;
   border-top: 1px solid var(--ion-color-instagram-border);
   border-bottom: 1px solid var(--ion-color-instagram-border);
   margin-bottom: 1px;
+  padding-bottom: 2%;
 }
 
 .publicaciones-nav ion-segment {
   --background: var(--ion-color-instagram-dark);
-  position: relative;
-  z-index: 1;
   display: flex;
   justify-content: space-between;
+  position: relative;
+  z-index: 1;
 }
 
 .publicaciones-nav ion-segment-button {
   --color: #ffffff99;
   --color-checked: var(--ion-color-success);
   --indicator-color: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 12px;
-  --padding-bottom: 6px;
-  border-radius: 8px;
-  margin: 4px;
-  z-index: 2;
-  position: relative;
-  transition: color 0.3s ease;
-  flex: 1; /* Que los botones tengan igual ancho */
+  flex: 1;
   text-align: center;
+  border-radius: 8px;
+  z-index: 2;
+  transition: color 0.3s ease;
 }
 
 .publicaciones-nav ion-segment-button ion-icon {
@@ -175,13 +163,12 @@ ion-content.perfil-content {
   transition: color 0.3s ease;
 }
 
-/* Deslizador */
 .publicaciones-nav::after {
   content: '';
   position: absolute;
   bottom: 4px;
-  height: 36px;
-  width: calc((100% / 3) - 8px); /* ancho = ancho botón - margen total */
+  height: 50px;
+  width: calc((100% / 3) - 8px);
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid var(--ion-color-success);
   border-radius: 8px;
@@ -191,65 +178,34 @@ ion-content.perfil-content {
   transform: var(--slider-transform, translateX(0%));
 }
 
-
-/* Área de Publicaciones (Cuadrícula) */
+/* ========== GRID DE PUBLICACIONES ========== */
 .publicaciones-grid {
-  display: grid; /* Activa CSS Grid */
-  grid-template-columns: repeat(3, 1fr); /* 3 columnas de igual ancho */
-  gap: 1px; /* Espacio pequeño entre las imágenes (imitando Instagram) */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
 }
 
 .post-thumbnail {
   width: 100%;
-  height: 0; /* Se usa padding-bottom para mantener la proporción */
-  padding-bottom: 100%; /* Crea un cuadrado (1:1 aspect ratio) */
-  position: relative; /* Necesario para posicionar la imagen dentro */
-  overflow: hidden; /* Oculta partes de la imagen que se salgan */
+  height: 0;
+  padding-bottom: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .post-thumbnail img {
-  position: absolute; /* Posiciona la imagen dentro del contenedor */
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%; /* La imagen cubre todo el contenedor */
+  width: 100%;
   height: 100%;
-  object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
-  display: block; /* Evita espacio extra debajo de la imagen */
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-/* Ajustes responsivos menores */
-@media (max-width: 480px) {
-  .perfil-container {
-    padding: 0 10px; /* Menos padding en pantallas pequeñas */
-  }
-
-  .foto-perfil {
-    width: 70px; /* Foto más pequeña en móviles */
-    height: 70px;
-    margin-right: 20px;
-  }
-
-  .usuario-info h2 {
-    font-size: 1.2rem; /* Nombre más pequeño */
-  }
-
-  .estadisticas {
-      margin-bottom: 15px;
-  }
-   .stat-item strong {
-        font-size: 1rem;
-   }
-   .stat-item {
-        font-size: 0.8rem;
-   }
-
-
-  .perfil-bio {
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-  }
-  
-}
+/* ========== ELEMENTOS VARIOS ========== */
 .cuadro-avatar {
   width: 80px;
   height: 80px;
@@ -266,78 +222,12 @@ ion-content.perfil-content {
 
 .chat-item.grande {
   --min-height: 100px;
-
-}
-body {
-  font-family: Arial, sans-serif;
-}
-
-.post-thumbnail img {
-  width: 200px;
-  cursor: pointer;
-  border-radius: 8px;
-}
-/* ----------------------------------------------------------------------------------------*/
-/* Modal */
-.modal {
-  display: flex;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro */
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-}
-
-/* Contenido del modal */
-.modal-content {
-  background-color: #fff;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 300px;
-  margin-bottom: 20px;
-}
-
-/* Encabezado: flecha + título */
-.modal-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #ddd;
-  position: relative;
 }
 
 .close-button {
   position: absolute;
   left: 15px;
   cursor: pointer;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  flex-grow: 1;
-}
-
-/* Segunda fila: usuario y opciones */
-.modal-user-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #ddd;
 }
 
 .profile-info {
@@ -352,30 +242,9 @@ body {
   margin-right: 10px;
 }
 
-.modal-user-info strong {
-  font-size: 16px;
-}
-
 .options ion-icon {
   font-size: 20px;
   cursor: pointer;
-}
-
-/* Imagen principal */
-.modal-body img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 15px;
-}
-
-/* Pie del modal con íconos */
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-top: 1px solid #ddd;
 }
 
 .left-icons {
@@ -388,83 +257,75 @@ body {
   align-items: center;
 }
 
-.modal-footer ion-icon {
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* Descripción */
-.modal-description {
-  padding: 10px 15px;
-  font-size: 14px;
-  color: #555;
-  text-align: center;
-  border-top: 1px solid #ddd;
-}
-
-/* Responsive */
-@media (max-width: 767px) {
-  .modal-content {
-    width: 95%;
-    padding: 10px;
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+  .perfil-container {
+    padding: 0 10px;
   }
 
-  .modal-header {
-    padding: 10px;
+  .foto-perfil {
+    width: 70px;
+    height: 70px;
+    margin-right: 20px;
   }
 
-  .modal-title {
-    font-size: 16px;
+  .usuario-info h2 {
+    font-size: 1.2rem;
   }
 
-  .modal-description {
-    font-size: 12px;
-    padding: 8px 10px;
+  .estadisticas {
+    margin-bottom: 15px;
   }
 
-  .modal-body img {
-    margin-top: 10px;
+  .stat-item strong {
+    font-size: 1rem;
+  }
+
+  .stat-item {
+    font-size: 0.8rem;
   }
 }
-.perfil-acciones {
+.titulo-seccion {
+  font-size: 1.3rem;
+  color: var(--ion-color-primary); 
+  margin: 1.5rem 1rem 1rem;
+  border-left: 4px solid var(--ion-color-primary);
+  padding-left: 10px;
+}
+
+.tarjeta-evento ion-card {
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 12px;
+  margin: 12px;
+}
+
+.contenido-tarjeta {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 12px 0;
-
-  .accion-btn {
-    --border-radius: 20px;
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: none;
-  }
-
-  .accion-btn.ion-color-success {
-    --background: #2dd36f;
-    --background-hover: #28ba62;
-    --color: white;
-  }
-
-  .accion-btn.ion-color-danger {
-    --background: #eb445a;
-    --background-hover: #cf3c4f;
-    --color: white;
-  }
-
-  .accion-btn.ion-color-primary {
-    --background: #3880ff;
-    --background-hover: #3171e0;
-    --color: white;
-  }
-
-}
-  .color-azul {
-  color: var(--color-text-dato); 
-}
-.texto-secundario {
-  color: var(--color-text-secundary);
+  justify-content: space-between;
+  align-items: center;
 }
 
+.texto-tarjeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.icono-forward {
+  margin-left: 12px;
+}
+
+.titulo-evento {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.detalle {
+  font-size: 0.95rem;
+  color: var(--color-text-secundary); // Gris secundario (#a6a6a6)
+  margin-bottom: 2px;
+}
+
+.color-verde {
+  color: var(--ion-color-primary); // Verde principal
+}

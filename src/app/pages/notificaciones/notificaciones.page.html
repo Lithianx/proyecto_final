@@ -1,22 +1,24 @@
 <app-encabezado></app-encabezado>
 
-<ion-content [fullscreen]="true">
-    <ion-toolbar class="chat-header">
-      <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
-        <ion-icon name="arrow-back-outline"></ion-icon> </ion-button>
-          <ion-title>Notificaciones</ion-title>
-    </ion-toolbar>
+<ion-content [fullscreen]="true" class="contenido-con-margen">
+  <div class="chat-header">
+    <ion-button class="back-button" (click)="volver()" expand="block" fill="clear" shape="round">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <div class="title">Notificaciones</div>
+  </div>
 
   <div class="notificaciones-container">
-  <div class="notificacion" *ngFor="let n of notificaciones">
-    <img class="avatar" [src]="n.imagen" alt="Usuario">
-    <div class="contenido">
-      <strong>{{ n.usuario }}</strong> {{ n.accion }}
-      <div class="tiempo">{{ obtenerTiempoRelativo(n.timestamp) }}</div>
+    <div class="notificacion" *ngFor="let n of notificaciones">
+      <img class="avatar" [src]="n.imagen" alt="Usuario" (click)="verPerfil(n.idUsuario)">
+      <div class="contenido">
+        <strong class="usuario" (click)="verPerfil(n.idUsuario)">
+          {{ n.usuario }}
+        </strong> {{ n.accion }}
+        <div class="tiempo">{{ obtenerTiempoRelativo(n.timestamp) }}</div>
+      </div>
     </div>
   </div>
-</div>
-
 </ion-content>
 
 <app-navbar></app-navbar>

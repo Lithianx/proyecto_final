@@ -1,6 +1,3 @@
-/* --- INICIO: CSS Actualizado --- */
-
-// Estilo para el contenido principal con degradado
 ion-content.login-content {
   --background: linear-gradient(to top, #2ecc71, #1a1a1a);
   display: flex;
@@ -9,7 +6,6 @@ ion-content.login-content {
   height: 100%;
 }
 
-/* Contenedor principal dentro de ion-content */
 .container {
   display: flex;
   flex-direction: column;
@@ -21,14 +17,12 @@ ion-content.login-content {
   box-sizing: border-box;
 }
 
-// Estilo del logo
 .app-logo {
-  width: 100px; // Ajusta según tu logo
+  width: 100px;
   height: auto;
   margin-bottom: 1rem;
 }
 
-// Título de la aplicación
 .app-title {
   font-size: 1.8rem;
   font-weight: bold;
@@ -37,10 +31,9 @@ ion-content.login-content {
   text-align: center;
 }
 
-// Caja que contiene los campos de login
 .login-box {
-  background-color: #000000; // Fondo negro
-  color: #ffffff; // Texto blanco por defecto
+  background-color: #000000;
+  color: #ffffff;
   width: 100%;
   max-width: 400px;
   padding: 2rem;
@@ -50,98 +43,78 @@ ion-content.login-content {
   margin-top: 1rem;
 }
 
-// Contenedor para cada input con icono
 .input-item {
-  --background: #ffffff; // Fondo blanco
+  --background: #ffffff;
   --padding-start: 10px;
   --border-radius: 8px;
   --inner-padding-end: 10px;
   margin-bottom: 1rem;
-  color: #000000; // Icono negro por defecto
-
-  ion-icon {
-    font-size: 1.2rem;
-    margin-right: 5px;
-    color: #000000; // Asegura icono negro
-  }
-
-  ion-input {
-    --color: #000000; // Texto input negro
-    font-size: 1rem;
-  }
+  color: #000000;
 }
 
-// Fila para los enlaces (Registrarse / Olvidó Contraseña)
+.input-item ion-icon {
+  font-size: 1.2rem;
+  margin-right: 5px;
+  color: #000000;
+}
+
+.input-item ion-input {
+  --color: #000000;
+  font-size: 1rem;
+}
+
 .options-row {
   width: 100%;
-  margin-bottom: 1rem; // Espacio antes de los botones
-  display: flex; // Necesario para que el contenedor interno se expanda
-  justify-content: center; // Centra el contenedor interno si es más estrecho
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
 }
 
-// Contenedor interno de los enlaces
 .account-links {
   display: flex;
-  justify-content: space-between; // Espacia los enlaces
+  justify-content: space-between;
   align-items: start;
-  flex-wrap: wrap; // Permite envolver en pantallas muy pequeñas si es necesario
-  gap: 8px; // Espacio entre enlaces si se envuelven
-  width: 100%; // Ocupa el ancho disponible
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
 }
 
-// Estilo para los enlaces dentro de .account-links
 .account-links a.link-option {
-  color: #007bff; // Azul para los enlaces
-  font-size: 0.6rem;
+  color: #007bff;
+  font-size: 0.8rem;
   text-decoration: none;
-  white-space: nowrap; // Evita que el texto del enlace se parta
-
-  &:hover {
-    text-decoration: underline;
-  }
+  white-space: nowrap;
 }
 
-// Ajuste responsivo para los enlaces en pantallas pequeñas
-@media (max-width: 280px) { // Ajusta este punto de quiebre si es necesario
+.account-links a.link-option:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 280px) {
   .account-links {
-    flex-direction: column; // Apila los enlaces verticalmente
-    align-items: flex-start; // Alinea los enlaces a la izquierda
-    gap: 0.2rem; // Espacio vertical entre enlaces apilados
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
   }
 
   .account-links a.link-option {
-     width: 80%; // Hace que cada enlace ocupe el ancho al apilarse
-     text-align: left; // Alinea texto a la izquierda
+    width: 80%;
+    text-align: left;
   }
 }
 
-// Botón de login genérico
 .login-button {
   --border-radius: 8px;
   --box-shadow: none;
   font-weight: bold;
   height: 48px;
-  margin-bottom: 1rem; // Espacio reducido entre botones
-  // Mantenemos el color verde por defecto para el primer botón
+  margin-bottom: 1rem;
   --background: #2ecc71;
   --background-hover: #27ae60;
   --background-activated: #27ae60;
-  --color: #ffffff; // Asegura texto blanco
+  --color: #ffffff;
 }
 
-// Botón específico para Gmail (sobrescribe colores)
-// Asegúrate de añadir class="gmail-button" al botón en el HTML
-.gmail-button {
-  --background: #DB4437; // Rojo de Google
-  --background-hover: #c33d2e;
-  --background-activated: #b03629;
-  margin-top: 0.5rem; // Añade un pequeño espacio arriba si es el segundo botón
-  // Icono (opcional - descomentar si se añade <ion-icon> en HTML)
-  // ion-icon {
-  //   margin-right: 8px;
-  // }
-}
-/* Animación simple de entrada */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -153,11 +126,9 @@ ion-content.login-content {
   }
 }
 
-/* Ajustes menores para consistencia */
-ion-item.sc-ion-input-md-h, ion-item.sc-ion-input-ios-h {
+ion-item.sc-ion-input-md-h,
+ion-item.sc-ion-input-ios-h {
   --inner-padding-bottom: 0;
   --inner-padding-top: 0;
   --min-height: 40px;
 }
-
-/* --- FIN: CSS Actualizado --- */

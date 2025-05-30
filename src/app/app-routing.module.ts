@@ -47,10 +47,7 @@ const routes: Routes = [
     path: 'perfil',
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
-  {
-    path: 'configuracion',
-    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
-  },
+
   {
     path: 'editar-perfil',
     loadChildren: () => import('./pages/editar-perfil/editar-perfil.module').then( m => m.EditarPerfilPageModule)
@@ -80,7 +77,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
   },
   {
-    path: 'evento-inscrito',
+    path: 'evento-inscrito/:id',
     loadChildren: () => import('./pages/evento-inscrito/evento-inscrito.module').then( m => m.EventoInscritoPageModule)
   },
   {
@@ -118,7 +115,8 @@ const routes: Routes = [
   {
     path: 'notificaciones',
     loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
-  },  {
+  },
+  {
     path: 'buscar-persona',
     loadChildren: () => import('./pages/buscar-persona/buscar-persona.module').then( m => m.BuscarPersonaPageModule)
   },
