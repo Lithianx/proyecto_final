@@ -14,6 +14,17 @@ ion-content {
   padding: 16px;
 }
 
+.titulo {
+  flex: 1;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+  pointer-events: none; // evita que se haga clic sobre el texto
+}
+
+
 
 
 .espera-contenedor {
@@ -93,10 +104,132 @@ ion-button[color=danger] {
 }
 
 
-.boton-volver{
-  /* --background: var(--verde-neon); */
+.boton-volver {
   --color: rgb(0, 252, 0);
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin: 0;
+  padding: 0 10px;
+  z-index: 2;
+}
 
+.header-contenedor {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 50px;
+  margin-bottom: 16px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* FAB flotante */
+.chat-fab {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: #39ff14;
+  color: black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Ventana flotante del chat */
+.chat-flotante {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  width: 320px;
+  max-height: 400px;
+  background-color: #111;
+  color: white;
+  border: 2px solid #39ff14;
+  border-radius: 12px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 12px #39ff14;
+}
+
+/* Cabecera del chat */
+.chat-header {
+  background-color: #000;
+  color: #39ff14;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  border-bottom: 1px solid #39ff14;
+}
+
+/* Ícono cerrar */
+.cerrar-icono {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Cuerpo del chat con scroll */
+.chat-cuerpo {
+  padding: 10px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.chat-cuerpo .msg-yo {
+  text-align: right;
+  color: #39ff14;
+}
+
+.chat-cuerpo .msg-otro {
+  text-align: left;
+  color: #ffffff;
+}
+
+/* Input de chat */
+.chat-input {
+  padding: 6px 10px;
+  border-top: 1px solid #39ff14;
+
+  ion-item {
+    --background: transparent;
+    --color: white;
+    border: 1px solid #39ff14;
+    border-radius: 8px;
+  }
+
+  ion-input {
+    color: white;
+  }
+
+  ion-button {
+    --color: #39ff14;
+  }
+}
+
+.temporizador {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  color: #39ff14;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
 }

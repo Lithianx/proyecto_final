@@ -27,13 +27,10 @@
 
           <div class="campo-evento">
             <label>Fecha:</label>
-            <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
+            <p>{{ evento.hora}}</p>
           </div>
 
-          <div class="campo-evento">
-            <label>Duración:</label>
-            <p>{{ evento.duracion }} minutos</p>
-          </div>
+          
 
           <div class="campo-evento" *ngIf="evento.cupos">
             <label>Cupos máximos:</label>
