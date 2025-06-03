@@ -12,10 +12,10 @@
   <ion-card class="crear-publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="usuario.userAvatar" />
+        <img [src]="usuario.avatar" />
       </ion-avatar>
       <ion-label>
-        <h2>{{usuario.username}}</h2>
+        <h2>{{usuario.nombre_usuario}}</h2>
       </ion-label>
     </ion-item>
 
@@ -55,11 +55,11 @@
     <ion-card *ngFor="let publicacion of publicaciones">
       <ion-item>
         <ion-avatar slot="start">
-          <img [src]="publicacion.usuario.userAvatar" />
+          <img [src]="usuario.avatar" />
         </ion-avatar>
         <ion-label>
-          <h2>{{ publicacion.usuario.username }}</h2>
-          <p>{{ publicacion.time }}</p>
+          <h2>{{ usuario.nombre_usuario }}</h2>
+          <p>{{ publicacion.fecha_publicacion }}</p>
         </ion-label>
         <ion-chip (click)="modificar(publicacion)">
           <ion-label>Editar</ion-label>
@@ -67,27 +67,27 @@
       </ion-item>
   
       <!-- Parte donde se muestra imagen o descripción -->
-      <ng-container *ngIf="publicacion.image; else soloDescripcion">
+      <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
         <!-- Si hay imagen, mostrar imagen -->
-        <img [src]="publicacion.image" class="post-image" />
+        <img [src]="publicacion.imagen" class="post-image" />
       </ng-container>
   
       <!-- En caso que NO haya imagen -->
       <ng-template #soloDescripcion>
         <ion-card-content>
-          <p class="descripcion-sola">{{ publicacion.description }}</p>
-          <p><strong>{{ publicacion.likes }} likes</strong></p>
+          <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+          <p><strong>0 likes</strong></p>
         </ion-card-content>
       </ng-template>
   
       <!-- Siempre muestra acciones y descripción si hay imagen -->
-      <ng-container *ngIf="publicacion.image">
+      <ng-container *ngIf="publicacion.imagen">
         <ion-card-content>
-          <p><strong>{{ publicacion.likes }} likes</strong></p>
+          <p><strong>0 likes</strong></p>
   
           <p>
-            {{ mostrarDescripcion ? publicacion.description : (publicacion.description | slice:0:100) + (publicacion.description.length > 100 ? '...' : '') }}
-            <ion-button *ngIf="publicacion.description.length > 100" fill="clear" size="small"
+            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100 ? '...' : '') }}
+            <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
               (click)="mostrarDescripcion = !mostrarDescripcion">
               {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
             </ion-button>
