@@ -13,39 +13,36 @@
       <ion-title>Mensajes</ion-title>
     </ion-toolbar>
     <!-- Lista de chat -->
-    <ion-item *ngFor="let chat of chats" class="chat-item" [routerLink]="['/chat-privado', chat.id]">
+    <ion-item *ngFor="let chat of chats" class="chat-item" [routerLink]="['/chat-privado', chat.id_conversacion]">
       <div class="chat-avatar-icon">
         <ion-avatar slot="start">
-          <img [src]="chat.participante.userAvatar" />
+          <img [src]="getUsuario(chat.id_usuario)?.avatar" />
         </ion-avatar>
-        <ion-icon [name]="chat.participante.estado ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
+        <ion-icon [name]="getUsuario(chat.id_usuario)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
       <ion-label>
         <!-- Nombre de usuario y icono si hay mensaje no leído -->
         <div class="user-info">
-          <h5>{{ chat.participante.username }}</h5>
-          <ion-icon [name]="chat.ultimoMensaje?.leido ? 'mail-unread' : 'mail-open-outline'"></ion-icon>
+          <h5>{{ getUsuario(chat.id_usuario)?.nombre_usuario }}</h5>
+          <ion-icon [name]="chat.leido ? 'mail-unread' : 'mail-open-outline'"></ion-icon>
         </div>
         <!-- Último mensaje -->
         <p class="message-text">
-          <ng-container *ngIf="chat.ultimoMensaje?.imagen; else checkAudio">
-            📷 Imagen enviada
+          <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[imagen]'); else checkAudio">
+            📷 Imagen recibida
           </ng-container>
-
           <ng-template #checkAudio>
-            <ng-container *ngIf="chat.ultimoMensaje?.audio; else checkVideo">
-              🎧 Audio enviado
+            <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[audio]'); else checkVideo">
+              🎧 Audio recibido
             </ng-container>
           </ng-template>
-
           <ng-template #checkVideo>
-            <ng-container *ngIf="chat.ultimoMensaje?.video; else texto">
-              🎥 Video enviado
+            <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[video]'); else texto">
+              🎥 Video recibido
             </ng-container>
           </ng-template>
-
           <ng-template #texto>
-            {{ chat.ultimoMensaje?.contenido }}
+            {{ chat.ultimo_mensaje }}
           </ng-template>
         </p>
       </ion-label>
