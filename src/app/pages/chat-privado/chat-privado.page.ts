@@ -127,6 +127,18 @@ export class ChatPrivadoPage implements OnInit {
         this.mensajes.push(mensaje);
         this.scrollToBottom(); // 👈 Desplazarse al final
 
+              // Simula respuesta
+      setTimeout(() => {
+        this.mensajes.push({
+          id: new Date().getTime().toString(),
+          emisorId: this.chatId!,
+          receptorId: 'yo',
+          contenido: '¡Entendido!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          leido: false
+        });
+      }, 1000);
+
         // Resetear input para permitir reelección del mismo archivo
         event.target.value = '';
       };
@@ -184,6 +196,18 @@ export class ChatPrivadoPage implements OnInit {
     this.mensajes.push(mensaje);
     this.scrollToBottom();
 
+          // Simula respuesta
+      setTimeout(() => {
+        this.mensajes.push({
+          id: new Date().getTime().toString(),
+          emisorId: this.chatId!,
+          receptorId: 'yo',
+          contenido: '¡Entendido!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          leido: false
+        });
+      }, 1000);
+
   }
   
   
@@ -217,6 +241,18 @@ export class ChatPrivadoPage implements OnInit {
 
 
     this.scrollToBottom();
+
+          // Simula respuesta
+      setTimeout(() => {
+        this.mensajes.push({
+          id: new Date().getTime().toString(),
+          emisorId: this.chatId!,
+          receptorId: 'yo',
+          contenido: '¡Entendido!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          leido: false
+        });
+      }, 1000);
     
   }
 }
