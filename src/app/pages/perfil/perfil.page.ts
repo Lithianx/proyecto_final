@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 
 @Component({
@@ -8,6 +8,8 @@ import { ActionSheetController } from '@ionic/angular';
   standalone: false,
 })
 export class PerfilPage implements OnInit {
+
+  @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
   // Lista de eventos inscritos
   eventosinscritos = [
@@ -95,6 +97,41 @@ export class PerfilPage implements OnInit {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
+  ionViewDidEnter() {
+    this.applySliderTransform(this.vistaSeleccionada);
+  }
+
+  segmentChanged(event: any) {
+    const value = event.detail.value;
+    this.vistaSeleccionada = value;
+    this.applySliderTransform(value);
+  }
+
+  applySliderTransform(value: string) {
+    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
+
+    if (!segmentElement) {
+      console.warn('Elemento publicacionesNav no encontrado');
+      return;
+    }
+
+   let position = 0;
+
+  switch (value) {
+    case 'publicaciones':
+      position = 3;
+      break;
+    case 'eventos-inscritos':
+      position = 320 / 3;
+      break;
+    case 'eventos-creados':
+      position = (315 / 3) * 2;
+      break;
+  }
+    const adjustedPosition = position - 1;
+    segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
+  }
+
   abrirModal() {
     console.log('Se abrió el modal');
     this.mostrarModal = true;
@@ -107,82 +144,55 @@ export class PerfilPage implements OnInit {
     this.mostrarModal = false;
   }
 
-  // Cambiar deslizador según vista seleccionada
-  segmentChanged(event: any) {
-    const value = event.detail.value;
-    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
-
-    let position = 0;
-
-    switch (value) {
-      case 'publicaciones':
-        position = 3;
-        break;
-      case 'eventos-inscritos':
-        position = 320 / 3;
-        break;
-      case 'eventos-creados':
-        position = (315 / 3) * 2;
-        break;
-    }
-
-    const adjustedPosition = position - 1;
-    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
-  }
-
   // Menú de opciones (action sheet)
-// Menú de opciones (action sheet)
-async abrirOpciones() {
-  const actionSheet = await this.actionSheetCtrl.create({
-    header: 'Opciones',
-    buttons: [
-      {
-        text: 'Editar perfil',
-        icon: 'person-outline',
-        handler: () => {
-          console.log('Editar perfil');
-          // Redirigir a la vista de edición de perfil
-          window.location.href = '/editar-perfil';
+  async abrirOpciones() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: 'Editar perfil',
+          icon: 'person-outline',
+          handler: () => {
+            console.log('Editar perfil');
+            window.location.href = '/editar-perfil';
+          }
+        },
+        {
+          text: 'Historial de eventos',
+          icon: 'time-outline',
+          handler: () => {
+            console.log('Historial de eventos');
+            window.location.href = '/historial-eventos';
+          }
+        },
+        {
+          text: 'Guardados',
+          icon: 'bookmark',
+          handler: () => {
+            console.log('Publicaciones guardadas');
+            window.location.href = '/publicaciones-guardadas';
+          }
+        },
+        {
+          text: 'Terminos de condicion',
+          icon: 'school-outline',
+          handler: () => {
+            console.log('Validar cuenta institucional');
+            window.location.href = '/info-cuenta-institucional';
+          }
+        },
+        {
+          text: 'Cerrar sesión',
+          icon: 'log-out-outline',
+          role: 'destructive',
+          handler: () => {
+            console.log('Cerrar sesión');
+            window.location.href = '/login';
+          }
         }
-      },
-      {
-        text: 'Historial de eventos',
-        icon: 'time-outline',
-        handler: () => {
-          console.log('Historial de eventos');
-          window.location.href = '/historial-eventos';
-        }
-      },
-      {
-        text: 'Guardados',
-        icon: 'bookmark',
-        handler: () => {
-          console.log('Publicaciones guardadas');
-          window.location.href = '/publicaciones-guardadas';
-        }
-      },
-      {
-        text: 'Validar cuenta institucional',
-        icon: 'school-outline',
-        handler: () => {
-          console.log('Validar cuenta institucional');
-          window.location.href = '/info-cuenta-institucional';
-        }
-      },
+      ]
+    });
 
-      {
-        text: 'Cerrar sesión',
-        icon: 'log-out-outline',
-        role: 'destructive',
-        handler: () => {
-          console.log('Cerrar sesión');
-          window.location.href = '/login';
-        }
-      }
-    ]
-  });
-
-  await actionSheet.present();
-}
-
+    await actionSheet.present();
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 
@@ -9,9 +9,11 @@ import { ActionSheetController } from '@ionic/angular';
   standalone: false,
 })
 export class PerfilUserPage implements OnInit {
+  @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+
   siguiendo: boolean = true;
   mostrarModal: boolean = false;
-  vistaSeleccionada: string = 'publicaciones';
+  private _vistaSeleccionada: string = 'publicaciones';
 
   // Variables del perfil
   nombreUsuario: string = '';
@@ -26,6 +28,17 @@ export class PerfilUserPage implements OnInit {
     seguidores: 0,
     seguidos: 0
   };
+
+  get vistaSeleccionada(): string {
+    return this._vistaSeleccionada;
+  }
+
+  set vistaSeleccionada(value: string) {
+    this._vistaSeleccionada = value;
+    if (value !== 'publicaciones') {
+      this.mostrarModal = false;
+    }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -48,6 +61,42 @@ export class PerfilUserPage implements OnInit {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
+  ionViewDidEnter() {
+    // Aplica la animación al cargar la página con el valor actual
+    this.applySliderTransform(this.vistaSeleccionada);
+  }
+
+  segmentChanged(event: any) {
+    const value = event.detail.value;
+    this.vistaSeleccionada = value;
+    this.applySliderTransform(value);
+  }
+
+  applySliderTransform(value: string) {
+    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
+    if (!segmentElement) {
+      console.warn('Elemento publicacionesNav no encontrado');
+      return;
+    }
+
+   let position = 0;
+
+  switch (value) {
+    case 'publicaciones':
+      position = 3;
+      break;
+    case 'eventos-inscritos':
+      position = 320 / 3;
+      break;
+    case 'eventos-creados':
+      position = (315 / 3) * 2;
+      break;
+  }
+    const adjustedPosition = position - 1;
+
+    segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
+  }
+
   abrirModal() {
     console.log('Se abrió el modal');
     this.mostrarModal = true;
@@ -58,31 +107,6 @@ export class PerfilUserPage implements OnInit {
       event.stopPropagation();
     }
     this.mostrarModal = false;
-  }
-
-  segmentChanged(event: any) {
-    const value = event.detail.value;
-    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
-
-    let position = 0;
-
-    switch (value) {
-      case 'publicaciones':
-        position = 3;
-        break;
-      case 'eventos-inscritos':
-        position = 320 / 3; // ~33.33%
-        break;
-      case 'eventos-creados':
-        position = (315 / 3) * 2; // ~66.66%
-        break;
-    }
-
-    const adjustedPosition = position - 1; // ajustar si es necesario
-
-    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
-
-    this.vistaSeleccionada = value;
   }
 
   cargarPerfilUsuario(id: string) {
@@ -131,7 +155,6 @@ export class PerfilUserPage implements OnInit {
           icon: 'chatbubble-ellipses-outline',
           handler: () => {
             console.log('Mandar mensaje');
-            // Aquí puedes redirigir al chat si lo implementas
             // this.router.navigate(['/chat', this.nombreUsuario]);
           }
         },
@@ -141,7 +164,6 @@ export class PerfilUserPage implements OnInit {
           icon: 'alert-circle-outline',
           handler: () => {
             console.log('Reportar usuario');
-            // Aquí podrías abrir un modal o redirigir a una página de reporte
           }
         },
         {

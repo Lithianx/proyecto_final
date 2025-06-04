@@ -1,12 +1,13 @@
 <app-encabezado></app-encabezado>
 
 <ion-content class="event-details-container">
-  <ion-toolbar class="chat-header">
-    <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </ion-button>
-    <ion-title>Detalle evento</ion-title>
-  </ion-toolbar>
+    <div class="header-row">
+        <ion-button class="back-button" (click)="volver()"  fill="clear" >
+        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+      </ion-button>
+      <h1 class="app-title">Detalle evento</h1>
+    </div>
+
 
 
   <!-- Tournament Name -->

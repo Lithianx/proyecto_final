@@ -4,37 +4,6 @@
     font-weight: bold;
     color: var(--ion-color-primary);
   }
-  
-  .header-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 16px 0;
-  }
-  
-  .back-button {
-    position: absolute;
-    left: 16px;
-    font-size: 24px;
-    color: var(--ion-color-medium);
-  }
-  
-  .page-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--ion-color-dark);
-  }
-  
-  .search-bar {
-    margin: 0 auto 16px auto;
-    max-width: 90%;
-    --background: #f0f0f0;
-    --color: #000;
-    --placeholder-color: #3d3c3c;
-    border-radius: 10px;
-  }
-  
   .section-divider {
     border: none;
     height: 1px;
