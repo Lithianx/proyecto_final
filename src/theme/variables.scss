@@ -10,7 +10,7 @@
   --color-text-dato: #0085ff;             /* texto-dato */
   --color-text-secundary: #bababa;       /* texto-secundary */
   --color-text-primary: #ffffff;          /* texto-primary */
-  --color-fondo-gris: #2e2e2e;            /* fondo-gris */
+  --color-fondo-gris: #3b3b3b;            /* fondo-gris */
   --color-iconos: #45a834;                /* iconos */
 }
  /* Barra de buscador */
@@ -36,25 +36,25 @@ ion-searchbar.search-bar::part(container) {
 }
  /* Titulo de pagina y volver */
 .header-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 16px 0;
-
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  padding: 16px 0 !important;
 }
 
 .back-button {
-  position: absolute;
-  left: 0; 
-  font-size: 22px;
-  color: var(--color-iconos);
+  position: absolute !important;
+  left: 0 !important;
+  font-size: 22px !important;
+  color: var(--color-iconos) !important;
 }
 
 .app-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 0 auto;
-  color: var(--ion-color-dark);
+  font-size: 22px !important;
+  font-weight: bold !important;
+  margin: 0 auto !important;
+  color: var(--ion-color-dark) !important;
 }
+
 

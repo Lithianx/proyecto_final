@@ -11,10 +11,10 @@
   <hr class="section-divider">
 
   <ion-searchbar 
-  placeholder="Buscar usuario" 
-  class="search-bar" 
-  (ionInput)="buscarUsuarios($event)">
-</ion-searchbar>
+    placeholder="Buscar usuario" 
+    class="search-bar" 
+    (ionInput)="buscarUsuarios($event)">
+  </ion-searchbar>
 
   <hr class="section-divider">
 
@@ -28,7 +28,7 @@
         fill="outline"
         color="danger"
         class="follow-button"
-        (click)="confirmarEliminar(i); $event.stopPropagation();">
+        (click)="confirmarEliminar(i, user); $event.stopPropagation();">
         Eliminar
       </ion-button>
     </ion-item>

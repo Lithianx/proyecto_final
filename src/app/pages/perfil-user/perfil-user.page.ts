@@ -79,20 +79,23 @@ export class PerfilUserPage implements OnInit {
       return;
     }
 
-   let position = 0;
+    // Posiciones en porcentaje para 3 segmentos (0%, 33.33%, 66.66%)
+    let position = 0;
 
-  switch (value) {
-    case 'publicaciones':
-      position = 3;
-      break;
-    case 'eventos-inscritos':
-      position = 320 / 3;
-      break;
-    case 'eventos-creados':
-      position = (315 / 3) * 2;
-      break;
-  }
-    const adjustedPosition = position - 1;
+    switch (value) {
+      case 'publicaciones':
+        position = 3;
+        break;
+      case 'eventos-inscritos':
+        position = 320 / 3; // ~33.33%
+        break;
+      case 'eventos-creados':
+        position = (315 / 3) * 2; // ~66.66%
+        break;
+    
+
+    const adjustedPosition = position - 1; // ajustar si es necesario
+    }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
   }

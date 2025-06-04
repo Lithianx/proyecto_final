@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-historial-eventos',
@@ -7,6 +7,9 @@ import { Component, OnInit } from '@angular/core';
   standalone: false,
 })
 export class HistorialEventosPage implements OnInit {
+
+  @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+
   // Listas originales
   eventosinscritos_finaliazado = [
     {
@@ -41,15 +44,18 @@ export class HistorialEventosPage implements OnInit {
   ];
 
   mostrarModal: boolean = false;
+  searchTerm: string = '';
 
   private _vistaSeleccionada: string = 'eventos-inscritos';
-
-  searchTerm: string = '';
 
   constructor() {}
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+  }
+
+  ionViewDidEnter() {
+    this.applySliderTransform(this.vistaSeleccionada);
   }
 
   get vistaSeleccionada(): string {
@@ -65,27 +71,33 @@ export class HistorialEventosPage implements OnInit {
 
   segmentChanged(event: any) {
     const value = event.detail.value;
-    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
+    this.vistaSeleccionada = value;
+    this.applySliderTransform(value);
+  }
+
+  applySliderTransform(value: string) {
+    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
+
+    if (!segmentElement) {
+      console.warn('Elemento publicacionesNav no encontrado');
+      return;
+    }
 
     let position = 0;
 
     switch (value) {
       case 'eventos-inscritos':
-        position = 5;
+        position = 3;
         break;
       case 'eventos-creados':
-        position = 105;
+        position = 320 / 3; // aprox 106.66px si tu contenedor mide 320px
         break;
       default:
-        position = 5;
-        break;
+        position = 3;
     }
 
     const adjustedPosition = position - 1;
-
-    if (segmentElement) {
-      segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
-    }
+    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
   }
 
   // Filtro para eventos inscritos
@@ -110,7 +122,6 @@ export class HistorialEventosPage implements OnInit {
     );
   }
 
-  // Método para actualizar el filtro cuando cambie el valor del searchbar
   onSearchChange(event: any) {
     this.searchTerm = event.detail.value;
   }
