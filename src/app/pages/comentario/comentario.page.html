@@ -3,117 +3,122 @@
 <ion-content>
 
   <!-- MOSTRAR PUBLICACIÓN -->
-  <ion-card *ngIf="post" class="publicacion-card">
+  <ion-card *ngIf="publicacion" class="publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="post.usuario.userAvatar" />
+        <img [src]="usuarioPost.id_usuario" />
       </ion-avatar>
       <ion-label>
-        <h2>{{ post.usuario.username }}</h2>
-        <p>{{ post.time }}</p>
+        <h2>{{ usuarioPost.nombre_usuario }}</h2>
+        <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
       </ion-label>
       <!-- Botón de seguir -->
-      <ion-chip [color]="post.usuario.following ? 'success' : 'primary'" (click)="seguir(post)"
-        [outline]="!post.usuario.following">
-        {{ post.usuario.following ? 'Siguiendo' : 'Seguir' }}
+      <ion-chip [color]="sigueAlAutor() ? 'success' : 'primary'" (click)="seguir(usuarioPost)"
+        [outline]="!sigueAlAutor()">
+        {{ sigueAlAutor() ? 'Siguiendo' : 'Seguir' }}
       </ion-chip>
 
       <!-- Botón de opciones -->
-      <ion-button fill="clear" size="small" (click)="opcion(post)">
+      <ion-button fill="clear" size="small" (click)="opcion(publicacion)">
         <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
       </ion-button>
+
     </ion-item>
-    <img [src]="post.image" class="post-image" />
+    <img [src]="publicacion.imagen" class="post-image" />
     <!-- Acciones -->
     <ion-row class="action-row" responsive>
       <!-- Botón de me gusta -->
       <ion-col size="auto">
-        <ion-button fill="clear" size="small" (click)="likes(post)">
-          <!-- Cambia el icono según el estado de me gusta -->
-          <ion-icon [name]="post.liked ? 'sparkles' : 'sparkles-outline'" size="large"></ion-icon>
+        <ion-button fill="clear" size="small" (click)="likePublicacion()">
+          <ion-icon [name]="usuarioLikeoPublicacion() ? 'sparkles' : 'sparkles-outline'" size="large"></ion-icon>
         </ion-button>
       </ion-col>
       <!-- Botón de compartir -->
       <ion-col size="auto">
-        <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(post)">
+        <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(publicacion)">
           <ion-icon name="paper-plane-outline" size="large"></ion-icon>
         </ion-button>
       </ion-col>
       <ion-col></ion-col>
       <!-- Botón de guardar -->
       <ion-col size="auto">
-        <ion-button fill="clear" size="small" (click)="guardar(post)">
-          <!-- Cambia el icono según el estado de guardado -->
-          <ion-icon [name]="post.guardar ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
+        <ion-button fill="clear" size="small" (click)="guardar()">
+          <ion-icon [name]="estaGuardada() ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
         </ion-button>
       </ion-col>
+
     </ion-row>
+
     <ion-card-content>
-      <p><strong>{{ post.likes }} likes</strong></p>
-      <p>{{ post.description }}</p>
+      <p><strong>{{ getLikesPublicacion() }} likes</strong></p>
+      <p>{{ publicacion.contenido}}</p>
     </ion-card-content>
+
   </ion-card>
 
 
 
-  <!-- COMENTARIOS -->
+  <!-- COMENTARIOS   -->
   <div #comentariosContainer class="comentario-container">
     <ion-toolbar class="chat-header">
       <ion-button slot="start" (click)="volver()" expand="block" fill="clear" shape="round">
         <ion-icon name="arrow-back-outline"></ion-icon> </ion-button>
-          <ion-title>COMENTARIOS</ion-title>
+      <ion-title>COMENTARIOS</ion-title>
     </ion-toolbar>
     <ion-list>
-      <ion-item *ngFor="let comentario of post.comments">
+      <ion-item *ngFor="let comentario of comentarios">
         <ion-avatar slot="start">
-          <img [src]="comentario.avatar" />
+          <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar" />
         </ion-avatar>
 
         <ion-label>
-          <h3>{{ comentario.usuario }}</h3>
-          <p>{{ comentario.mensaje }}</p>
-          <small>{{ comentario.fecha | date:'short' }}</small>
+          <h3>{{ getUsuarioComentario(comentario.id_usuario)?.nombre_usuario }}</h3>
+          <p>{{ comentario.contenido_comentario }}</p>
+          <small>{{ comentario.fecha_comentario | date:'short' }}</small>
         </ion-label>
 
         <!-- CONTENEDOR PARA BOTÓN Y LIKES EN COLUMNA -->
         <div slot="end" class="like-container">
           <ion-button fill="clear" size="small" (click)="comentariolikes(comentario)">
-            <ion-icon [name]="comentario.comentarioliked ? 'sparkles' : 'sparkles-outline'"></ion-icon>
+            <ion-icon
+              [name]="usuarioLikeoComentario(comentario.id_comentario) ? 'sparkles' : 'sparkles-outline'"></ion-icon>
           </ion-button>
           <ion-note class="likes-count">
-            {{ comentario.comentariolikes }}
+            {{ getLikesComentario(comentario.id_comentario) }}
           </ion-note>
         </div>
+
       </ion-item>
     </ion-list>
   </div>
 
 
 
- <!-- Modal para seleccionar amigos (Sheet Modal) -->
- <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26" [breakpoints]="[0, 0.26, 0.51]">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Enviar publicación</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
-      <ion-list class="modal-scrollable-content" scroll-y="true">
-        <ion-item *ngFor="let user of followersfriend">
-          <ion-avatar slot="start">
-            <img [src]="user.userAvatar" />
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ user.username }}</h2>
-          </ion-label>
-          <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
-        </ion-item>
-      </ion-list>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+  <!-- Modal para seleccionar amigos (Sheet Modal) -->
+  <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26"
+    [breakpoints]="[0, 0.26, 0.51]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Enviar publicación</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
+        <ion-list class="modal-scrollable-content" scroll-y="true">
+          <ion-item *ngFor="let user of usuariosFiltrados">
+            <ion-avatar slot="start">
+              <img [src]="user.avatar" />
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ user.nombre_usuario }}</h2>
+            </ion-label>
+            <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
 
 
@@ -127,7 +132,7 @@
   <ion-toolbar>
     <ion-item lines="none">
       <ion-input placeholder="Añadir comentario..." [(ngModel)]="nuevoComentario"></ion-input>
-      <ion-button fill="clear" class="btn-publicar" (click)="publicarComentario()" >Publicar</ion-button>
+      <ion-button fill="clear" class="btn-publicar" (click)="publicarComentario()">Publicar</ion-button>
     </ion-item>
   </ion-toolbar>
 </ion-footer>
