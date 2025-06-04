@@ -4,23 +4,9 @@ import { ViewChild, ElementRef } from '@angular/core';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 
 
-interface Usuario {
-  id: string;
-  username: string;
-  userAvatar: string;
-}
+import { Usuario } from 'src/app/models/usuario.model';
+import { Conversacion } from 'src/app/models/conversacion.model';
 
-interface Mensaje {
-  id: string;
-  emisorId: string;
-  receptorId: string;
-  contenido: string;
-  timestamp: string;
-  imagen?: string;
-  video?: string;
-  audio?: string;
-  leido?: boolean;
-}
 
 @Component({
   selector: 'app-chat-privado',
@@ -35,8 +21,8 @@ export class ChatPrivadoPage implements OnInit {
   @ViewChild('endOfMessages') endOfMessages!: ElementRef;
 
   chatId: string | null = '';
-  chatInfo: Usuario = { id: '', username: '', userAvatar: '' };
-
+  chatInfo!: Usuario;
+  idConversacionActual!: number;
   nuevoMensaje: string = '';
 
   grabando: boolean = false; // Variable para saber si está grabando
@@ -44,24 +30,105 @@ export class ChatPrivadoPage implements OnInit {
   audioChunks: any[] = [];
   audioBlob: Blob | null = null;
 
+  // Usuarios simulados (modelo real)
+  usuariosMock: Usuario[] = [
+    {
+      id_usuario: 1,
+      nombre_usuario: 'johndoe',
+      correo_electronico: 'john@correo.com',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
+    },
+    {
+      id_usuario: 2,
+      nombre_usuario: 'gamer123',
+      correo_electronico: 'gamer@correo.com',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: false
+    },
+    {
+      id_usuario: 3,
+      nombre_usuario: 'petterpan',
+      correo_electronico: 'petter@correo.com',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
+    }
+  ];
+
+
+  // Conversaciones simuladas (cada mensaje es una Conversacion)
+  mensajes: Conversacion[] = [
+  {
+    id_conversacion: 1,
+    id_emisor: 1,
+    id_receptor: 0,
+    contenido_conversacion: '¡Hola!',
+    fecha_envio: new Date(),
+    estado_visto: true
+  },
+  {
+    id_conversacion: 1,
+    id_emisor: 0,
+    id_receptor: 1,
+    contenido_conversacion: '¿Cómo estás?',
+    fecha_envio: new Date(),
+    estado_visto: true
+  },
+  {
+    id_conversacion: 2,
+    id_emisor: 2,
+    id_receptor: 0,
+    contenido_conversacion: '¡Hola! Soy gamer123',
+    fecha_envio: new Date(),
+    estado_visto: true
+  }
+  ];
+
   constructor(private route: ActivatedRoute) { }
 
-  ngOnInit() {
-    this.chatId = this.route.snapshot.paramMap.get('id');
-    this.chatInfo = this.usuariosMock.find(user => user.id === this.chatId) || { id: '', username: 'PRUEBA', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' };
+ngOnInit() {
+  // Recibe el id de la conversación
+  const idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
+  // Filtra los mensajes de esa conversación
+  this.mensajes = this.mensajes.filter(m => m.id_conversacion === idConversacionActual);
+
+  // Si no hay mensajes, usa el usuario prueba
+  if (this.mensajes.length === 0) {
+    this.chatInfo = {
+      id_usuario: 99,
+      nombre_usuario: 'PRUEBA',
+      correo_electronico: '',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: false
+    };
+  } else {
+    // Busca el usuario contraparte (el que NO es "yo", asumiendo que "yo" es id 0)
+    const mensajeEjemplo = this.mensajes[0];
+    const idUsuarioContraparte = mensajeEjemplo.id_emisor !== 0 ? mensajeEjemplo.id_emisor : mensajeEjemplo.id_receptor;
+    this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte) || {
+      id_usuario: 99,
+      nombre_usuario: 'PRUEBA',
+      correo_electronico: '',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: false
+    };
   }
-
-  mensajes: Mensaje[] = [
-    { id: 'm1', emisorId: '1', receptorId: 'yo', contenido: '¡Hola!', timestamp: '10:00', leido: true },
-    { id: 'm2', emisorId: 'yo', receptorId: '1', contenido: '¿Cómo estás?', timestamp: '10:01', leido: true },
-    { id: 'm3', emisorId: '1', receptorId: 'yo', contenido: 'Todo bien, ¿y tú?', timestamp: '10:02', leido: false }
-  ];
-
-  usuariosMock: Usuario[] = [
-    { id: '1', username: 'johndoe', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
-    { id: '2', username: 'gamer123', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
-    { id: '3', username: 'petterpan', userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg' },
-  ];
+}
 
 
   autoResize(event: Event): void {
@@ -107,37 +174,37 @@ export class ChatPrivadoPage implements OnInit {
 
       reader.onload = () => {
         const base64 = reader.result as string;
-        const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const horaActual = new Date()
 
-        const mensaje: Mensaje = {
-          id: new Date().getTime().toString(),
-          emisorId: 'yo',
-          receptorId: this.chatId!,
-          contenido: '',  // No hay texto
-          timestamp: horaActual,
-          leido: false,
+        const mensaje: Conversacion = {
+          id_conversacion: new Date().getTime(),
+          id_emisor: 0,
+          id_receptor: Number(this.chatId),
+          contenido_conversacion: '',
+          fecha_envio: horaActual,
+          estado_visto: false,
         };
 
         if (file.type.startsWith('image/')) {
-          mensaje.imagen = base64;
+          mensaje.contenido_conversacion = `[imagen] ${base64}`;
         } else if (file.type.startsWith('video/')) {
-          mensaje.video = base64;
+          mensaje.contenido_conversacion = `[video] ${base64}`;
         }
 
         this.mensajes.push(mensaje);
         this.scrollToBottom(); // 👈 Desplazarse al final
 
-              // Simula respuesta
-      setTimeout(() => {
-        this.mensajes.push({
-          id: new Date().getTime().toString(),
-          emisorId: this.chatId!,
-          receptorId: 'yo',
-          contenido: '¡Entendido!',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          leido: false
-        });
-      }, 1000);
+        // Simula respuesta
+setTimeout(() => {
+  this.mensajes.push({
+    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+    id_receptor: 0,                             // <-- tú
+    contenido_conversacion: '¡Entendido!',
+    fecha_envio: new Date(),
+    estado_visto: false
+  });
+}, 1000);
 
         // Resetear input para permitir reelección del mismo archivo
         event.target.value = '';
@@ -147,21 +214,21 @@ export class ChatPrivadoPage implements OnInit {
     }
   }
 
-  
+
   async iniciarGrabacion() {
     this.grabando = true;
     const result = await VoiceRecorder.startRecording();
     console.log('Grabación iniciada:', result);
   }
-  
+
   async detenerGrabacion() {
     this.grabando = false;
     console.log('Deteniendo grabación...');
-  
+
     try {
       const result = await VoiceRecorder.stopRecording();
       console.log('Resultado de la grabación:', result);
-  
+
       if (result.value && result.value.recordDataBase64) {
         console.log('Contenido grabado:', result.value.recordDataBase64); // 👈 Asegurar que hay datos
         const audioBase64 = `data:audio/mp4;base64,${result.value.recordDataBase64}`;
@@ -174,58 +241,56 @@ export class ChatPrivadoPage implements OnInit {
       console.error('Error al detener la grabación:', error);
     }
   }
-  
-  
+
+
   async enviarMensajeDeVoz(audioBase64: string) {
     console.log('Mensaje de voz recibido:', audioBase64);
 
-    const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const horaActual = new Date()
     console.log('Audio Base64 generado:', audioBase64);
 
-    const mensaje: Mensaje = {
-      id: new Date().getTime().toString(),
-      emisorId: 'yo',
-      receptorId: this.chatId!,
-      contenido: '',
-      timestamp: horaActual,
-      audio: audioBase64,
-      leido: false,
+    const mensaje: Conversacion = {
+      id_conversacion: new Date().getTime(),
+      id_emisor: 0,
+      id_receptor: Number(this.chatId),
+      contenido_conversacion: `[audio] ${audioBase64}`,
+      fecha_envio: horaActual,
+      estado_visto: false,
     };
-    console.log('Mensaje de voz recibido:', mensaje.audio);
+    console.log('Mensaje de voz recibido:', mensaje.contenido_conversacion);
 
     this.mensajes.push(mensaje);
     this.scrollToBottom();
 
-          // Simula respuesta
-      setTimeout(() => {
-        this.mensajes.push({
-          id: new Date().getTime().toString(),
-          emisorId: this.chatId!,
-          receptorId: 'yo',
-          contenido: '¡Entendido!',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          leido: false
-        });
-      }, 1000);
+    // Simula respuesta
+setTimeout(() => {
+  this.mensajes.push({
+    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+    id_receptor: 0,                             // <-- tú
+    contenido_conversacion: '¡Entendido!',
+    fecha_envio: new Date(),
+    estado_visto: false
+  });
+}, 1000);
 
   }
-  
-  
+
+
 
 
 
   enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
 
-    const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const mensaje: Mensaje = {
-      id: new Date().getTime().toString(),
-      emisorId: 'yo',
-      receptorId: this.chatId!,
-      contenido: this.nuevoMensaje,
-      timestamp: horaActual,
-      leido: false,
+    const horaActual = new Date()
+    const mensaje: Conversacion = {
+      id_conversacion: new Date().getTime(),
+      id_emisor: 0,
+      id_receptor: Number(this.chatId),
+      contenido_conversacion: this.nuevoMensaje,
+      fecha_envio: horaActual,
+      estado_visto: false,
     };
 
     this.mensajes.push(mensaje);
@@ -242,17 +307,17 @@ export class ChatPrivadoPage implements OnInit {
 
     this.scrollToBottom();
 
-          // Simula respuesta
-      setTimeout(() => {
-        this.mensajes.push({
-          id: new Date().getTime().toString(),
-          emisorId: this.chatId!,
-          receptorId: 'yo',
-          contenido: '¡Entendido!',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          leido: false
-        });
-      }, 1000);
-    
+    // Simula respuesta
+setTimeout(() => {
+  this.mensajes.push({
+    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+    id_receptor: 0,                             // <-- tú
+    contenido_conversacion: '¡Entendido!',
+    fecha_envio: new Date(),
+    estado_visto: false
+  });
+}, 1000);
+
   }
 }

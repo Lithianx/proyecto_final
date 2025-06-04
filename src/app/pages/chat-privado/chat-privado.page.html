@@ -10,9 +10,9 @@
 
     <div class="avatar-container">
       <ion-avatar>
-        <img [src]="chatInfo.userAvatar">
+        <img [src]="chatInfo.avatar">
       </ion-avatar>
-      <ion-title>{{ chatInfo.username }}</ion-title>
+      <ion-title>{{ chatInfo.nombre_usuario }}</ion-title>
     </div>
   </ion-toolbar>
 
@@ -20,36 +20,42 @@
   <div class="spacer-header"></div>
 
 
-  <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.emisorId === 'yo' ? 'message sent' : 'message received'">
-      <div class="bubble">
+<div class="chat-container">
+  <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.id_emisor === 0 ? 'message sent' : 'message received'">
+    <div class="bubble">
 
-        <!-- Imagen (si existe) -->
-        <img *ngIf="mensaje.imagen" [src]="mensaje.imagen" class="imagen-mensaje" (load)="onImageLoad()" />
+      <!-- Imagen -->
+      <img *ngIf="mensaje.contenido_conversacion?.startsWith('[imagen]')" 
+           [src]="mensaje.contenido_conversacion.replace('[imagen]', '').trim()" 
+           class="imagen-mensaje" (load)="onImageLoad()" />
 
-        <!-- Video (si existe) -->
-        <video *ngIf="mensaje.video" [src]="mensaje.video" controls class="video-chat"
-          (canplay)="onMediaLoad()"></video>
+      <!-- Video -->
+      <video *ngIf="mensaje.contenido_conversacion?.startsWith('[video]')" 
+             [src]="mensaje.contenido_conversacion.replace('[video]', '').trim()" 
+             controls class="video-chat" (canplay)="onMediaLoad()"></video>
 
-        <!-- Audio (si existe) -->
-        <audio *ngIf="mensaje.audio" [src]="mensaje.audio" controls type="audio/*" class="audio-chat"
-          (canplay)="onMediaLoad()"></audio>
+      <!-- Audio -->
+      <audio *ngIf="mensaje.contenido_conversacion?.startsWith('[audio]')" 
+             [src]="mensaje.contenido_conversacion.replace('[audio]', '').trim()" 
+             controls type="audio/*" class="audio-chat" (canplay)="onMediaLoad()"></audio>
 
-        <!-- Texto (si existe) -->
-        <p *ngIf="mensaje.contenido">{{ mensaje.contenido }}</p>
+      <!-- Texto -->
+      <p *ngIf="!mensaje.contenido_conversacion?.startsWith('[imagen]') 
+                && !mensaje.contenido_conversacion?.startsWith('[video]') 
+                && !mensaje.contenido_conversacion?.startsWith('[audio]')">
+        {{ mensaje.contenido_conversacion }}
+      </p>
 
-        <!-- Hora -->
-
-        <div class="hora-visto">
-          <span class="hora">{{ mensaje.timestamp }}</span>
-          <ion-icon [name]="mensaje.leido ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
-        </div>
-
-
+      <!-- Hora y visto -->
+      <div class="hora-visto">
+        <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+        <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
       </div>
+
     </div>
-    <div #endOfMessages></div>
   </div>
+  <div #endOfMessages></div>
+</div>
 
 
 
