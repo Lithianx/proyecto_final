@@ -79,7 +79,7 @@
         <ion-icon [name]="grabando ? 'stop-circle' : 'mic-circle'"></ion-icon>
       </ion-button>
 
-      <textarea [placeholder]="grabando ? 'Enviando audio...' : 'Enviar mensaje...'" [(ngModel)]="nuevoMensaje"
+      <textarea #mensajeInput [placeholder]="grabando ? 'Enviando audio...' : 'Enviar mensaje...'" [(ngModel)]="nuevoMensaje"
         (input)="autoResize($event)" class="mensaje-input"></textarea>
       <ion-button fill="clear" (click)="enviarMensaje()">
         <ion-icon name="send-outline"></ion-icon>

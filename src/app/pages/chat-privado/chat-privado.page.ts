@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
-
+import { Keyboard } from '@capacitor/keyboard';
 
 import { Usuario } from 'src/app/models/usuario.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
@@ -19,6 +19,7 @@ export class ChatPrivadoPage implements OnInit {
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild('audioInput', { static: false }) audioInput!: ElementRef;
   @ViewChild('endOfMessages') endOfMessages!: ElementRef;
+  @ViewChild('mensajeInput') mensajeInput!: ElementRef<HTMLTextAreaElement>;
 
   chatId: string | null = '';
   chatInfo!: Usuario;
@@ -67,68 +68,68 @@ export class ChatPrivadoPage implements OnInit {
 
   // Conversaciones simuladas (cada mensaje es una Conversacion)
   mensajes: Conversacion[] = [
-  {
-    id_conversacion: 1,
-    id_emisor: 1,
-    id_receptor: 0,
-    contenido_conversacion: '¡Hola!',
-    fecha_envio: new Date(),
-    estado_visto: true
-  },
-  {
-    id_conversacion: 1,
-    id_emisor: 0,
-    id_receptor: 1,
-    contenido_conversacion: '¿Cómo estás?',
-    fecha_envio: new Date(),
-    estado_visto: true
-  },
-  {
-    id_conversacion: 2,
-    id_emisor: 2,
-    id_receptor: 0,
-    contenido_conversacion: '¡Hola! Soy gamer123',
-    fecha_envio: new Date(),
-    estado_visto: true
-  }
+    {
+      id_conversacion: 1,
+      id_emisor: 1,
+      id_receptor: 0,
+      contenido_conversacion: '¡Hola!',
+      fecha_envio: new Date(),
+      estado_visto: true
+    },
+    {
+      id_conversacion: 1,
+      id_emisor: 0,
+      id_receptor: 1,
+      contenido_conversacion: '¿Cómo estás?',
+      fecha_envio: new Date(),
+      estado_visto: true
+    },
+    {
+      id_conversacion: 2,
+      id_emisor: 2,
+      id_receptor: 0,
+      contenido_conversacion: '¡Hola! Soy gamer123',
+      fecha_envio: new Date(),
+      estado_visto: true
+    }
   ];
 
   constructor(private route: ActivatedRoute) { }
 
-ngOnInit() {
-  // Recibe el id de la conversación
-  const idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
-  // Filtra los mensajes de esa conversación
-  this.mensajes = this.mensajes.filter(m => m.id_conversacion === idConversacionActual);
+  ngOnInit() {
+    // Recibe el id de la conversación
+    const idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
+    // Filtra los mensajes de esa conversación
+    this.mensajes = this.mensajes.filter(m => m.id_conversacion === idConversacionActual);
 
-  // Si no hay mensajes, usa el usuario prueba
-  if (this.mensajes.length === 0) {
-    this.chatInfo = {
-      id_usuario: 99,
-      nombre_usuario: 'PRUEBA',
-      correo_electronico: '',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: false
-    };
-  } else {
-    // Busca el usuario contraparte (el que NO es "yo", asumiendo que "yo" es id 0)
-    const mensajeEjemplo = this.mensajes[0];
-    const idUsuarioContraparte = mensajeEjemplo.id_emisor !== 0 ? mensajeEjemplo.id_emisor : mensajeEjemplo.id_receptor;
-    this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte) || {
-      id_usuario: 99,
-      nombre_usuario: 'PRUEBA',
-      correo_electronico: '',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: false
-    };
+    // Si no hay mensajes, usa el usuario prueba
+    if (this.mensajes.length === 0) {
+      this.chatInfo = {
+        id_usuario: 99,
+        nombre_usuario: 'PRUEBA',
+        correo_electronico: '',
+        fecha_registro: new Date(),
+        contrasena: '',
+        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado_cuenta: true,
+        estado_online: false
+      };
+    } else {
+      // Busca el usuario contraparte (el que NO es "yo", asumiendo que "yo" es id 0)
+      const mensajeEjemplo = this.mensajes[0];
+      const idUsuarioContraparte = mensajeEjemplo.id_emisor !== 0 ? mensajeEjemplo.id_emisor : mensajeEjemplo.id_receptor;
+      this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte) || {
+        id_usuario: 99,
+        nombre_usuario: 'PRUEBA',
+        correo_electronico: '',
+        fecha_registro: new Date(),
+        contrasena: '',
+        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+        estado_cuenta: true,
+        estado_online: false
+      };
+    }
   }
-}
 
 
   autoResize(event: Event): void {
@@ -137,6 +138,11 @@ ngOnInit() {
     textarea.style.height = textarea.scrollHeight + 'px';
   }
 
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.mensajeInput?.nativeElement.focus();
+    }, 300); // Espera un poco para asegurar que el DOM esté listo
+  }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
@@ -195,16 +201,16 @@ ngOnInit() {
         this.scrollToBottom(); // 👈 Desplazarse al final
 
         // Simula respuesta
-setTimeout(() => {
-  this.mensajes.push({
-    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
-    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
-    id_receptor: 0,                             // <-- tú
-    contenido_conversacion: '¡Entendido!',
-    fecha_envio: new Date(),
-    estado_visto: false
-  });
-}, 1000);
+        setTimeout(() => {
+          this.mensajes.push({
+            id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+            id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+            id_receptor: 0,                             // <-- tú
+            contenido_conversacion: '¡Entendido!',
+            fecha_envio: new Date(),
+            estado_visto: false
+          });
+        }, 1000);
 
         // Resetear input para permitir reelección del mismo archivo
         event.target.value = '';
@@ -263,16 +269,16 @@ setTimeout(() => {
     this.scrollToBottom();
 
     // Simula respuesta
-setTimeout(() => {
-  this.mensajes.push({
-    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
-    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
-    id_receptor: 0,                             // <-- tú
-    contenido_conversacion: '¡Entendido!',
-    fecha_envio: new Date(),
-    estado_visto: false
-  });
-}, 1000);
+    setTimeout(() => {
+      this.mensajes.push({
+        id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+        id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+        id_receptor: 0,                             // <-- tú
+        contenido_conversacion: '¡Entendido!',
+        fecha_envio: new Date(),
+        estado_visto: false
+      });
+    }, 1000);
 
   }
 
@@ -308,16 +314,20 @@ setTimeout(() => {
     this.scrollToBottom();
 
     // Simula respuesta
-setTimeout(() => {
-  this.mensajes.push({
-    id_conversacion: this.idConversacionActual, // o el id actual de la conversación
-    id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
-    id_receptor: 0,                             // <-- tú
-    contenido_conversacion: '¡Entendido!',
-    fecha_envio: new Date(),
-    estado_visto: false
-  });
-}, 1000);
+    setTimeout(() => {
+      this.mensajes.push({
+        id_conversacion: this.idConversacionActual, // o el id actual de la conversación
+        id_emisor: this.chatInfo.id_usuario,        // <-- el usuario contraparte
+        id_receptor: 0,                             // <-- tú
+        contenido_conversacion: '¡Entendido!',
+        fecha_envio: new Date(),
+        estado_visto: false
+      });
+    }, 1000);
 
+  }
+
+  ionViewWillLeave() {
+    Keyboard.hide();
   }
 }
