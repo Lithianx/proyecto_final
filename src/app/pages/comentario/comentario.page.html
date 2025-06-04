@@ -6,7 +6,7 @@
   <ion-card *ngIf="publicacion" class="publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="usuarioPost.id_usuario" />
+        <img [src]="usuarioPost.avatar" />
       </ion-avatar>
       <ion-label>
         <h2>{{ usuarioPost.nombre_usuario }}</h2>
@@ -106,7 +106,7 @@
       <ion-content>
         <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
         <ion-list class="modal-scrollable-content" scroll-y="true">
-          <ion-item *ngFor="let user of usuariosFiltrados">
+          <ion-item *ngFor="let user of followersfriend">
             <ion-avatar slot="start">
               <img [src]="user.avatar" />
             </ion-avatar>

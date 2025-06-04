@@ -40,6 +40,11 @@ export class ComentarioPage implements OnInit {
     estado_online: true
   };
 
+  seguimientos: Seguir[] = [
+    { id_usuario_seguidor: 0, id_usuario_seguido: 2, estado_seguimiento: true },
+    { id_usuario_seguidor: 0, id_usuario_seguido: 3, estado_seguimiento: true },
+    // Puedes agregar más relaciones si quieres
+  ];
 
   usuarios: Usuario[] = [
     {
@@ -64,7 +69,7 @@ export class ComentarioPage implements OnInit {
     },
     {
       id_usuario: 3,
-      nombre_usuario: 'Pan_con_queso',
+      nombre_usuario: 'gamer78',
       correo_electronico: 'pan@correo.com',
       fecha_registro: new Date(),
       contrasena: '',
@@ -91,7 +96,11 @@ export class ComentarioPage implements OnInit {
 
 
   ngOnInit() {
-    this.usuariosFiltrados = [...this.usuarios];
+    const idsSeguidos = this.seguimientos
+      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
+      .map(s => s.id_usuario_seguido);
+
+    this.followersfriend = this.usuarios.filter(user => idsSeguidos.includes(user.id_usuario));
     this.postId = this.route.snapshot.paramMap.get('id');
     this.obtenerPublicacion();
 
@@ -103,14 +112,31 @@ export class ComentarioPage implements OnInit {
     }, 100); // Se le da un pequeño retraso para asegurarse que todo esté cargado
   }
 
-  // Filtrado por texto
+
+
+  followersfriend: Usuario[] = [];
+
+  // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
     const searchTerm = event.target.value?.toLowerCase() || '';
-    this.usuariosFiltrados = this.usuarios.filter(user =>
-      user.nombre_usuario.toLowerCase().includes(searchTerm)
-    );
-    console.log('Usuarios filtrados:', this.usuariosFiltrados);
+    console.log('Valor ingresado en el input:', searchTerm);
+
+    // 1. Obtén los IDs de los usuarios que sigues
+    const idsSeguidos = this.seguimientos
+      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
+      .map(s => s.id_usuario_seguido);
+
+    // 2. Filtra solo los usuarios seguidos y luego por nombre
+    this.followersfriend = this.usuarios
+      .filter(user => idsSeguidos.includes(user.id_usuario))
+      .filter(user => user.nombre_usuario.toLowerCase().includes(searchTerm));
+
+    console.log('Usuarios filtrados:', this.followersfriend);
   }
+
+
+
+
 
   usuarioPost!: Usuario;
 
@@ -302,7 +328,6 @@ export class ComentarioPage implements OnInit {
   }
 
   // Array para almacenar seguimientos
-  seguimientos: Seguir[] = [];
 
   seguir(usuario: Usuario) {
     const seguimiento = this.seguimientos.find(
