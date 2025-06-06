@@ -10,6 +10,7 @@ import { ActionSheetController } from '@ionic/angular';
 })
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+  idUsuario: string = '';
 
   siguiendo: boolean = true;
   mostrarModal: boolean = false;
@@ -141,42 +142,43 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-  async abrirOpciones() {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
-        {
-          text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
-          icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
-          handler: () => {
-            this.siguiendo = !this.siguiendo;
-            console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
-          }
-        },
-        {
-          text: 'Mandar mensaje',
-          icon: 'chatbubble-ellipses-outline',
-          handler: () => {
-            console.log('Mandar mensaje');
-            // this.router.navigate(['/chat', this.nombreUsuario]);
-          }
-        },
-        {
-          text: 'Reportar',
-          role: 'destructive',
-          icon: 'alert-circle-outline',
-          handler: () => {
-            console.log('Reportar usuario');
-          }
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close',
-          role: 'cancel'
+async abrirOpciones() {
+  const actionSheet = await this.actionSheetCtrl.create({
+    header: 'Opciones',
+    buttons: [
+      {
+        text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
+        icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
+        handler: () => {
+          this.siguiendo = !this.siguiendo;
+          console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
         }
-      ]
-    });
+      },
+      {
+        text: 'Mandar mensaje',
+        icon: 'chatbubble-ellipses-outline',
+        handler: () => {
+          console.log('Mandar mensaje a ID:', this.idUsuario);
+          this.router.navigate(['/chat-privado', this.idUsuario]);
+        }
+      },
+      {
+        text: 'Reportar',
+        role: 'destructive',
+        icon: 'alert-circle-outline',
+        handler: () => {
+          console.log('Reportar usuario');
+        }
+      },
+      {
+        text: 'Cancelar',
+        icon: 'close',
+        role: 'cancel'
+      }
+    ]
+  });
 
-    await actionSheet.present();
-  }
+  await actionSheet.present();
+}
+
 }
