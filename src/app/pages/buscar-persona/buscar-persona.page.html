@@ -15,12 +15,12 @@
 
 <!-- Lista de resultados -->
 <ion-list *ngIf="usuarios.length > 0" [inset]="true" lines="full">
-  <ion-item *ngFor="let usuario of usuarios" [routerLink]="['/perfil-user', usuario.id]">
+  <ion-item *ngFor="let usuario of usuarios" [routerLink]="['/perfil-user', usuario.id_usuario]">
     <ion-avatar slot="start">
-      <img [src]="usuario.userAvatar" />
+      <img [src]="usuario.avatar" />
     </ion-avatar>
     <ion-label>
-      <h2>{{ usuario.username }}</h2>
+      <h2>{{ usuario.nombre_usuario }}</h2>
     </ion-label>
   </ion-item>
 </ion-list>
