@@ -4,6 +4,12 @@
   --ion-color-chip-text: white; /* Para que el texto dentro del chip sea blanco */
 }
 
+::ng-deep ion-refresher-content .refresher-icon,
+::ng-deep ion-refresher-content .refresher-pulling-icon,
+::ng-deep ion-refresher-content .refresher-refreshing-icon {
+  color: #3fe520 !important; // Cambia este valor por el color que desees
+}
+
 ::ng-deep .custom-modal-enviar .modal-scrollable-content {
   --overflow: auto;
   height: 100%;
