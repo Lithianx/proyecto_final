@@ -48,6 +48,16 @@ export class ComentarioPage implements OnInit {
 
   usuarios: Usuario[] = [
     {
+    id_usuario: 0,
+    nombre_usuario: 'Usuario Demo',
+    correo_electronico: 'demo@correo.com',
+    fecha_registro: new Date(),
+    contrasena: '',
+    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    estado_cuenta: true,
+    estado_online: true
+    },
+    {
       id_usuario: 1,
       nombre_usuario: 'PedritoGamer',
       correo_electronico: 'pedrito@correo.com',
@@ -114,6 +124,35 @@ export class ComentarioPage implements OnInit {
 
 
 
+  // Método para refrescar la lista de comentarios
+  doRefresh(event: any) {
+    console.log('Recargando comentarios...');
+    setTimeout(() => {
+      // Aquí actualizar desde Firebase
+      this.obtenerPublicacion(); // Recarga los posts como ejemplo sin reiniciar todo el componente
+      // Agrega publicaciones nuevas simuladas
+      this.comentarios.push(
+        {
+        id_comentario: this.comentarios.length + 1,
+        id_publicacion: this.publicacion.id_publicacion,
+        id_usuario: 2,
+        contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?! con refrescar',
+        fecha_comentario: new Date()
+        }
+      );
+      // Ordena después de agregar nuevas publicaciones
+      this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+      event.target.complete();
+      console.log('Recarga completada');
+    }, 1500); // Simula un tiempo de espera
+  }
+
+
+
+
+
+
+
   followersfriend: Usuario[] = [];
 
   // Filtrado por texto SOLO para los usuarios que sigues
@@ -157,38 +196,39 @@ export class ComentarioPage implements OnInit {
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: 2,
         contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?!',
-        fecha_comentario: new Date()
+        fecha_comentario: new Date('2023-05-01T09:00:00')
       },
       {
         id_comentario: 2,
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: 3,
         contenido_comentario: 'Me perdí esa parte, ¿hay video?',
-        fecha_comentario: new Date()
+        fecha_comentario: new Date('2022-06-01T09:00:00')
       },
       {
         id_comentario: 3,
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: 1,
         contenido_comentario: 'Gracias a todos por el apoyo, ¡fue un gran equipo!',
-        fecha_comentario: new Date()
+        fecha_comentario: new Date('2021-06-01T09:00:00')
       },
       {
         id_comentario: 4,
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: 3,
         contenido_comentario: '¡Quiero jugar la próxima vez!',
-        fecha_comentario: new Date()
+        fecha_comentario: new Date('2023-07-01T09:00:00')
       },
       {
         id_comentario: 5,
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: 3,
         contenido_comentario: '¿Qué personaje usaste?',
-        fecha_comentario: new Date()
+        fecha_comentario: new Date('2023-06-01T09:00:00')
       }
       // ...puedes agregar más comentarios simulados aquí
     ];
+    this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
   }
 
   getUsuarioComentario(id_usuario: number): Usuario | undefined {
@@ -207,6 +247,7 @@ export class ComentarioPage implements OnInit {
         fecha_comentario: new Date(),
       };
       this.comentarios.push(nuevo);
+      this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
       this.nuevoComentario = '';
     }
   }

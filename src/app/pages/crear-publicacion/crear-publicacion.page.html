@@ -22,17 +22,22 @@
     <ion-textarea auto-grow="true" placeholder="¿Qué estás pensando?" [(ngModel)]="contenido"
       class="textarea-publicacion">
     </ion-textarea>
- 
+
     <!-- Mostrar imagen seleccionada -->
     <img *ngIf="imagenBase64" [src]="imagenBase64" class="media-item" />
-    
+
     <ion-row class="acciones-publicacion">
-      <ion-col size="12">
+      <ion-col size="6">
         <ion-button fill="clear" expand="full" (click)="seleccionarArchivo()">
           <ion-icon name="image-outline" slot="start"></ion-icon>
           Agregar Foto
         </ion-button>
-        <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
+      </ion-col>
+      <ion-col size="6">
+        <ion-button fill="clear" expand="full" (click)="mostrarBuscadorGiphy = true">
+          <ion-icon name="happy-outline" slot="start"></ion-icon>
+          Buscar GIF
+        </ion-button>
       </ion-col>
     </ion-row>
 
@@ -43,7 +48,30 @@
 
 
 
-
+  <!-- Modal o sección para buscar y mostrar GIFs -->
+  <ion-modal class="modal-giphy" *ngIf="mostrarBuscadorGiphy" [isOpen]="mostrarBuscadorGiphy" (didDismiss)="mostrarBuscadorGiphy = false">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Buscar GIF</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="mostrarBuscadorGiphy = false">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-searchbar (ionInput)="buscarGiphy($event.target.value || '' )"></ion-searchbar>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="4" *ngFor="let gif of giphyResults">
+              <img [src]="gif.images.fixed_height.url" (click)="seleccionarGifGiphy(gif.images.original.url)"
+                style="width: 100%; cursor: pointer;" />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
 
 
@@ -65,13 +93,13 @@
           <ion-label>Editar</ion-label>
         </ion-chip>
       </ion-item>
-  
+
       <!-- Parte donde se muestra imagen o descripción -->
       <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
         <!-- Si hay imagen, mostrar imagen -->
         <img [src]="publicacion.imagen" class="post-image" />
       </ng-container>
-  
+
       <!-- En caso que NO haya imagen -->
       <ng-template #soloDescripcion>
         <ion-card-content>
@@ -79,14 +107,15 @@
           <p><strong>0 likes</strong></p>
         </ion-card-content>
       </ng-template>
-  
+
       <!-- Siempre muestra acciones y descripción si hay imagen -->
       <ng-container *ngIf="publicacion.imagen">
         <ion-card-content>
           <p><strong>0 likes</strong></p>
-  
+
           <p>
-            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100 ? '...' : '') }}
+            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) +
+            (publicacion.contenido.length > 100 ? '...' : '') }}
             <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
               (click)="mostrarDescripcion = !mostrarDescripcion">
               {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
@@ -94,7 +123,7 @@
           </p>
         </ion-card-content>
       </ng-container>
-  
+
     </ion-card>
   </ion-list>
 

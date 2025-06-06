@@ -7,6 +7,9 @@ import { Keyboard } from '@capacitor/keyboard';
 import { Usuario } from 'src/app/models/usuario.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
 
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { environment } from 'src/environments/environment';
+
 
 @Component({
   selector: 'app-chat-privado',
@@ -18,6 +21,7 @@ export class ChatPrivadoPage implements OnInit {
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild('audioInput', { static: false }) audioInput!: ElementRef;
+  @ViewChild('videoInput') videoInput!: ElementRef<HTMLInputElement>;
   @ViewChild('endOfMessages') endOfMessages!: ElementRef;
   @ViewChild('mensajeInput') mensajeInput!: ElementRef<HTMLTextAreaElement>;
 
@@ -94,9 +98,10 @@ export class ChatPrivadoPage implements OnInit {
     }
   ];
 
+  
   constructor(private route: ActivatedRoute) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     // Recibe el id de la conversación
     const idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
     // Filtra los mensajes de esa conversación
@@ -164,6 +169,134 @@ export class ChatPrivadoPage implements OnInit {
     this.scrollToBottom();  // Desplazar hacia abajo después de que el contenido multimedia (imagen o video) esté listo
   }
 
+  imagenBase64: string | null = null;
+mostrarModalArchivos = false;
+
+abrirBuscadorGiphy() {
+  this.mostrarModalArchivos = false;
+  setTimeout(() => {
+    this.mostrarBuscadorGiphy = true;
+  }, 200); // Pequeño delay para que el modal anterior se cierre antes de abrir el nuevo
+}
+
+  // Giphy
+  giphyResults: any[] = [];
+
+  async buscarGiphy(query: string) {
+    const giphyApiKey = environment.giphyApiKey;
+    const url = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${encodeURIComponent(query)}&limit=20&rating=g`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    this.giphyResults = data.data; // Array de GIFs
+  }
+
+  mostrarBuscadorGiphy = false;
+
+  seleccionarGifGiphy(url: string) {
+    this.imagenBase64 = url; // Guarda la URL del GIF
+    this.mostrarBuscadorGiphy = false;
+  }
+
+enviarGifGiphy(url: string) {
+  const horaActual = new Date();
+  const mensaje: Conversacion = {
+    id_conversacion: new Date().getTime(),
+    id_emisor: 0,
+    id_receptor: Number(this.chatId),
+    contenido_conversacion: url,
+    fecha_envio: horaActual,
+    estado_visto: false,
+  };
+
+  this.mensajes.push(mensaje);
+  this.mostrarBuscadorGiphy = false;
+  this.scrollToBottom();
+
+  // Simula respuesta
+  setTimeout(() => {
+    this.mensajes.push({
+      id_conversacion: this.idConversacionActual,
+      id_emisor: this.chatInfo.id_usuario,
+      id_receptor: 0,
+      contenido_conversacion: '¡Genial GIF!',
+      fecha_envio: new Date(),
+      estado_visto: false
+    });
+  }, 1000);
+}
+
+
+abrirSelectorArchivos() {
+  this.fileInput.nativeElement.click();
+}
+
+async tomarFoto() {
+  try {
+    const image = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      saveToGallery: true,
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Camera, // Usa la cámara
+    });
+
+    if (image && image.dataUrl) {
+      const horaActual = new Date();
+      const mensaje: Conversacion = {
+        id_conversacion: new Date().getTime(),
+        id_emisor: 0,
+        id_receptor: Number(this.chatId),
+        contenido_conversacion: `[imagen] ${image.dataUrl}`,
+        fecha_envio: horaActual,
+        estado_visto: false,
+      };
+
+      this.mensajes.push(mensaje);
+      this.scrollToBottom();
+
+      // Simula respuesta
+      setTimeout(() => {
+        this.mensajes.push({
+          id_conversacion: this.idConversacionActual,
+          id_emisor: this.chatInfo.id_usuario,
+          id_receptor: 0,
+          contenido_conversacion: '¡Entendido!',
+          fecha_envio: new Date(),
+          estado_visto: false
+        });
+      }, 1000);
+    }
+  } catch (error: any) {
+    if (error.message?.toLowerCase().includes('permission')) {
+      alert('Debes permitir el acceso a la cámara o galería desde la configuración de tu dispositivo.');
+    } else {
+      console.warn('No se seleccionó ninguna imagen o se canceló la acción.');
+    }
+  }
+}
+
+abrirInputVideo() {
+  this.videoInput.nativeElement.click();
+}
+
+
+onVideoSeleccionado(event: any) {
+  const file = event.target.files[0];
+  if (file) {
+    const videoUrl = URL.createObjectURL(file);
+    const horaActual = new Date();
+    const mensaje: Conversacion = {
+      id_conversacion: new Date().getTime(),
+      id_emisor: 0,
+      id_receptor: Number(this.chatId),
+      contenido_conversacion: `[video] ${videoUrl}`,
+      fecha_envio: horaActual,
+      estado_visto: false,
+    };
+    this.mensajes.push(mensaje);
+    this.scrollToBottom();
+  }
+}
 
 
 

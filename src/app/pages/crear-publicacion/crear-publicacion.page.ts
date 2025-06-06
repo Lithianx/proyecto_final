@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 
 import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -37,31 +39,48 @@ export class CrearPublicacionPage implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit() {
+
   }
 
-  // Función para seleccionar archivo de imagen
-  seleccionarArchivo() {
-    this.fileInput.nativeElement.click();
+  // Giphy
+  giphyResults: any[] = [];
+
+  async buscarGiphy(query: string) {
+    const giphyApiKey = environment.giphyApiKey;
+    const url = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${encodeURIComponent(query)}&limit=20&rating=g`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    this.giphyResults = data.data; // Array de GIFs
   }
 
-  // Función que se ejecuta al seleccionar un archivo
-  onArchivoSeleccionado(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
+  mostrarBuscadorGiphy = false;
 
-      reader.onload = () => {
-        const base64 = reader.result as string;
+  seleccionarGifGiphy(url: string) {
+    this.imagenBase64 = url; // Guarda la URL del GIF
+    this.mostrarBuscadorGiphy = false;
+  }
 
-        // Solo permitimos imagen para publicaciones, no video
-        if (file.type.startsWith('image/')) {
-          this.imagenBase64 = base64;
-        } else {
-          console.warn('Solo se permiten imágenes en las publicaciones');
-        }
-      };
+  async seleccionarArchivo() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        saveToGallery: true,
+        promptLabelHeader: 'Selecciona una opción',
+        promptLabelPhoto: 'Elegir de la galería',
+        promptLabelPicture: 'Tomar foto',
+        promptLabelCancel: 'Cancelar',
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt // Permite elegir entre cámara y galería
+      });
 
-      reader.readAsDataURL(file);
+      this.imagenBase64 = image.dataUrl || null;
+    } catch (error: any) {
+      if (error.message?.toLowerCase().includes('permission')) {
+        alert('Debes permitir el acceso a la cámara o galería desde la configuración de tu dispositivo.');
+      } else {
+        console.warn('No se seleccionó ninguna imagen o se canceló la acción.');
+      }
     }
   }
 
@@ -91,6 +110,6 @@ export class CrearPublicacionPage implements OnInit {
 
   // Función para navegar a la pantalla de edición
   modificar(post: Publicacion) {
-    this.router.navigate(['/editar-publicacion',post.id_publicacion]);
+    this.router.navigate(['/editar-publicacion', post.id_publicacion]);
   }
 }
