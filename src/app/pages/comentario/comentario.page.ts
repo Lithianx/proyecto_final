@@ -12,6 +12,8 @@ import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
 
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+
 
 @Component({
   selector: 'app-comentario',
@@ -27,6 +29,8 @@ export class ComentarioPage implements OnInit {
   publicacion!: Publicacion;
   comentarios: Comentario[] = [];
   nuevoComentario = '';
+
+  mostrarDescripcion: boolean = false;
 
   // Simulación del usuario actual (en producción esto viene de un servicio de autenticación)
   usuarioActual: Usuario = {
@@ -48,14 +52,14 @@ export class ComentarioPage implements OnInit {
 
   usuarios: Usuario[] = [
     {
-    id_usuario: 0,
-    nombre_usuario: 'Usuario Demo',
-    correo_electronico: 'demo@correo.com',
-    fecha_registro: new Date(),
-    contrasena: '',
-    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-    estado_cuenta: true,
-    estado_online: true
+      id_usuario: 0,
+      nombre_usuario: 'Usuario Demo',
+      correo_electronico: 'demo@correo.com',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
     },
     {
       id_usuario: 1,
@@ -90,6 +94,47 @@ export class ComentarioPage implements OnInit {
     // ...otros usuarios simulados...
   ];
 
+
+  // Ejemplo de likes para publicaciones
+  likesPublicaciones: Like[] = [
+    {
+      id_usuario: 1,
+      id_publicacion: 101,
+      fecha_like: new Date('2024-06-01T10:00:00'),
+      estado_like: true
+    },
+    {
+      id_usuario: 2,
+      id_publicacion: 101,
+      fecha_like: new Date('2024-06-01T11:00:00'),
+      estado_like: true
+    },
+    {
+      id_usuario: 3,
+      id_publicacion: 102,
+      fecha_like: new Date('2024-06-02T09:30:00'),
+      estado_like: true
+    }
+  ];
+
+  // Ejemplo de likes para comentarios
+  likesComentarios: Like[] = [
+    {
+      id_usuario: 1,
+      id_comentario: 1,
+      fecha_like: new Date('2024-06-01T12:00:00'),
+      estado_like: true
+    },
+    {
+      id_usuario: 3,
+      id_comentario: 1,
+      fecha_like: new Date('2024-06-02T08:00:00'),
+      estado_like: true
+    }
+  ];
+
+
+
   usuariosFiltrados: Usuario[] = [];
 
   isModalOpen: boolean = false;
@@ -101,18 +146,22 @@ export class ComentarioPage implements OnInit {
     private navCtrl: NavController,
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
-    private router: Router
+    private router: Router,
+    private localStorage: LocalStorageService
   ) { }
 
 
-  ngOnInit() {
+  async ngOnInit() {
     const idsSeguidos = this.seguimientos
       .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
       .map(s => s.id_usuario_seguido);
 
     this.followersfriend = this.usuarios.filter(user => idsSeguidos.includes(user.id_usuario));
     this.postId = this.route.snapshot.paramMap.get('id');
-    this.obtenerPublicacion();
+    await this.obtenerPublicacion();
+    this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes');
+    this.publicacionLikes = await this.localStorage.getList<Like>('publicacionLikes');
+    this.seguimientos = await this.localStorage.getList<Seguir>('seguimientos');
 
     // Desplazar hacia la sección de comentarios después de cargar la página
     setTimeout(() => {
@@ -125,26 +174,13 @@ export class ComentarioPage implements OnInit {
 
 
   // Método para refrescar la lista de comentarios
-  doRefresh(event: any) {
+  async doRefresh(event: any) {
     console.log('Recargando comentarios...');
-    setTimeout(() => {
-      // Aquí actualizar desde Firebase
-      this.obtenerPublicacion(); // Recarga los posts como ejemplo sin reiniciar todo el componente
-      // Agrega publicaciones nuevas simuladas
-      this.comentarios.push(
-        {
-        id_comentario: this.comentarios.length + 1,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 2,
-        contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?! con refrescar',
-        fecha_comentario: new Date()
-        }
-      );
-      // Ordena después de agregar nuevas publicaciones
-      this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+    setTimeout(async () => {
+      await this.obtenerPublicacion(); // Recarga los comentarios desde el local storage
       event.target.complete();
       console.log('Recarga completada');
-    }, 1500); // Simula un tiempo de espera
+    }, 1500);
   }
 
 
@@ -174,60 +210,78 @@ export class ComentarioPage implements OnInit {
   }
 
 
+  imagenSeleccionada: string | null = null;
+
+  verImagen(publicacion: Publicacion) {
+    this.imagenSeleccionada = publicacion.imagen ?? null;
+  }
+
+  cerrarVisor() {
+    this.imagenSeleccionada = null;
+  }
 
 
 
   usuarioPost!: Usuario;
 
-  obtenerPublicacion() {
-    this.publicacion = {
-      id_publicacion: Number(this.postId) || 1,
-      id_usuario: 1,
-      contenido: '¡Esa victoria fue épica! 🎮💥 ¿Quién más estuvo en la partida?',
-      imagen: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-      fecha_publicacion: new Date()
-    };
-    // Buscar el usuario de la publicación
+  async obtenerPublicacion() {
+    // Obtiene la publicación desde el local storage
+    const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
+    this.publicacion = publicaciones.find(p => p.id_publicacion === Number(this.postId))!;
+
+    // Busca el usuario de la publicación
     this.usuarioPost = this.usuarios.find(u => u.id_usuario === this.publicacion.id_usuario)!;
-    // Carga varios comentarios simulados
-    this.comentarios = [
-      {
-        id_comentario: 1,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 2,
-        contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?!',
-        fecha_comentario: new Date('2023-05-01T09:00:00')
-      },
-      {
-        id_comentario: 2,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 3,
-        contenido_comentario: 'Me perdí esa parte, ¿hay video?',
-        fecha_comentario: new Date('2022-06-01T09:00:00')
-      },
-      {
-        id_comentario: 3,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 1,
-        contenido_comentario: 'Gracias a todos por el apoyo, ¡fue un gran equipo!',
-        fecha_comentario: new Date('2021-06-01T09:00:00')
-      },
-      {
-        id_comentario: 4,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 3,
-        contenido_comentario: '¡Quiero jugar la próxima vez!',
-        fecha_comentario: new Date('2023-07-01T09:00:00')
-      },
-      {
-        id_comentario: 5,
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: 3,
-        contenido_comentario: '¿Qué personaje usaste?',
-        fecha_comentario: new Date('2023-06-01T09:00:00')
+
+    // Obtiene los comentarios asociados a la publicación desde el local storage
+    let comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
+
+    // Si no hay comentarios en el local, inicializa con simulados y guárdalos
+    if (!comentarios || comentarios.length === 0) {
+      comentarios = [
+        {
+          id_comentario: Number(`${this.publicacion.id_publicacion}01`), // Ej: 101 para publicación 1, 201 para publicación 2
+          id_publicacion: this.publicacion.id_publicacion,
+          id_usuario: 2,
+          contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?!',
+          fecha_comentario: new Date('2023-05-01T09:00:00')
+        },
+        {
+          id_comentario: Number(`${this.publicacion.id_publicacion}02`),
+          id_publicacion: this.publicacion.id_publicacion,
+          id_usuario: 3,
+          contenido_comentario: 'Me perdí esa parte, ¿hay video?',
+          fecha_comentario: new Date('2022-06-01T09:00:00')
+        },
+        {
+          id_comentario: Number(`${this.publicacion.id_publicacion}03`),
+          id_publicacion: this.publicacion.id_publicacion,
+          id_usuario: 1,
+          contenido_comentario: 'Gracias a todos por el apoyo, ¡fue un gran equipo!',
+          fecha_comentario: new Date('2021-06-01T09:00:00')
+        },
+        {
+          id_comentario: Number(`${this.publicacion.id_publicacion}04`),
+          id_publicacion: this.publicacion.id_publicacion,
+          id_usuario: 3,
+          contenido_comentario: '¡Quiero jugar la próxima vez!',
+          fecha_comentario: new Date('2023-07-01T09:00:00')
+        },
+        {
+          id_comentario: Number(`${this.publicacion.id_publicacion}05`),
+          id_publicacion: this.publicacion.id_publicacion,
+          id_usuario: 3,
+          contenido_comentario: '¿Qué personaje usaste?',
+          fecha_comentario: new Date('2023-06-01T09:00:00')
+        }
+      ];
+      // Guarda los comentarios simulados en el local storage
+      for (const comentario of comentarios) {
+        await this.localStorage.addToList<Comentario>('comentarios', comentario);
       }
-      // ...puedes agregar más comentarios simulados aquí
-    ];
+    }
+
+    // Asigna los comentarios ordenados
+    this.comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
     this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
   }
 
@@ -236,7 +290,7 @@ export class ComentarioPage implements OnInit {
   }
 
 
-  publicarComentario() {
+  async publicarComentario() {
     const mensaje = this.nuevoComentario.trim();
     if (mensaje) {
       const nuevo: Comentario = {
@@ -246,26 +300,26 @@ export class ComentarioPage implements OnInit {
         contenido_comentario: mensaje,
         fecha_comentario: new Date(),
       };
-      this.comentarios.push(nuevo);
+      await this.localStorage.addToList<Comentario>('comentarios', nuevo);
+      this.comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
       this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
       this.nuevoComentario = '';
     }
   }
 
-  comentarioLikes: Like[] = [];
 
   getLikesComentario(id_comentario: number): number {
-    return this.comentarioLikes.filter(l => l.id_comentario === id_comentario && l.estado_like).length;
+    return this.likesComentarios.filter(l => l.id_comentario === id_comentario && l.estado_like).length;
   }
 
   usuarioLikeoComentario(id_comentario: number): boolean {
-    return !!this.comentarioLikes.find(
+    return !!this.likesComentarios.find(
       l => l.id_comentario === id_comentario && l.id_usuario === this.usuarioActual.id_usuario && l.estado_like
     );
   }
 
   comentariolikes(comentario: Comentario) {
-    const like = this.comentarioLikes.find(
+    const like = this.likesComentarios.find(
       l => l.id_usuario === this.usuarioActual.id_usuario && l.id_comentario === comentario.id_comentario
     );
 
@@ -273,13 +327,14 @@ export class ComentarioPage implements OnInit {
       like.estado_like = !like.estado_like;
       like.fecha_like = new Date();
     } else {
-      this.comentarioLikes.push({
+      this.likesComentarios.push({
         id_usuario: this.usuarioActual.id_usuario,
         id_comentario: comentario.id_comentario,
         fecha_like: new Date(),
         estado_like: true
       });
     }
+    this.localStorage.setItem('comentarioLikes', this.likesComentarios);
   }
 
   publicacionLikes: Like[] = [];
@@ -301,6 +356,7 @@ export class ComentarioPage implements OnInit {
         estado_like: true
       });
     }
+    this.localStorage.setItem('publicacionLikes', this.publicacionLikes);
   }
 
   getLikesPublicacion(): number {
@@ -366,6 +422,7 @@ export class ComentarioPage implements OnInit {
         estado_guardado: true
       });
     }
+    this.localStorage.setItem('publicacionesGuardadas', this.publicacionesGuardadas);
   }
 
   // Array para almacenar seguimientos
@@ -386,6 +443,7 @@ export class ComentarioPage implements OnInit {
         estado_seguimiento: true
       });
     }
+    this.localStorage.setItem('seguimientos', this.seguimientos);
   }
 
   sigueAlAutor(): boolean {

@@ -10,6 +10,7 @@ import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
 
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
 @Component({
   selector: 'app-home',
@@ -56,32 +57,36 @@ export class HomePage implements OnInit {
   modalCompartirAbierto: boolean = false;
   publicacionCompartir: Publicacion | null = null;
 
-  constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) { }
+  constructor(private actionSheetCtrl: ActionSheetController,
+    private modalController: ModalController,
+    private router: Router,
+    private localStorage: LocalStorageService
+  ) { }
 
   publicacionesAmigos: Publicacion[] = [];
 
   loadPublicaciones() {
     this.publicaciones = [
       {
-      id_publicacion: 1,
-      id_usuario: 1,
-      contenido: '¡Esa victoria fue épica! 🎮💥',
-      imagen: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-      fecha_publicacion: new Date('2024-05-01T15:30:00')
+        id_publicacion: 1,
+        id_usuario: 1,
+        contenido: '¡Esa victoria fue épica! 🎮💥',
+        imagen: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
+        fecha_publicacion: new Date('2024-05-01T15:30:00')
       },
       {
-      id_publicacion: 2,
-      id_usuario: 2,
-      contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-      imagen: '',
-      fecha_publicacion: new Date('2024-06-01T12:00:00')
+        id_publicacion: 2,
+        id_usuario: 2,
+        contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
+        imagen: '',
+        fecha_publicacion: new Date('2024-06-01T12:00:00')
       },
       {
-      id_publicacion: 3,
-      id_usuario: 2,
-      contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-      imagen: 'https://ionicframework.com/docs/img/demos/card-media.png',
-      fecha_publicacion: new Date('2023-06-01T09:00:00')
+        id_publicacion: 3,
+        id_usuario: 2,
+        contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
+        imagen: 'https://ionicframework.com/docs/img/demos/card-media.png',
+        fecha_publicacion: new Date('2023-06-01T09:00:00')
       }
     ];
     // Ordena de más nueva a más antigua
@@ -91,9 +96,42 @@ export class HomePage implements OnInit {
 
 
 
-  ngOnInit() {
-    this.loadPublicaciones();
-    // Al iniciar, carga los usuarios seguidos en followersfriend (sin filtro de nombre)
+  async ngOnInit() {
+    // Usuarios
+    let usuarios = await this.localStorage.getList<Usuario>('usuarios');
+    if (!usuarios || usuarios.length === 0) {
+      
+      usuarios = [...this.usuarios]; // Usa los simulados si es la primera vez
+
+      const usuariosPublicos = usuarios.map(u => ({
+        id_usuario: u.id_usuario,
+        nombre_usuario: u.nombre_usuario,
+        avatar: u.avatar,
+        estado_online: u.estado_online
+      }));
+      await this.localStorage.setItem('usuarios', usuariosPublicos);
+    }
+    this.usuarios = usuarios;
+
+    // Publicaciones
+    let publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
+    if (!publicaciones || publicaciones.length === 0) {
+      this.loadPublicaciones();
+      publicaciones = [...this.publicaciones];
+      await this.localStorage.setItem('publicaciones', publicaciones);
+    }
+    this.publicaciones = publicaciones;
+
+    // Likes de publicaciones
+    this.publicacionesLikes = await this.localStorage.getList<Like>('publicacionLikes') || [];
+
+    // Guardados
+    this.publicacionesGuardadas = await this.localStorage.getList<GuardaPublicacion>('publicacionesGuardadas') || [];
+
+    // Seguimientos
+    this.seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || this.seguimientos;
+
+    // Carga publicaciones de amigos
     const idsSeguidos = this.seguimientos
       .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
       .map(s => s.id_usuario_seguido);
@@ -107,26 +145,17 @@ export class HomePage implements OnInit {
   // Método para refrescar la lista de publicaciones
   doRefresh(event: any) {
     console.log('Recargando publicaciones...');
-    setTimeout(() => {
-      // Aquí actualizar desde Firebase
-      this.loadPublicaciones(); // Recarga los posts como ejemplo sin reiniciar todo el componente
-      // Agrega publicaciones nuevas simuladas
-      this.publicaciones.push(
-        {
-          id_publicacion: this.publicaciones.length + 1,
-          id_usuario: 3,
-          contenido: '¡Nueva publicación agregada al refrescar! 🚀',
-          imagen: '',
-          fecha_publicacion: new Date()
-        }
-      );
-      // Ordena después de agregar nuevas publicaciones
+    setTimeout(async () => {
+      // Opcional: recarga desde el local storage si quieres actualizar
+      this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+
+      // Ordena las publicaciones de más nueva a más antigua
       this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
+      await this.localStorage.setItem('publicaciones', this.publicaciones);
       event.target.complete();
       console.log('Recarga completada');
-    }, 1500); // Simula un tiempo de espera
+    }, 1500);
   }
-
 
 
   // Likes
@@ -145,6 +174,7 @@ export class HomePage implements OnInit {
         estado_like: true
       });
     }
+    this.localStorage.setItem('publicacionLikes', this.publicacionesLikes);
   }
 
   getLikesPublicacion(publicacion: Publicacion): number {
@@ -178,6 +208,7 @@ export class HomePage implements OnInit {
         estado_guardado: true
       });
     }
+    this.localStorage.setItem('publicacionesGuardadas', this.publicacionesGuardadas);
   }
 
   estaGuardada(publicacion: Publicacion): boolean {
@@ -203,6 +234,7 @@ export class HomePage implements OnInit {
         estado_seguimiento: true
       });
     }
+    this.localStorage.setItem('seguimientos', this.seguimientos);
   }
 
   sigueAlAutor(publicacion: Publicacion): boolean {
@@ -341,19 +373,19 @@ export class HomePage implements OnInit {
   getUsuarioPublicacion(id_usuario: number): Usuario | undefined {
     return this.usuarios.find(u => u.id_usuario === id_usuario);
   }
-  
-filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
 
-get publicacionesFiltradas(): Publicacion[] {
-  if (this.filtroPublicaciones === 'publico') {
-    return this.publicaciones;
-  } else {
-    // Solo publicaciones de usuarios seguidos
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
-    return this.publicaciones.filter(pub => idsSeguidos.includes(pub.id_usuario));
+  filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
+
+  get publicacionesFiltradas(): Publicacion[] {
+    if (this.filtroPublicaciones === 'publico') {
+      return this.publicaciones;
+    } else {
+      // Solo publicaciones de usuarios seguidos
+      const idsSeguidos = this.seguimientos
+        .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
+        .map(s => s.id_usuario_seguido);
+      return this.publicaciones.filter(pub => idsSeguidos.includes(pub.id_usuario));
+    }
   }
-}
 
 }

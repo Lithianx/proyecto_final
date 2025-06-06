@@ -32,7 +32,14 @@
       </ion-button>
 
     </ion-item>
-    <img [src]="publicacion.imagen" class="post-image" />
+
+
+      <!-- Parte donde se muestra imagen o descripción -->
+      <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
+        <!-- Si hay imagen, mostrar imagen -->
+        <img [src]="publicacion.imagen" class="post-image" (click)="verImagen(publicacion)"/>
+      </ng-container>
+
     <!-- Acciones -->
     <ion-row class="action-row" responsive>
       <!-- Botón de me gusta -->
@@ -57,10 +64,29 @@
 
     </ion-row>
 
-    <ion-card-content>
-      <p><strong>{{ getLikesPublicacion() }} likes</strong></p>
-      <p>{{ publicacion.contenido}}</p>
-    </ion-card-content>
+      <!-- En caso que NO haya imagen -->
+      <ng-template #soloDescripcion>
+        <ion-card-content>
+          <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+          <p><strong>{{ getLikesPublicacion() }} likes</strong></p>
+        </ion-card-content>
+      </ng-template>
+
+      <!-- Siempre muestra acciones y descripción si hay imagen -->
+      <ng-container *ngIf="publicacion.imagen">
+        <ion-card-content>
+          <p><strong>{{ getLikesPublicacion() }} likes</strong></p>
+
+          <p>
+            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100
+            ? '...' : '') }}
+            <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
+              (click)="mostrarDescripcion = !mostrarDescripcion">
+              {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
+            </ion-button>
+          </p>
+        </ion-card-content>
+      </ng-container>
 
   </ion-card>
 
@@ -100,7 +126,10 @@
     </ion-list>
   </div>
 
-
+  <!-- VISOR DE IMAGEN (solo se muestra cuando se activa) -->
+  <div *ngIf="imagenSeleccionada" class="overlay" (click)="cerrarVisor()">
+    <img [src]="imagenSeleccionada" class="imagen-expandida" />
+  </div>
 
   <!-- Modal para seleccionar amigos (Sheet Modal) -->
   <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26"
