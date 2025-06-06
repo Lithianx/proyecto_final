@@ -1,23 +1,28 @@
 <app-encabezado></app-encabezado>
 
 <ion-content [fullscreen]="true">
-
-    <div class="header-row">
-      <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
-        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
-      </ion-button>
-      <h1 class="app-title">Publicaciones guardadas</h1>
-    </div>
-
-  <hr class="section-divider">
-
-  <div class="publicaciones-grid">
-    <div class="post-thumbnail"[routerLink]="['/detalles-publicacion-personal']" *ngFor="let post of publicacionesGuardadas">
-      <img [src]="post.img" [alt]="post.alt" />
-      <ion-icon name="bookmark" class="bookmark-icon"></ion-icon>
-    </div>
+  <div class="header-row">
+    <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
+      <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+    </ion-button>
+    <h1 class="app-title">Publicaciones guardadas</h1>
   </div>
 
+  <hr class="section-divider" />
+
+  <div class="publicaciones-grid">
+    <div class="post-thumbnail" *ngFor="let post of publicacionesGuardadas; let i = index">
+      <!-- Toda la tarjeta es clickeable -->
+      <div (click)="irADetalles()" class="post-content" tabindex="0" role="button" aria-label="Ver detalles de la publicación">
+        <img [src]="post.img" [alt]="post.alt" />
+      </div>
+
+      <!-- Ícono envuelto en botón accesible -->
+      <button class="bookmark-icon" (click)="confirmarEliminar(i, $event)" aria-label="Eliminar publicación guardada">
+        <ion-icon name="bookmark"></ion-icon>
+      </button>
+    </div>
+  </div>
 </ion-content>
 
 <app-navbar></app-navbar>

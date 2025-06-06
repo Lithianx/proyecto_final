@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 
@@ -9,9 +9,12 @@ import { ActionSheetController } from '@ionic/angular';
   standalone: false,
 })
 export class PerfilUserPage implements OnInit {
+  @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+  idUsuario: string = '';
+
   siguiendo: boolean = true;
   mostrarModal: boolean = false;
-  vistaSeleccionada: string = 'publicaciones';
+  private _vistaSeleccionada: string = 'publicaciones';
 
   // Variables del perfil
   nombreUsuario: string = '';
@@ -26,6 +29,17 @@ export class PerfilUserPage implements OnInit {
     seguidores: 0,
     seguidos: 0
   };
+
+  get vistaSeleccionada(): string {
+    return this._vistaSeleccionada;
+  }
+
+  set vistaSeleccionada(value: string) {
+    this._vistaSeleccionada = value;
+    if (value !== 'publicaciones') {
+      this.mostrarModal = false;
+    }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -48,22 +62,25 @@ export class PerfilUserPage implements OnInit {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
-  abrirModal() {
-    console.log('Se abrió el modal');
-    this.mostrarModal = true;
-  }
-
-  cerrarModal(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.mostrarModal = false;
+  ionViewDidEnter() {
+    // Aplica la animación al cargar la página con el valor actual
+    this.applySliderTransform(this.vistaSeleccionada);
   }
 
   segmentChanged(event: any) {
     const value = event.detail.value;
-    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
+    this.vistaSeleccionada = value;
+    this.applySliderTransform(value);
+  }
 
+  applySliderTransform(value: string) {
+    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
+    if (!segmentElement) {
+      console.warn('Elemento publicacionesNav no encontrado');
+      return;
+    }
+
+    // Posiciones en porcentaje para 3 segmentos (0%, 33.33%, 66.66%)
     let position = 0;
 
     switch (value) {
@@ -76,13 +93,24 @@ export class PerfilUserPage implements OnInit {
       case 'eventos-creados':
         position = (315 / 3) * 2; // ~66.66%
         break;
-    }
+    
 
     const adjustedPosition = position - 1; // ajustar si es necesario
+    }
 
-    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
+    segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
+  }
 
-    this.vistaSeleccionada = value;
+  abrirModal() {
+    console.log('Se abrió el modal');
+    this.mostrarModal = true;
+  }
+
+  cerrarModal(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.mostrarModal = false;
   }
 
   cargarPerfilUsuario(id: string) {
@@ -114,44 +142,43 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-  async abrirOpciones() {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
-        {
-          text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
-          icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
-          handler: () => {
-            this.siguiendo = !this.siguiendo;
-            console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
-          }
-        },
-        {
-          text: 'Mandar mensaje',
-          icon: 'chatbubble-ellipses-outline',
-          handler: () => {
-            console.log('Mandar mensaje');
-            // Aquí puedes redirigir al chat si lo implementas
-            // this.router.navigate(['/chat', this.nombreUsuario]);
-          }
-        },
-        {
-          text: 'Reportar',
-          role: 'destructive',
-          icon: 'alert-circle-outline',
-          handler: () => {
-            console.log('Reportar usuario');
-            // Aquí podrías abrir un modal o redirigir a una página de reporte
-          }
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close',
-          role: 'cancel'
+async abrirOpciones() {
+  const actionSheet = await this.actionSheetCtrl.create({
+    header: 'Opciones',
+    buttons: [
+      {
+        text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
+        icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
+        handler: () => {
+          this.siguiendo = !this.siguiendo;
+          console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
         }
-      ]
-    });
+      },
+      {
+        text: 'Mandar mensaje',
+        icon: 'chatbubble-ellipses-outline',
+        handler: () => {
+          console.log('Mandar mensaje a ID:', this.idUsuario);
+          this.router.navigate(['/chat-privado', this.idUsuario]);
+        }
+      },
+      {
+        text: 'Reportar',
+        role: 'destructive',
+        icon: 'alert-circle-outline',
+        handler: () => {
+          console.log('Reportar usuario');
+        }
+      },
+      {
+        text: 'Cancelar',
+        icon: 'close',
+        role: 'cancel'
+      }
+    ]
+  });
 
-    await actionSheet.present();
-  }
+  await actionSheet.present();
+}
+
 }

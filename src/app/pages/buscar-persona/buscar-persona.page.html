@@ -2,7 +2,12 @@
 
 <ion-content>
   <!-- Barra de búsqueda -->
-  <ion-searchbar [debounce]="1000" (ionInput)="handleInput($event)" placeholder="Buscar usuario"></ion-searchbar>
+  <ion-searchbar 
+  [debounce]="1000" 
+  class="search-bar"
+  (ionInput)="handleInput($event)"
+   placeholder="Buscar usuario">
+  </ion-searchbar>
 
 
 <!-- Mensaje cuando no se ha buscado nada -->

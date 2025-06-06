@@ -2,63 +2,63 @@
 
 <ion-content fullscreen="true">
   <div class="contenido-wrapper">
-    <!-- Encabezado -->
-    <div class="header-row">
-      <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
-        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
-      </ion-button>
-      <h1 class="app-title">Historial de eventos</h1>
-    </div>
-
-    <!-- Searchbar habilitada para búsqueda -->
-    <ion-searchbar
-      class="searchbar-gris"
-      placeholder="Buscar evento"
-      (ionInput)="onSearchChange($event)"
-      [value]="searchTerm"
-    ></ion-searchbar>
-
-    <!-- Segmento de navegación -->
-    <div class="publicaciones-nav">
-      <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
-        <ion-segment-button value="eventos-inscritos">
-          <ion-icon name="flash-outline"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button value="eventos-creados">
-          <ion-icon name="game-controller-outline"></ion-icon>
-        </ion-segment-button>
-      </ion-segment>
-    </div>
-
-    <!-- Eventos Inscritos -->
-    <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
-      <h2 class="titulo-seccion">Eventos en los que estás inscrito</h2>
-
-      <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
-        <ion-card>
-          <ion-card-content class="contenido-tarjeta">
-            <div class="texto-tarjeta">
-              <h3 class="titulo-evento">
-                {{ evento.nombre }}
-              </h3>
-              <p class="detalle">Creador: {{ evento.creador }}</p>
-              <p class="detalle">Fecha: {{ evento.fecha }}</p>
-              <p class="detalle">Juego: {{ evento.juego }}</p>
-            </div>
-            <ion-icon
-              name="chevron-forward-outline"
-              class="color-verde icono-forward"
-              size="large"
-              [routerLink]="['/evento-inscrito', evento.id]">
-            </ion-icon>
-          </ion-card-content>
-        </ion-card>
+      <!-- Encabezado -->
+      <div class="header-row">
+        <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
+          <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+        </ion-button>
+        <h1 class="app-title">Historial de eventos</h1>
       </div>
+
+      <!-- Searchbar habilitada para búsqueda -->
+      <ion-searchbar
+        class="search-bar"
+        placeholder="Buscar evento"
+        (ionInput)="onSearchChange($event)"
+        [value]="searchTerm"
+      ></ion-searchbar>
+
+      <!-- Segmento de navegación -->
+    <div #publicacionesNav class="publicaciones-nav">
+        <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
+          <ion-segment-button value="eventos-inscritos">
+            <ion-icon name="flash-outline"></ion-icon>
+          </ion-segment-button>
+          <ion-segment-button value="eventos-creados">
+            <ion-icon name="game-controller-outline"></ion-icon>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- Eventos Inscritos -->
+      <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
+        <h2 class="titulo-seccion">Eventos inscritos</h2>
+
+        <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
+          <ion-card>
+            <ion-card-content class="contenido-tarjeta">
+              <div class="texto-tarjeta">
+                <h3 class="titulo-evento">
+                  {{ evento.nombre }}
+                </h3>
+                <p class="detalle">Creador: {{ evento.creador }}</p>
+                <p class="detalle">Fecha: {{ evento.fecha }}</p>
+                <p class="detalle">Juego: {{ evento.juego }}</p>
+              </div>
+              <ion-icon
+                name="chevron-forward-outline"
+                class="color-verde icono-forward"
+                size="large"
+                [routerLink]="['/evento-inscrito', evento.id]">
+              </ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </div>
     </div>
 
     <!-- Eventos Creados -->
     <div *ngIf="vistaSeleccionada === 'eventos-creados'" class="eventos-inscritos">
-      <h2 class="titulo-seccion">Eventos que tú has creado</h2>
+      <h2 class="titulo-seccion">Eventos creados</h2>
 
       <div *ngFor="let evento of eventosCreadosFiltrados" class="tarjeta-evento">
         <ion-card>

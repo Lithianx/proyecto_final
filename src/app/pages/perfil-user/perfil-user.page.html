@@ -43,7 +43,7 @@
     </div>
 
     <!-- Navegación de publicaciones/eventos -->
-<div class="publicaciones-nav">
+<div #publicacionesNav class="publicaciones-nav">
   <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
     <ion-segment-button value="publicaciones">
       <ion-icon name="grid-outline"></ion-icon>
@@ -76,7 +76,7 @@
  <!------------------------------------------------------------------------------------------>
 <!-- Eventos inscritos (modo reels) -->
 <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
-  <h2 class="titulo-seccion">Eventos que esta participando {{ nombreUsuario }}</h2>
+  <h2 class="titulo-seccion">Eventos Inscritos</h2>
   
   <div *ngFor="let evento of eventosinscritos" class="tarjeta-evento">
     <ion-card>
@@ -91,7 +91,7 @@
           name="chevron-forward-outline" 
           class="color-verde icono-forward" 
           size="large" 
-          [routerLink]="['/evento-inscrito', evento.id]">
+          [routerLink]="['/event-insc-cread', evento.id, 'Evento inscrito']">
         </ion-icon>
       </ion-card-content>
     </ion-card>
@@ -100,7 +100,7 @@
 
 <!-- Eventos creados -->
 <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
-  <h2 class="titulo-seccion">Eventos creados por {{ nombreUsuario }}</h2>
+  <h2 class="titulo-seccion">Eventos Creados</h2>
   
   <div *ngFor="let evento of eventosCreados" class="tarjeta-evento">
     <ion-card>
@@ -114,7 +114,7 @@
         name="chevron-forward-outline" 
         class="color-verde icono-forward" 
         size="large" 
-        [routerLink]="['/evento-creado']">
+        [routerLink]="['/event-insc-cread', evento.id, 'Evento Creado']">
       </ion-icon>
 
       </ion-card-content>

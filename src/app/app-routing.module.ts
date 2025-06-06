@@ -77,14 +77,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
   },
   {
-    path: 'evento-inscrito/:id',
-    loadChildren: () => import('./pages/evento-inscrito/evento-inscrito.module').then( m => m.EventoInscritoPageModule)
-  },
-  {
-    path: 'evento-creado',
-    loadChildren: () => import('./pages/evento-creado/evento-creado.module').then( m => m.EventoCreadoPageModule)
-  },
-  {
     path: 'crear-evento-flash',
     loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
@@ -124,6 +116,13 @@ const routes: Routes = [
     path: 'buscar-persona',
     loadChildren: () => import('./pages/buscar-persona/buscar-persona.module').then( m => m.BuscarPersonaPageModule)
   },
+  {
+    path: 'event-insc-cread/:id/:titulo',
+    loadChildren: () => import('./pages/event-insc-cread/event-insc-cread.module').then(m => m.EventInscCreadPageModule)
+  }
+
+
+
 
 
 

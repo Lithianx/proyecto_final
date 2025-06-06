@@ -1,5 +1,6 @@
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-seguidores',
@@ -12,9 +13,9 @@ export class SeguidoresPage implements OnInit {
   seguidores: { id: number; nombre: string; siguiendo: boolean }[] = [];
   seguidoresFiltrados: { id: number; nombre: string; siguiendo: boolean }[] = [];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private alertController: AlertController) {}
 
-ngOnInit() {
+  ngOnInit() {
   this.seguidores = [
     { id: 1, nombre: 'mariana.fit', siguiendo: true },
     { id: 2, nombre: 'lucas.dev', siguiendo: false },
@@ -32,13 +33,33 @@ ngOnInit() {
     { id: 14, nombre: 'andres.tech', siguiendo: false },
     { id: 15, nombre: 'constanza.books', siguiendo: true }
   ];
+    this.seguidoresFiltrados = [...this.seguidores];
+  }
 
-  this.seguidoresFiltrados = [...this.seguidores];
-}
-
-
-  alternarSeguimiento(usuario: any) {
-    usuario.siguiendo = !usuario.siguiendo;
+  // Cambia estado o muestra modal según sea seguir o eliminar
+  async alternarSeguimiento(usuario: any) {
+    if (usuario.siguiendo) {
+      const alert = await this.alertController.create({
+        header: '¿Dejar de seguir?',
+        message: `¿Quieres dejar de seguir a ${usuario.nombre}?`,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          },
+          {
+            text: 'Eliminar',
+            role: 'destructive',
+            handler: () => {
+              usuario.siguiendo = false; 
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      usuario.siguiendo = true;
+    }
   }
 
   verPerfil(id: number) {
@@ -52,5 +73,4 @@ ngOnInit() {
     );
   }
 }
-
 

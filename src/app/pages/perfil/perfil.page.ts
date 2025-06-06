@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-perfil',
@@ -9,47 +10,25 @@ import { ActionSheetController } from '@ionic/angular';
 })
 export class PerfilPage implements OnInit {
 
+  @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+
   // Lista de eventos inscritos
   eventosinscritos = [
-    {
-      id: 1,
-      nombre: 'Campeonato de LoL',
-      fecha: '12/05/2025',
-      juego: 'League of Legends',
-      creador: 'usuario1'
-    },
-    {
-      id: 2,
-      nombre: 'Torneo Valorant',
-      fecha: '19/05/2025',
-      juego: 'Valorant',
-      creador: 'usuario2'
-    },
+    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends', creador: 'usuario1' },
+    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
   // Lista de eventos creados
   eventosCreados = [
-    {
-      id: 1,
-      nombre: 'Campeonato de LoL',
-      fecha: '12/05/2025',
-      juego: 'League of Legends'
-    },
-    {
-      id: 2,
-      nombre: 'Torneo Valorant',
-      fecha: '19/05/2025',
-      juego: 'Valorant'
-    }
+    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends' },
+    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant' }
   ];
 
-  // Información del perfil
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
   nombreCompleto: string = 'Nombre Completo';
   descripcionBio: string = `🌍 Amante de los viajes | 📸 Capturando momentos\n☕ Café y libros | 🎧 Música 24/7\n📍Chile`;
 
-  // Publicaciones
   publicaciones = [
     { id: 1, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 1', link: '/detalles-publicacion-personal' },
     { id: 2, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 2', link: '/detalles-publicacion-personal' },
@@ -59,19 +38,16 @@ export class PerfilPage implements OnInit {
     { id: 6, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 6', link: '/detalles-publicacion-personal' },
   ];
 
-  // Estadísticas del perfil
   estadisticas = {
     publicaciones: this.publicaciones.length,
     seguidores: 300,
     seguidos: 180
   };
 
-  // Getters
   get numeroPublicaciones(): number {
     return this.publicaciones.length;
   }
 
-  // Vista actual seleccionada (por defecto: publicaciones)
   private _vistaSeleccionada: string = 'publicaciones';
 
   get vistaSeleccionada(): string {
@@ -80,37 +56,38 @@ export class PerfilPage implements OnInit {
 
   set vistaSeleccionada(value: string) {
     this._vistaSeleccionada = value;
-
     if (value !== 'publicaciones') {
       this.mostrarModal = false;
     }
   }
 
-  // Control de modal
   mostrarModal: boolean = false;
 
-  constructor(private actionSheetCtrl: ActionSheetController) {}
+  constructor(
+    private actionSheetCtrl: ActionSheetController,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
-  abrirModal() {
-    console.log('Se abrió el modal');
-    this.mostrarModal = true;
+  ionViewDidEnter() {
+    this.applySliderTransform(this.vistaSeleccionada);
   }
 
-  cerrarModal(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.mostrarModal = false;
-  }
-
-  // Cambiar deslizador según vista seleccionada
   segmentChanged(event: any) {
     const value = event.detail.value;
-    const segmentElement = document.querySelector('.publicaciones-nav') as HTMLElement;
+    this.vistaSeleccionada = value;
+    this.applySliderTransform(value);
+  }
+
+  applySliderTransform(value: string) {
+    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
+    if (!segmentElement) {
+      console.warn('Elemento publicacionesNav no encontrado');
+      return;
+    }
 
     let position = 0;
 
@@ -119,70 +96,77 @@ export class PerfilPage implements OnInit {
         position = 3;
         break;
       case 'eventos-inscritos':
-        position = 320 / 3;
+        position = 320 / 3; // ~33.33%
         break;
       case 'eventos-creados':
-        position = (315 / 3) * 2;
+        position = (315 / 3) * 2; // ~66.66%
         break;
+    
+
+    const adjustedPosition = position - 1; // ajustar si es necesario
     }
 
-    const adjustedPosition = position - 1;
-    segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
+    segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
   }
 
-  // Menú de opciones (action sheet)
-// Menú de opciones (action sheet)
-async abrirOpciones() {
-  const actionSheet = await this.actionSheetCtrl.create({
-    header: 'Opciones',
-    buttons: [
-      {
-        text: 'Editar perfil',
-        icon: 'person-outline',
-        handler: () => {
-          console.log('Editar perfil');
-          // Redirigir a la vista de edición de perfil
-          window.location.href = '/editar-perfil';
-        }
-      },
-      {
-        text: 'Historial de eventos',
-        icon: 'time-outline',
-        handler: () => {
-          console.log('Historial de eventos');
-          window.location.href = '/historial-eventos';
-        }
-      },
-      {
-        text: 'Guardados',
-        icon: 'bookmark',
-        handler: () => {
-          console.log('Publicaciones guardadas');
-          window.location.href = '/publicaciones-guardadas';
-        }
-      },
-      {
-        text: 'Validar cuenta institucional',
-        icon: 'school-outline',
-        handler: () => {
-          console.log('Validar cuenta institucional');
-          window.location.href = '/info-cuenta-institucional';
-        }
-      },
+  abrirModal() {
+    console.log('Se abrió el modal');
+    this.mostrarModal = true;
+  }
 
-      {
-        text: 'Cerrar sesión',
-        icon: 'log-out-outline',
-        role: 'destructive',
-        handler: () => {
-          console.log('Cerrar sesión');
-          window.location.href = '/login';
+  cerrarModal(event?: Event) {
+    if (event) event.stopPropagation();
+    this.mostrarModal = false;
+  }
+
+  async abrirOpciones() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: 'Editar perfil',
+          icon: 'person-outline',
+          handler: () => {
+            console.log('Editar perfil');
+            this.router.navigate(['/editar-perfil']);
+          }
+        },
+        {
+          text: 'Historial de eventos',
+          icon: 'time-outline',
+          handler: () => {
+            console.log('Historial de eventos');
+            this.router.navigate(['/historial-eventos']);
+          }
+        },
+        {
+          text: 'Guardados',
+          icon: 'bookmark',
+          handler: () => {
+            console.log('Publicaciones guardadas');
+            this.router.navigate(['/publicaciones-guardadas']);
+          }
+        },
+        {
+          text: 'Términos y condiciones',
+          icon: 'school-outline',
+          handler: () => {
+            console.log('Validar cuenta institucional');
+            this.router.navigate(['/info-cuenta-institucional']);
+          }
+        },
+        {
+          text: 'Cerrar sesión',
+          icon: 'log-out-outline',
+          role: 'destructive',
+          handler: () => {
+            console.log('Cerrar sesión');
+            this.router.navigate(['/login']);
+          }
         }
-      }
-    ]
-  });
+      ]
+    });
 
-  await actionSheet.present();
-}
-
+    await actionSheet.present();
+  }
 }

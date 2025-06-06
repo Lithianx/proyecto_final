@@ -114,61 +114,6 @@
   transform: var(--slider-transform, translateX(0%));
 }
 
-/* ==========================
-   ENCABEZADO
-   ========================== */
-.header-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 10px 16px;
-}
-
-.back-button {
-  position: absolute;
-  left: 16px;
-}
-
-.app-title {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--text-color);
-  margin: 0;
-}
-
-/* ==========================
-   VARIABLES Y ESTILOS BASE
-   ========================== */
-body {
-  --ion-background-color: var(--bg-color);
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-/* ==========================
-   CONTENEDOR PRINCIPAL
-   ========================== */
-.edit-profile-container {
-  width: 100%;
-  max-width: 600px;
-  padding: 0 15px;
-  box-sizing: border-box;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-/* ==========================
-   FORMULARIO
-   ========================== */
-.profile-form-box {
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(48, 47, 47, 0.3);
-  margin-top: 20px;
-}
 
 /* ==========================
    FOTO DE PERFIL
@@ -229,10 +174,5 @@ body {
   padding: 8px;
   border-radius: 10px;
 }
-.contenido-wrapper {
-  padding: 0 16px;  /* margenes laterales */
-  margin-top: 12px; /* separacion superior */
-  margin-bottom: 20px; /* separacion inferior */
-  /* puedes ajustar más estilos como max-width, centrar, etc */
-}
+
 
