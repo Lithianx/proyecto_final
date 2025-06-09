@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Usuario } from 'src/app/models/usuario.model';
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
 @Component({
   selector: 'app-buscar-persona',
@@ -10,6 +12,7 @@ import { Usuario } from 'src/app/models/usuario.model';
 })
 export class BuscarPersonaPage implements OnInit {
 
+<<<<<<< HEAD
 
 
 
@@ -218,13 +221,19 @@ export class BuscarPersonaPage implements OnInit {
 ]
 ;
 
+=======
+  todosusuarios: Usuario[] = [];
+>>>>>>> PruebaFelipe
   usuarios: Usuario[] = [];
   busquedaActiva: boolean = false;
 
-  constructor() { }
+  constructor(
+    private localStorage: LocalStorageService,
+    private usuarioService: UsuarioService
+  ) { }
 
-  ngOnInit() {
-
+  async ngOnInit() {
+    this.todosusuarios = await this.usuarioService.getUsuarios();
   }
 
 

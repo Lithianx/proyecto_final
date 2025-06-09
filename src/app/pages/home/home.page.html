@@ -1,24 +1,21 @@
-
 <app-encabezado></app-encabezado>
 
 <ion-content>
 
   <!-- REFRESHER -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content 
-      pullingIcon="game-controller"
-      refreshingIcon="game-controller"> 
+    <ion-refresher-content pullingIcon="game-controller" refreshingIcon="game-controller">
     </ion-refresher-content>
   </ion-refresher>
-  
-<ion-segment [(ngModel)]="filtroPublicaciones">
-  <ion-segment-button value="publico">
-    <ion-label>Público</ion-label>
-  </ion-segment-button>
-  <ion-segment-button value="seguidos">
-    <ion-label>Solo seguidos</ion-label>
-  </ion-segment-button>
-</ion-segment>
+
+  <ion-segment [(ngModel)]="filtroPublicaciones">
+    <ion-segment-button value="publico">
+      <ion-label>Público</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="seguidos">
+      <ion-label>Solo seguidos</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
   <ion-list lines="none">
 
@@ -33,8 +30,8 @@
           <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
         </ion-label>
         <!-- Botón de seguir -->
-        <ion-chip [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'" (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario)!)"
-          [outline]="!sigueAlAutor(publicacion)">
+        <ion-chip [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
+          (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario)!)" [outline]="!sigueAlAutor(publicacion)">
           {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
         </ion-chip>
 
@@ -63,13 +60,13 @@
       <ng-container *ngIf="publicacion.imagen">
         <ion-card-content>
           <p><strong>{{ getLikesPublicacion(publicacion) }} likes</strong></p>
-
           <p>
-            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100
-            ? '...' : '') }}
+            {{ descripcionExpandida[publicacion.id_publicacion]
+            ? publicacion.contenido
+            : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100 ? '...' : '') }}
             <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
-              (click)="mostrarDescripcion = !mostrarDescripcion">
-              {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
+              (click)="toggleDescripcion(publicacion.id_publicacion)">
+              {{ descripcionExpandida[publicacion.id_publicacion] ? '...Ver menos' : 'Ver más...' }}
             </ion-button>
           </p>
         </ion-card-content>
@@ -81,8 +78,8 @@
         <!-- Botón de me gusta -->
         <ion-col size="auto">
           <ion-button fill="clear" size="small" (click)="likePublicacion(publicacion)">
-            <!-- Cambia el icono según el estado de me gusta -->
-            <ion-icon [name]="usuarioLikeoPublicacion(publicacion) ? 'sparkles' : 'sparkles-outline'" size="large"></ion-icon>
+            <ion-icon [name]="usuarioLikeoPublicacion(publicacion)? 'sparkles' : 'sparkles-outline'"
+              size="large"></ion-icon>
           </ion-button>
         </ion-col>
 
@@ -126,30 +123,31 @@
 
 
 
- <!-- Modal para seleccionar amigos (Sheet Modal) -->
- <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26" [breakpoints]="[0, 0.26, 0.51]">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Enviar publicación</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
-      <ion-list class="modal-scrollable-content" scroll-y="true">
-        <ion-item *ngFor="let user of followersfriend">
-          <ion-avatar slot="start">
-            <img [src]="user.avatar" />
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ user.nombre_usuario }}</h2>
-          </ion-label>
-          <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
-        </ion-item>
-      </ion-list>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+  <!-- Modal para seleccionar amigos (Sheet Modal) -->
+  <ion-modal class="custom-modal-enviar" [isOpen]="isModalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.26"
+    [breakpoints]="[0, 0.26, 0.51]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Enviar publicación</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
+        <ion-list class="modal-scrollable-content" scroll-y="true">
+          <ion-item *ngFor="let user of followersfriend">
+            <ion-avatar slot="start">
+              <img [src]="user.avatar" />
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ user.nombre_usuario }}</h2>
+            </ion-label>
+            <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
 
 
