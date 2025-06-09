@@ -16,7 +16,7 @@ export class BuscarPersonaPage implements OnInit {
   // Lista original de chats, tipificada con la interface ChatPrivado
   todosusuarios: Usuario[] = [
   {
-    id_usuario: 133,
+    id_usuario: 1,
     nombre_usuario: 'techguru',
     correo_electronico: 'techguru@correo.com',
     fecha_registro: new Date('2024-01-01'),

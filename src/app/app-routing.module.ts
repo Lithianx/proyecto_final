@@ -119,7 +119,13 @@ const routes: Routes = [
   {
     path: 'event-insc-cread/:id/:titulo',
     loadChildren: () => import('./pages/event-insc-cread/event-insc-cread.module').then(m => m.EventInscCreadPageModule)
-  }
+  },
+{
+  path: 'reportar-cuenta/:id',
+  loadChildren: () => import('./pages/reportar-cuenta/reportar-cuenta.module').then(m => m.ReportarCuentaPageModule)
+}
+
+
 
 
 

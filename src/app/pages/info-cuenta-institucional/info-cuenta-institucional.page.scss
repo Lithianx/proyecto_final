@@ -1,89 +1,35 @@
-.edit-profile-container {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    padding-top: 10%;
-    padding-bottom: 10%;
-  }
-  
-  .profile-form-box {
-    width: 100%;
-    max-width: 700px;
-    border-radius: 16px;
-    padding: 24px 20px;
-    background: var(--ion-background-color);
-    color: var(--ion-text-color);
-  }
-  
-  .header-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  
-  .back-button {
-    margin: 0;
-  }
-  
-  .app-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--ion-text-color);
-    margin: 0;
-    flex: 1;
-  }
-  
-  .content-box {
-    background-color: var(--ion-item-background);
-    border-left: 5px solid var(--ion-color-success);
-    border-radius: 12px;
-    padding: 24px;
-    font-size: 18px;
-    color: var(--ion-text-color);
-    line-height: 1.8;
-    margin-bottom: 24px;
-  }
-  
-  .content-box ul {
-    padding-left: 24px;
-    margin-top: 12px;
-    margin-bottom: 12px;
-  }
-  
-  .terms-checkbox {
-    margin-bottom: 20px;
-  }
-  
-  .save-button-container {
-    margin-top: 10px;
-  }
-  
-  ion-button.save-button {
-    --background: var(--ion-color-success);
-    --background-hover: #218838;
-    --background-activated: #1e7e34;
-    --border-radius: 12px;
-    --padding-start: 16px;
-    --padding-end: 16px;
-    font-weight: 600;
-    font-size: 17px;
-    color: white;
-  }
-  
-  /* Responsividad para pantallas pequeñas */
-  @media screen and (max-width: 480px) {
-    .app-title {
-      font-size: 20px;
-    }
-  
-    .content-box {
-      font-size: 16px;
-      padding: 16px;
-    }
-  
-    .profile-form-box {
-      padding: 16px 12px;
-    }
-  }
-  
+.content-box {
+  font-size: 15px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+ion-accordion ion-item {
+
+  --color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+ion-accordion .ion-padding p,
+ion-accordion .ion-padding ul {
+  text-align: justify;
+  margin-bottom: 12px;
+  --background: var(--color-fondo-gris);
+}
+
+.content-box ul {
+  list-style-type: disc;
+  padding-left: 24px;
+}
+ion-accordion ion-item::part(native) {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+ion-accordion .ion-padding {
+  background-color: var(--color-fondo-gris);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  color: var(--color-text-primary); /* Para mantener el texto blanco sobre fondo oscuro */
+}
