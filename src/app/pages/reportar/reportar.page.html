@@ -3,21 +3,21 @@
 <ion-content>
 
   <!-- MOSTRAR PUBLICACIÓN -->
-  <ion-card *ngIf="post" class="publicacion-card">
+  <ion-card *ngIf="post && usuarioPost" class="publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="post.userAvatar" />
+        <img [src]="usuarioPost.avatar" />
       </ion-avatar>
       <ion-label>
-        <h2>{{ post.username }}</h2>
-        <p>{{ post.time }}</p>
+        <h2>{{ usuarioPost.nombre_usuario }}</h2>
+        <p>{{ post.fecha_publicacion | date:'short'}}</p>
       </ion-label>
     </ion-item>
 
-    <img [src]="post.image" class="post-image" />
+    <img [src]="post.imagen" class="post-image" />
 
     <ion-card-content>
-      <p>{{ post.description }}</p>
+      <p>{{ post.contenido }}</p>
     </ion-card-content>
   </ion-card>
 
@@ -36,21 +36,21 @@
       <ion-card-content>
         <form (ngSubmit)="enviarReporte()">
           <ion-item>
-            <ion-label position="floating">Razón del Reporte</ion-label>
-            <ion-select interface="alert" [interfaceOptions]="alertOptions" [(ngModel)]="reporte.razon" name="razon" required okText="Confirmar"
-              cancelText="Cancelar">
-              <ion-select-option *ngFor="let opcion of razonesReporte" [value]="opcion.valor">
-                {{ opcion.texto }}
-              </ion-select-option>
-            </ion-select>
+        <ion-label position="floating">Razón del Reporte</ion-label>
+        <ion-select interface="alert" [interfaceOptions]="alertOptions" [(ngModel)]="reporte.id_tipo_reporte" name="razon" required okText="Confirmar"
+          cancelText="Cancelar">
+          <ion-select-option *ngFor="let opcion of TipoReporte" [value]="opcion.id_tipo_reporte">
+            {{ opcion.descripcion_tipo_reporte }}
+          </ion-select-option>
+        </ion-select>
           </ion-item>
 
           <ion-item>
-            <ion-label position="floating">Detalles Adicionales</ion-label>
-            <ion-textarea [(ngModel)]="reporte.detalles" name="detalles" required></ion-textarea>
+        <ion-label position="floating">Detalles Adicionales</ion-label>
+        <ion-textarea [(ngModel)]="reporte.descripcion_reporte" name="detalles" required></ion-textarea>
           </ion-item>
 
-          <ion-button class="ion-padding" expand="full" shape="round" type="submit">Enviar Reporte</ion-button>
+          <ion-button class="ion-padding" expand="full" shape="round" type="submit" [disabled]="!reporte.id_tipo_reporte || !reporte.descripcion_reporte">Enviar Reporte</ion-button>
         </form>
       </ion-card-content>
     </ion-card>

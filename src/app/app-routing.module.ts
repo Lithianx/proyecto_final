@@ -24,7 +24,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/crear-publicacion/crear-publicacion.module').then( m => m.CrearPublicacionPageModule)
   },
   {
-    path: 'editar-publicacion',
+    path: 'editar-publicacion/:id',
     loadChildren: () => import('./pages/editar-publicacion/editar-publicacion.module').then( m => m.EditarPublicacionPageModule)
   },
   {
@@ -47,10 +47,7 @@ const routes: Routes = [
     path: 'perfil',
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
-  {
-    path: 'configuracion',
-    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
-  },
+
   {
     path: 'editar-perfil',
     loadChildren: () => import('./pages/editar-perfil/editar-perfil.module').then( m => m.EditarPerfilPageModule)
@@ -80,14 +77,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/perfil-user/perfil-user.module').then( m => m.PerfilUserPageModule)
   },
   {
-    path: 'evento-inscrito',
-    loadChildren: () => import('./pages/evento-inscrito/evento-inscrito.module').then( m => m.EventoInscritoPageModule)
-  },
-  {
-    path: 'evento-creado',
-    loadChildren: () => import('./pages/evento-creado/evento-creado.module').then( m => m.EventoCreadoPageModule)
-  },
-  {
     path: 'crear-evento-flash',
     loadChildren: () => import('./pages/crear-evento-flash/crear-evento-flash.module').then( m => m.CrearEventoFlashPageModule)
   },
@@ -108,6 +97,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/detalle-evento/detalle-evento.module').then( m => m.DetalleEventoPageModule)
   },
   {
+    path : 'sala-evento/:id',
+    loadChildren: () => import('./pages/sala-evento/sala-evento.module').then( m => m.SalaEventoPageModule)
+  },
+  {
     path: 'publicaciones-guardadas',
     loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
   },
@@ -119,6 +112,18 @@ const routes: Routes = [
     path: 'notificaciones',
     loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
   },
+  {
+    path: 'buscar-persona',
+    loadChildren: () => import('./pages/buscar-persona/buscar-persona.module').then( m => m.BuscarPersonaPageModule)
+  },
+  {
+    path: 'event-insc-cread/:id/:titulo',
+    loadChildren: () => import('./pages/event-insc-cread/event-insc-cread.module').then(m => m.EventInscCreadPageModule)
+  }
+
+
+
+
 
 
 

@@ -1,4 +1,14 @@
 
+::ng-deep ion-refresher-content .refresher-icon,
+::ng-deep ion-refresher-content .refresher-pulling-icon,
+::ng-deep ion-refresher-content .refresher-refreshing-icon {
+  color: #3fe520 !important; // Cambia este valor por el color que desees
+}
+
+ion-icon{
+  color: #3fe520;
+}
+
 ion-searchbar{
   color: #f2f2f2;
   --icon-color: #3fe520;
@@ -12,19 +22,18 @@ ion-searchbar{
 }
 
 .message-text{
+  padding-left: 20px;
   color: #a6a6a6;
 }
 
+.chat-avatar-icon{
+  padding-top: 9px;
+  height: 90px;
+}
   .user-info {
+    padding-left: 20px;
     color: #f2f2f2;
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-  
-  .no-visto {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #39ff14;
   }

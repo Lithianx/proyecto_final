@@ -3,32 +3,39 @@
   color: #f2f2f2;
   z-index: 10;
   padding: 4px 16px;
-  /* Reduce el padding general para hacerlo más compacto */
   display: flex;
-  justify-content: center;
   align-items: center;
+  height: 70px; // o el alto que uses en tu app
 
   ion-back-button {
     color: #3fe520;
   }
+
+  .avatar-container {
+    position: absolute;
+    top: 6px; // sube el contenedor
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none; // evita bloquear clics como el botón atrás
+  }
+
+  ion-title {
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 2px;
+  }
+
+  ion-avatar {
+    width: 32px;
+    height: 32px;
+  }
 }
 
-.chat-header .avatar-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-ion-avatar {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
-}
-
-ion-title {
-  font-size: 16px;
-  font-weight: normal;
-}
 
 .spacer-header {
   height: 56px;
@@ -70,7 +77,7 @@ ion-title {
 
 .bubble {
   border-radius: 18px;
-  padding: 10px 14px;
+  padding: 5px 8px;
   word-wrap: break-word;
   /* Permite el salto de línea si el texto es largo */
   overflow-wrap: break-word;
@@ -91,12 +98,21 @@ ion-title {
   background-color: #494848;
 }
 
-.hora {
-  font-size: 10px;
-  color: gray;
-  display: block;
+
+.hora-visto{
   text-align: right;
-  margin-top: 4px;
+  .hora {
+    font-size: 10px;
+    color: white;
+    display: block;
+    text-align: right;
+    margin-top: 4px;
+  }
+  ion-icon{
+    font-size: 15px;
+    color: white;
+    margin-top: 4px;
+  }
 }
 
 
@@ -125,28 +141,6 @@ ion-title {
 
 
 
-ion-item {
-  display: flex;
-  flex: 1; // Permite que los elementos ocupen el espacio disponible
-  align-items: center;
-  justify-content: space-between; // Asegura que los botones no se amontonen
-  position: relative; // Mantiene la estructura dentro del footer
-}
-
-ion-button {
-  position: fixed;
-  bottom: 10px;
-  width: 50px; // Ajusta el tamaño del botón para evitar solapamiento
-}
-
-ion-button:first-of-type {
-  left: 15px; // Asegura que el botón de imagen/audio esté a la izquierda
-}
-
-ion-button:last-of-type {
-  right: 4px; // Mantiene el botón de enviar alineado a la derecha
-}
-
 ion-icon {
   color: #3fe520;
   font-size: 30px;
@@ -164,20 +158,83 @@ ion-icon {
   transform: scale(1.9); /* Mantiene el crecimiento centrado */
 }
 
-  .mensaje-input {
-    position: relative;
-    left: auto; /* Evita desajustes horizontales */
-    margin-left: 110px; /* Empuja el input hacia la derecha */
-    margin-right: 50px; /* Espacio para el botón de grabar */
-    width: calc(100% - 120px); /* Mantiene el espacio para los botones */
-    max-height: 80px;
-    min-height: 40px;
-    resize: none;
-    overflow-y: auto;
-    line-height: 1.4;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-    color: black;
+
+  .chat-footer {
+  ion-toolbar {
+    padding: 0 !important;
+    background: #fff;
+
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      gap: 8px; 
+
+      ion-button {
+        margin: 0 2px;
+        font-size: 22px;
+        --padding-start: 0;
+        --padding-end: 0;
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: static; 
+      }
+
+      .mensaje-input {
+        flex: 1 1 auto;
+        min-height: 36px;
+        max-height: 80px;
+        margin: 0 8px;
+        border-radius: 16px;
+        border: 1px solid #3fe520;
+        color: white;
+        padding: 8px 12px;
+        font-size: 16px;
+        resize: none;
+        background: #222;
+      }
+    }
   }
+}
+
+::ng-deep ion-modal {
+  --height: 300px; // Ajusta la altura según tus necesidades
+  --width: 90vw;
+  --border-radius: 18px;
+  align-items: flex-end !important; // Para que salga desde abajo
+  justify-content: center;
+}
+
+::ng-deep ion-modal .ion-page {
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+}
+
+::ng-deep ion-modal ion-content {
+  --background: #000000;
+  border-radius: 18px 18px 0 0;
+}
+
+::ng-deep ion-modal.modal-giphy {
+  --height: 80vh;
+  --width: 98vw;
+  --border-radius: 18px;
+  align-items: center !important;
+  justify-content: center;
+}
+
+::ng-deep ion-modal.modal-giphy .ion-page {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+::ng-deep ion-modal.modal-giphy ion-content {
+  --background: #181818;
+  border-radius: 18px;
+  padding: 0 0 16px 0;
+}

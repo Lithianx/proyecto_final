@@ -1,0 +1,37 @@
+<app-encabezado></app-encabezado>
+
+<ion-content>
+  <!-- Barra de búsqueda -->
+  <ion-searchbar 
+  [debounce]="1000" 
+  class="search-bar"
+  (ionInput)="handleInput($event)"
+   placeholder="Buscar usuario">
+  </ion-searchbar>
+
+
+<!-- Mensaje cuando no se ha buscado nada -->
+<ion-card *ngIf="!busquedaActiva && usuarios.length === 0" class="mensaje">
+  <ion-card-content>
+    <p>¿Estás buscando a alguien?</p>
+    <ion-icon name="search-circle-sharp"></ion-icon>
+  </ion-card-content>
+</ion-card>
+
+<!-- Lista de resultados -->
+<ion-list *ngIf="usuarios.length > 0" [inset]="true" lines="full">
+  <ion-item *ngFor="let usuario of usuarios" [routerLink]="['/perfil-user', usuario.id_usuario]">
+    <ion-avatar slot="start">
+      <img [src]="usuario.avatar" />
+    </ion-avatar>
+    <ion-label>
+      <h2>{{ usuario.nombre_usuario }}</h2>
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+
+</ion-content>
+
+
+<app-navbar></app-navbar>

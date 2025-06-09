@@ -255,7 +255,7 @@ export class DetallesPublicacionPersonalPage implements OnInit {
       header: 'Opciones',
       buttons: [
         {
-          text: 'Ocultar',
+          text: 'Editar',
           icon: 'share-outline',
           handler: () => {
             this.compartir(post);

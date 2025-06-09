@@ -1,46 +1,178 @@
-.cuadro-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-right: 10px;
-  }
-  
-  .cuadro-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .chat-item.grande {
-    --min-height: 100px;
-    padding: 16px 10px;
-  }
-  
-  .searchbar-gris {
-    --background: #e0e0e0; 
-    --color: #333;
-    --placeholder-color: #666;
-  }
-  .header-historial {
-    display: flex;
-    align-items: center;
-    position: relative;
-    padding: 10px 16px;
-  
-    .back-button {
-      z-index: 1;
-    }
-  
-    .titulo-centro {
-      position: absolute;
-      left: 0;
-      right: 0;
-      text-align: center;
-      pointer-events: none; 
-    }
-  }
-  
-  
+/* ==========================
+   SECCIÓN: TÍTULO DE SECCIÓN
+   ========================== */
+.titulo-seccion {
+  font-size: 1.3rem;
+  color: var(--ion-color-primary); 
+  margin: 1.5rem 1rem 1rem;
+  border-left: 4px solid var(--ion-color-primary);
+  padding-left: 10px;
+}
 
-  
+/* ==========================
+   TARJETAS DE EVENTO
+   ========================== */
+.tarjeta-evento ion-card {
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 12px;
+  margin: 12px;
+}
+
+.contenido-tarjeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.texto-tarjeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.icono-forward {
+  margin-left: 12px;
+}
+
+.titulo-evento {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.detalle {
+  font-size: 0.95rem;
+  color: #a6a6a6; /* Comentario corregido */
+  margin-bottom: 2px;
+}
+
+.color-verde {
+  color: var(--ion-color-primary);
+}
+
+.icono-creacion {
+  font-size: 1.1rem;
+  margin-right: 6px;
+  color: var(--ion-color-primary);
+  vertical-align: middle;
+}
+
+.icono-inscrito {
+  font-size: 1.1rem;
+  margin-right: 6px;
+  color: #4cd964; /* Verde más suave */
+  vertical-align: middle;
+}
+
+/* ==========================
+   NAVEGACIÓN DE PUBLICACIONES
+   ========================== */
+.publicaciones-nav {
+  position: relative;
+  border-top: 1px solid var(--ion-color-instagram-border);
+  border-bottom: 1px solid var(--ion-color-instagram-border);
+  margin-bottom: 1px;
+  padding-bottom: 2%;
+}
+
+.publicaciones-nav ion-segment {
+  --background: var(--ion-color-instagram-dark);
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.publicaciones-nav ion-segment-button {
+  --color: #ffffff99;
+  --color-checked: var(--ion-color-success);
+  --indicator-color: transparent;
+  flex: 1;
+  text-align: center;
+  border-radius: 8px;
+  z-index: 2;
+  transition: color 0.3s ease;
+}
+
+.publicaciones-nav ion-segment-button ion-icon {
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+/* Slider adaptado para 2 botones */
+.publicaciones-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  height: 50px;
+  width: calc(50% - 8px); /* 2 botones: 50% */
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--ion-color-success);
+  border-radius: 8px;
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease;
+  transform: var(--slider-transform, translateX(0%));
+}
+
+
+/* ==========================
+   FOTO DE PERFIL
+   ========================== */
+.profile-picture-edit-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  margin-top: 10px;
+}
+
+.profile-picture-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #ffffff;
+  z-index: 1;
+}
+
+.edit-overlay ion-icon {
+  font-size: 1.2rem;
+  color: var(--color-iconos);
+}
+
+/* ==========================
+   INPUTS Y BOTONES
+   ========================== */
+.input-item {
+  border: 1px solid #45a834;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+

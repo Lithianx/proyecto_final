@@ -1,0 +1,49 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+  <div class="header-row">
+    <ion-button fill="clear" class="back-button" (click)="volver()"  >
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <h1 class="app-title">{{ titulo }}</h1>
+  </div>
+
+  <div class="contenedor-evento">
+    <ion-card class="card-monster" *ngIf="evento">
+      <ion-card-header>
+        <ion-card-title class="titulo-monster">🎮 {{ evento.nombre }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="contenido-evento">
+          <div class="campo-evento">
+            <label>Descripción:</label>
+            <p>{{ evento.descripcion }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Lugar:</label>
+            <p>{{ evento.lugar }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Fecha:</label>
+            <p>{{ evento.fecha | date: 'dd/MM/yyyy' }}</p>
+          </div>
+
+          <div class="campo-evento">
+            <label>Duración:</label>
+            <p>{{ evento.duracion }} minutos</p>
+          </div>
+
+          <div class="campo-evento" *ngIf="evento.cupos">
+            <label>Cupos máximos:</label>
+            <p>{{ evento.cupos }}</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<app-navbar></app-navbar>

@@ -1,30 +1,9 @@
+
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 
-
-interface Usuario {
-  id: string;
-  username: string;
-  userAvatar: string;
-}
-
-interface Mensaje {
-  id: string;
-  emisorId: string;
-  receptorId: string;
-  contenido: string;
-  timestamp: string;
-  imagen?: string;
-  video?: string;
-  audio?: string;
-  leido?: boolean;
-}
-
-interface ChatPrivado {
-  id: string;
-  participante: Usuario;
-  ultimoMensaje?: Mensaje;
-}
+import { Usuario } from 'src/app/models/usuario.model';
+import { ConversacionUsuario } from 'src/app/models/conversacion-usuario.model';
 
 
 @Component({
@@ -35,107 +14,142 @@ interface ChatPrivado {
 })
 export class ListaChatPage implements OnInit {
 
-  // Lista original de chats, tipificada con la interface ChatPrivado
-  chatsOriginal: ChatPrivado[] = [
+  usuarios: Usuario[] = [
     {
-      id: '1',
-      participante: {
-        id: 'u123',
-        username: 'johndoe',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      },
-      ultimoMensaje: {
-        id: 'm1',
-        emisorId: 'u123',
-        receptorId: 'yo',
-        contenido: '¡Hola! ¿Cómo estás?',
-        timestamp: '2025-04-29T10:00:00',
-        leido: true
-      },
+      id_usuario: 123,
+      nombre_usuario: 'johndoe',
+      correo_electronico: 'john@correo.com',
+      fecha_registro: new Date('2024-01-01'),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
     },
     {
-      id: '2',
-      participante: {
-        id: 'u124',
-        username: 'gamer123',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      },
-      ultimoMensaje: {
-        id: 'm2',
-        emisorId: 'u124',
-        receptorId: 'yo',
-        contenido: 'Gracias por la invitación a jugar.',
-        timestamp: '2025-04-29T10:15:00',
-        leido: false
-      },
+      id_usuario: 456,
+      nombre_usuario: 'janedoe',
+      correo_electronico: 'jane@correo.com',
+      fecha_registro: new Date('2024-02-01'),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: false
     },
     {
-      id: '3',
-      participante: {
-        id: 'u125',
-        username: 'petterpan',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      },
-      ultimoMensaje: {
-        id: 'm3',
-        emisorId: 'u125',
-        receptorId: 'yo',
-        contenido: '',
-        timestamp: '2025-04-29T10:30:00',
-        imagen: 'https://ionicframework.com/docs/img/demos/thumbnail.svg',
-        leido: true,
-      },
+      id_usuario: 789,
+      nombre_usuario: 'pedrogamer',
+      correo_electronico: 'pedro@gamer.com',
+      fecha_registro: new Date('2024-03-01'),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
     },
     {
-      id: '4',
-      participante: {
-        id: 'u126',
-        username: 'videofan',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      },
-      ultimoMensaje: {
-        id: 'm4',
-        emisorId: 'u126',
-        receptorId: 'yo',
-        contenido: '',
-        timestamp: '2025-04-29T10:45:00',
-        video: 'https://example.com/videos/video-demo.mp4',
-        leido: true,
-      },
+      id_usuario: 900,
+      nombre_usuario: 'pedrogamer',
+      correo_electronico: 'pedro@gamer.com',
+      fecha_registro: new Date('2024-03-01'),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
     },
     {
-      id: '5',
-      participante: {
-        id: 'u127',
-        username: 'audiolover',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      },
-      ultimoMensaje: {
-        id: 'm5',
-        emisorId: 'u127',
-        receptorId: 'yo',
-        contenido: '',
-        timestamp: '2025-04-29T10:50:00',
-        audio: 'https://example.com/audio/audio-demo.mp3',
-        leido: false,
-      },
+      id_usuario: 9000,
+      nombre_usuario: 'pedrogamer',
+      correo_electronico: 'pedro@gamer.com',
+      fecha_registro: new Date('2024-03-01'),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
     }
   ];
 
-  chats: ChatPrivado[] = [];
 
-  constructor(private navCtrl: NavController) {}
+
+  // Simulación de lista de chats usando el modelo real
+  chatsOriginal: ConversacionUsuario[] = [
+    {
+      id_conversacion: 1,
+      id_usuario: 123,
+      ultimo_mensaje: '[imagen] https://ejemplo.com/imagen.jpg',
+      fecha_ultimo_mensaje: new Date('2023-06-01T09:00:00'),
+      leido: true, // Indica que el último mensaje fue leído
+    },
+    {
+      id_conversacion: 2,
+      id_usuario: 789,
+      ultimo_mensaje: '[audio] https://ejemplo.com/audio.mp3',
+      fecha_ultimo_mensaje: new Date('2023-06-23T09:00:00'),
+      leido: false, // Indica que el último mensaje no fue leído
+    },
+    {
+      id_conversacion: 3,
+      id_usuario: 456,
+      ultimo_mensaje: '[video] https://ejemplo.com/video.mp4',
+      fecha_ultimo_mensaje: new Date('2023-05-01T09:00:00'),
+      leido: true, // Indica que el último mensaje fue leído
+    },
+    {
+      id_conversacion: 4,
+      id_usuario: 900,
+      ultimo_mensaje: '¡Hola! ¿Cómo estás?',
+      fecha_ultimo_mensaje: new Date('2022-06-01T09:00:00'),
+      leido: false, // Indica que el último mensaje no fue leído
+    }
+  ];
+
+  chats: ConversacionUsuario[] = [];
+
+  constructor(private navCtrl: NavController) { }
 
   ngOnInit() {
     this.chats = [...this.chatsOriginal];
   }
 
+
+
+doRefresh(event: any) {
+  console.log('Recargando lista de chat...');
+  setTimeout(() => {
+    // Aquí actualizar desde Firebase
+    this.chatsOriginal.push(
+      {
+        id_conversacion: this.chatsOriginal.length + 1,
+        id_usuario: 900,
+        ultimo_mensaje: '¡Hola! ganaste un Iphone 15 😁👇 haz click aqui',
+        fecha_ultimo_mensaje: new Date(),
+        leido: false,
+      }
+    );
+    this.chatsOriginal.sort((a, b) => {
+      const fechaA = a.fecha_ultimo_mensaje ? a.fecha_ultimo_mensaje.getTime() : 0;
+      const fechaB = b.fecha_ultimo_mensaje ? b.fecha_ultimo_mensaje.getTime() : 0;
+      return fechaB - fechaA;
+    });
+    this.chats = [...this.chatsOriginal]; // <-- Actualiza la lista visible
+    event.target.complete();
+    console.log('Recarga completada');
+  }, 1500);
+}
+
+
+
+
   // Filtrado de la lista de chats por el nombre del participante
   handleInput(event: any): void {
     const query = event.target.value?.toLowerCase() || '';
-    this.chats = this.chatsOriginal.filter(chat =>
-      chat.participante.username.toLowerCase().includes(query)
-    );
+    this.chats = this.chatsOriginal.filter(chat => {
+      const usuario = this.usuarios.find(u => u.id_usuario === chat.id_usuario);
+      return usuario ? usuario.nombre_usuario.toLowerCase().includes(query) : false;
+    });
+  }
+
+
+  getUsuario(id_usuario: number) {
+    return this.usuarios.find(u => u.id_usuario === id_usuario);
   }
 
   volver() {

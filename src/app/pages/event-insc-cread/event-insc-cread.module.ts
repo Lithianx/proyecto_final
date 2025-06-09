@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { EventoCreadoPageRoutingModule } from './evento-creado-routing.module';
+import { EventInscCreadPageRoutingModule } from './event-insc-cread-routing.module';
 
-import { EventoCreadoPage } from './evento-creado.page';
+import { EventInscCreadPage } from './event-insc-cread.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 
 @NgModule({
@@ -14,9 +14,9 @@ import { ComponentsModule } from 'src/app/components/components.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    EventoCreadoPageRoutingModule,
+    EventInscCreadPageRoutingModule,
     ComponentsModule
   ],
-  declarations: [EventoCreadoPage]
+  declarations: [EventInscCreadPage]
 })
-export class EventoCreadoPageModule {}
+export class EventInscCreadPageModule {}

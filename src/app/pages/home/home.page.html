@@ -11,56 +11,63 @@
     </ion-refresher-content>
   </ion-refresher>
   
-
+<ion-segment [(ngModel)]="filtroPublicaciones">
+  <ion-segment-button value="publico">
+    <ion-label>Público</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="seguidos">
+    <ion-label>Solo seguidos</ion-label>
+  </ion-segment-button>
+</ion-segment>
 
   <ion-list lines="none">
 
     <!-- Publicación -->
-    <ion-card *ngFor="let post of posts">
+    <ion-card *ngFor="let publicacion of publicacionesFiltradas">
       <ion-item>
         <ion-avatar slot="start">
-          <img [src]="post.usuario.userAvatar" />
+          <img [src]="getUsuarioPublicacion(publicacion.id_usuario)?.avatar" />
         </ion-avatar>
         <ion-label class="etiqueta-usuario">
-          <h2>{{ post.usuario.username }}</h2>
-          <p>{{ post.time }}</p>
+          <h2>{{ getUsuarioPublicacion(publicacion.id_usuario)?.nombre_usuario }}</h2>
+          <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
         </ion-label>
         <!-- Botón de seguir -->
-        <ion-chip [color]="post.usuario.following ? 'success' : 'primary'" (click)="seguir(post)"
-          [outline]="!post.usuario.following">
-          {{ post.usuario.following ? 'Siguiendo' : 'Seguir' }}
+        <ion-chip [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'" (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario)!)"
+          [outline]="!sigueAlAutor(publicacion)">
+          {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
         </ion-chip>
 
         <!-- Botón de opciones -->
-        <ion-button fill="clear" size="small" (click)="opcion(post)">
+        <ion-button fill="clear" size="small" (click)="opcion(publicacion)">
           <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
         </ion-button>
 
       </ion-item>
 
       <!-- Parte donde se muestra imagen o descripción -->
-      <ng-container *ngIf="post.image; else soloDescripcion">
+      <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
         <!-- Si hay imagen, mostrar imagen -->
-        <img [src]="post.image" class="post-image" (click)="verImagen(post)" />
+        <img [src]="publicacion.imagen" class="post-image" (click)="verImagen(publicacion)" />
       </ng-container>
 
       <!-- En caso que NO haya imagen -->
       <ng-template #soloDescripcion>
         <ion-card-content>
-          <p class="descripcion-sola">{{ post.description }}</p>
-          <p><strong>{{ post.likes }} likes</strong></p>
+          <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+          <p><strong>{{ getLikesPublicacion(publicacion) }} likes</strong></p>
         </ion-card-content>
       </ng-template>
 
       <!-- Siempre muestra acciones y descripción si hay imagen -->
-      <ng-container *ngIf="post.image">
+      <ng-container *ngIf="publicacion.imagen">
         <ion-card-content>
-          <p><strong>{{ post.likes }} likes</strong></p>
+          <p><strong>{{ getLikesPublicacion(publicacion) }} likes</strong></p>
 
           <p>
-            {{ mostrarDescripcion ? post.description : (post.description | slice:0:100) + (post.description.length > 100
+            {{ mostrarDescripcion ? publicacion.contenido : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100
             ? '...' : '') }}
-            <ion-button *ngIf="post.description.length > 100" fill="clear" size="small"
+            <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
               (click)="mostrarDescripcion = !mostrarDescripcion">
               {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
             </ion-button>
@@ -73,22 +80,22 @@
 
         <!-- Botón de me gusta -->
         <ion-col size="auto">
-          <ion-button fill="clear" size="small" (click)="likes(post)">
+          <ion-button fill="clear" size="small" (click)="likePublicacion(publicacion)">
             <!-- Cambia el icono según el estado de me gusta -->
-            <ion-icon [name]="post.liked ? 'heart' : 'heart-outline'" size="large"></ion-icon>
+            <ion-icon [name]="usuarioLikeoPublicacion(publicacion) ? 'sparkles' : 'sparkles-outline'" size="large"></ion-icon>
           </ion-button>
         </ion-col>
 
         <!-- Botón de comentarios -->
         <ion-col size="auto">
-          <ion-button fill="clear" size="small" (click)="comentario(post)">
+          <ion-button fill="clear" size="small" (click)="comentario(publicacion)">
             <ion-icon name="chatbubble-outline" size="large"></ion-icon>
           </ion-button>
         </ion-col>
 
         <!-- Botón de compartir a chat -->
         <ion-col size="auto">
-          <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(post)">
+          <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(publicacion)">
             <ion-icon name="paper-plane-outline" size="large"></ion-icon>
           </ion-button>
         </ion-col>
@@ -97,9 +104,9 @@
 
         <!-- Botón de guardar -->
         <ion-col size="auto">
-          <ion-button fill="clear" size="small" (click)="guardar(post)">
+          <ion-button fill="clear" size="small" (click)="guardar(publicacion)">
             <!-- Cambia el icono según el estado de guardado -->
-            <ion-icon [name]="post.guardar ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
+            <ion-icon [name]="estaGuardada(publicacion) ? 'bookmark' : 'bookmark-outline'" size="large"></ion-icon>
           </ion-button>
         </ion-col>
       </ion-row>
@@ -132,10 +139,10 @@
       <ion-list class="modal-scrollable-content" scroll-y="true">
         <ion-item *ngFor="let user of followersfriend">
           <ion-avatar slot="start">
-            <img [src]="user.userAvatar" />
+            <img [src]="user.avatar" />
           </ion-avatar>
           <ion-label>
-            <h2>{{ user.username }}</h2>
+            <h2>{{ user.nombre_usuario }}</h2>
           </ion-label>
           <ion-button fill="clear" (click)="sendPostToUser(user)">Enviar</ion-button>
         </ion-item>

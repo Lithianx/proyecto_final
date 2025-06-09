@@ -28,9 +28,8 @@
 }
 
 .publicar{
-  --background: #3fe520;
-  --color: #f2f2f2;
-  font-weight: bold;
+  --background: #2d9e19;
+  --color: black;
 }
 
 .media-item {
@@ -51,4 +50,24 @@
   object-fit: contain;
   display: block;
   margin: 0 auto;
+}
+
+
+::ng-deep ion-modal.modal-giphy {
+  --height: 80vh;
+  --width: 98vw;
+  --border-radius: 18px;
+  align-items: center !important;
+  justify-content: center;
+}
+
+::ng-deep ion-modal.modal-giphy .ion-page {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+::ng-deep ion-modal.modal-giphy ion-content {
+  --background: #181818;
+  border-radius: 18px;
+  padding: 0 0 16px 0;
 }

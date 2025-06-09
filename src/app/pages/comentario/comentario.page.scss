@@ -1,3 +1,14 @@
+::ng-deep ion-chip {
+  --ion-color-primary: #3fe520; /* Verde para el color primario */
+  --ion-color-chip-background: #3fe520; /* Color de fondo de chip si es necesario */
+  --ion-color-chip-text: white; /* Para que el texto dentro del chip sea blanco */
+}
+
+::ng-deep ion-refresher-content .refresher-icon,
+::ng-deep ion-refresher-content .refresher-pulling-icon,
+::ng-deep ion-refresher-content .refresher-refreshing-icon {
+  color: #3fe520 !important; // Cambia este valor por el color que desees
+}
 
 ::ng-deep .custom-modal-enviar .modal-scrollable-content {
   --overflow: auto;
@@ -70,18 +81,15 @@ ion-button {
 }
 
 ion-chip {
-  color: #3fe520;
+    border:  #3fe520 !important;
+    box-shadow: inset 0 0 5px rgba(63, 229, 32, 0.5) !important;
+    color: #3fe520;
 }
 
 .btn-publicar {
   --color: #3fe520 ;
 }
 
-::ng-deep .custom-action-sheet .action-sheet-group {
-  max-width: 300px;         // ancho máximo del ActionSheet
-  margin: 0 auto;           // centra horizontalmente
-  width: 90%;               // ancho relativo para móviles
-}
 
 ::ng-deep .custom-action-sheet .action-sheet-button {
   color: #a6a6a6; // color de texto de los botones

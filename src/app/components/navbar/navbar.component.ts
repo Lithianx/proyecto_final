@@ -19,8 +19,8 @@ export class NavbarComponent  implements OnInit {
 
   ngOnInit() {}
 
-  irTorneo() {
-    this.router.navigate(['/perfil']);
+  irBuscar() {
+    this.router.navigate(['/buscar-persona']);
   }
   irEvento() {
     this.router.navigate(['/evento']);
@@ -41,13 +41,6 @@ export class NavbarComponent  implements OnInit {
           icon: 'add-circle-outline',
           handler: () => {
             this.router.navigate(['/crear-publicacion']);
-          }
-        },
-        {
-          text: 'Crear Torneo',
-          icon: 'trophy-outline',
-          handler: () => {
-            this.router.navigate(['/crear-torneo']);
           }
         },
         {

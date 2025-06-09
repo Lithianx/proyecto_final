@@ -13,10 +13,10 @@
     <ion-card class="editar-publicacion-card">
         <ion-item lines="none">
             <ion-avatar slot="start">
-                <img [src]="usuario.userAvatar" />
+                <img [src]="usuario.avatar" />
             </ion-avatar>
             <ion-label>
-                <h2>{{usuario.username}}</h2>
+                <h2>{{usuario.nombre_usuario}}</h2>
             </ion-label>
         </ion-item>
 
@@ -58,8 +58,8 @@
     </ion-card-header>
 
     <ion-card-content>
-        <p>{{ post.description }}</p>
-        <img *ngIf="post.image" [src]="post.image" class="media-item" />
+        <p>{{ publicacion.contenido }}</p>
+        <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="media-item" />
     </ion-card-content>
 </ion-card>
 

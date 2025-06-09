@@ -1,24 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-// Definir las interfaces
-interface Usuario {
-  id: string;
-  username: string;
-  userAvatar: string;
-  following: boolean;
-}
+import { Usuario } from 'src/app/models/usuario.model';
+import { Publicacion } from 'src/app/models/publicacion.model';
 
-interface Post {
-  id: number;
-  image: string;
-  time: string;
-  description: string;
-  likes: number;
-  liked: boolean;
-  guardar: boolean;
-  usuario: Usuario;
-}
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -30,50 +15,39 @@ export class EditarPublicacionPage implements OnInit {
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
 
+  // Usuario simulado (ajustado al modelo real)
   usuario: Usuario = {
-    id: '1',
-    username: 'Juan Pérez',
-    userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-    following: false,
+    id_usuario: 1,
+    nombre_usuario: 'Juan Pérez',
+    correo_electronico: 'juan@correo.com',
+    fecha_registro: new Date(),
+    contrasena: '',
+    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    estado_cuenta: true,
+    estado_online: true
   };
 
-  postId: string | null = '';
-  post!: Post;
+  postId!: number;
+  publicacion!: Publicacion;
   contenido: string = '';
   imagenBase64: string | null = null;
   vistaPreviaVisible: boolean = false;
 
-  // Simulación de publicaciones (esto luego se reemplaza con datos reales de Firebase)
-  publicaciones: Post[] = [
+  // Simulación de publicaciones (ajustado al modelo real)
+  publicaciones: Publicacion[] = [
     {
-      id: 1,
-      image: 'https://ionicframework.com/docs/img/demos/card-media.png',
-      time: 'Hace 2 horas',
-      description: 'Esta es una publicación de prueba para edición.',
-      likes: 42,
-      liked: false,
-      guardar: false,
-      usuario: {
-        id: '1',
-        username: 'Juan Pérez',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        following: false,
-      },
+      id_publicacion: 1,
+      id_usuario: 1,
+      contenido: 'Esta es una publicación de prueba para edición.',
+      imagen: 'https://ionicframework.com/docs/img/demos/card-media.png',
+      fecha_publicacion: new Date(),
     },
     {
-      id: 2,
-      image: '',
-      time: 'Hace 1 hora',
-      description: 'Otra publicación sin imagen.',
-      likes: 15,
-      liked: false,
-      guardar: false,
-      usuario: {
-        id: '1',
-        username: 'Juan Pérez',
-        userAvatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        following: false,
-      },
+      id_publicacion: 2,
+      id_usuario: 1,
+      contenido: 'Otra publicación sin imagen.',
+      imagen: '',
+      fecha_publicacion: new Date(),
     },
   ];
 
@@ -81,15 +55,15 @@ export class EditarPublicacionPage implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      this.postId = params['id'];
+      this.postId = Number(params['id']);
 
       // Buscar la publicación por ID
-      const postEncontrado = this.publicaciones.find(p => p.id === +this.postId!);
+      const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === +this.postId!);
 
-      if (postEncontrado) {
-        this.post = postEncontrado;
-        this.contenido = this.post.description;
-        this.imagenBase64 = this.post.image || null;
+      if (publicacionEncontrada) {
+        this.publicacion = publicacionEncontrada;
+        this.contenido = this.publicacion.contenido;
+        this.imagenBase64 = this.publicacion.imagen || null;
       } else {
         console.warn('Publicación no encontrada');
       }
@@ -124,11 +98,11 @@ export class EditarPublicacionPage implements OnInit {
   }
 
   guardarCambios() {
-    if (this.post) {
-      this.post.description = this.contenido;
-      this.post.image = this.imagenBase64 || '';
+    if (this.publicacion) {
+      this.publicacion.contenido = this.contenido;
+      this.publicacion.imagen = this.imagenBase64 || '';
 
-      console.log('Cambios guardados:', this.post);
+      console.log('Cambios guardados:', this.publicacion);
           // Mostrar la vista previa después de guardar
     this.vistaPreviaVisible = true;
     }
