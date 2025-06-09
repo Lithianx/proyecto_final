@@ -1,16 +1,30 @@
- .fondo-negro {
-  --background: #000;
+.fondo-negro {
+  --background: #202020;
   color: #39ff14;
-} 
+}
+
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: flex-start;
+  padding-bottom: 16px;
+}
 
 .input-monster {
-  --background: #000;
+  --background: #202020;
   --color: #ffffff;
-  --border-color: #39ff14;
-  --border-radius: 12px; // más redondeado
+  --border-color: #30ce14;
+  --border-radius: 12px;
   margin: 12px auto;
-  width: 90%; // achica de los lados (puedes ajustar a 80% si quieres más compacto)
-  max-width: 500px; // limita su expansión en pantallas grandes
+  width: 90%;
+  max-width: 500px;
 }
 
 ion-label {
@@ -34,12 +48,13 @@ ion-label {
 }
 
 .boton-monster {
-  --background: #39ff14;
+  --background: #30ce14;
   --color: #000;
   font-weight: bold;
-  margin-top: 280px;
-
+  margin-top: auto;
+  margin-bottom: 24px;
 }
+
 .boton-volver {
   position: absolute;
   left: 0;
@@ -47,40 +62,65 @@ ion-label {
   margin-left: 10px;
 }
 
-
-
-
-
-
- .campo-cupos {
+.campo-cupos {
   display: flex;
   flex-direction: column;
   margin: 16px 0;
-  height: 50px;
 
-  label-cupos {
+  .label-cupos {
     font-weight: bold;
-    margin-bottom: 150px;
     color: #ffffff;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    text-align: center;
   }
 
   .cupos-selector {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 24px;
 
     ion-button {
-      --border-color: #39ff14;
-      --color: #39ff14;
+      --border-color: #30ce14;
+      --color: #30ce14;
     }
 
     .cupos-numero {
       font-size: 1.5rem;
       font-weight: bold;
-      width: 40px;
+      width: 50px;
       text-align: center;
       color: white;
     }
   }
-} 
+}
+
+ion-segment.input-monster {
+  --background: #202020;
+  --color: #ffffff;
+  --indicator-color: #2ec713;
+  --highlight-color: #32d815;
+  --border-radius: 12px;
+  margin: 12px auto;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid #33db15;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+ion-segment-button {
+  --color-checked: #202020;
+  --background-checked: #2eb316;
+  --color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 10px;
+}
+
+ion-segment-button.ion-activated {
+  box-shadow: 0 0 10px #2ed610;
+}
