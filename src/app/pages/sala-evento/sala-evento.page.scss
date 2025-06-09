@@ -1,11 +1,22 @@
 
+ .info-horizontal {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 12px;       
+  margin-bottom: 10px;
+ 
+}
 
+.info-item {
+  flex: 1;           
+  min-width: 140px;  
+}
 :host {
   display: flex;
   flex-direction: column;
   height: 100vh;
   background-color: #000;
-  color: #39ff14;
+  color: #2bb113;
   font-family: 'Arial', sans-serif;
 }
 
@@ -28,24 +39,29 @@ ion-content {
 
 
 .espera-contenedor {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  padding-bottom: 20px;
 }
 
 .espera-card {
-  width: 100%;
-  max-width: 500px;
+  
   background: #111;
-  border: 2px solid #39ff14;
+  border: 2px solid #2bb113;
   border-radius: 12px;
-  box-shadow: 0 0 10px #39ff14;
-  margin-bottom: 16px;
+  box-shadow: 0 0 10px #2bb113;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
 }
 
 ion-card-title {
-  color: #39ff14;
+  color: #2bb113;
   font-size: 1.3rem;
   text-align: center;
 }
@@ -57,7 +73,7 @@ ion-card-subtitle {
 }
 
 ion-label h2 {
-  color: #39ff14;
+  color: #2bb113;
   margin: 0;
   font-size: 1rem;
 }
@@ -70,15 +86,15 @@ ion-label p {
 
 ion-item-divider {
   background: transparent;
-  border-top: 1px solid #39ff14;
-  color: #39ff14;
+  border-top: 1px solid #2bb113;
+  color: #2bb113;
   text-align: center;
   margin-top: 12px;
 }
 
 ion-list ion-item {
   background: #1a1a1a;
-  border-bottom: 1px solid #39ff14;
+  border-bottom: 1px solid #2bb113;
   --color: white;
 }
 
@@ -90,7 +106,7 @@ ion-list ion-item {
 }
 
 ion-button[color=success] {
-  --background: #39ff14;
+  --background: #2bb113;
   --color: #000;
   font-weight: bold;
   border-radius: 8px;
@@ -105,7 +121,7 @@ ion-button[color=danger] {
 
 
 .boton-volver {
-  --color: rgb(0, 252, 0);
+  --color: rgb(21, 214, 21);
   margin: 0;
   padding: 0 10px;
   z-index: 2;
@@ -120,8 +136,13 @@ ion-button[color=danger] {
 }
 
 
-
-
+.boton-invitar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
+  color: #2bb113;
+}
 
 
 
@@ -138,7 +159,7 @@ ion-button[color=danger] {
   right: 20px;
   width: 56px;
   height: 56px;
-  background-color: #39ff14;
+  background-color: #2bb113;
   color: black;
   border-radius: 50%;
   display: flex;
@@ -159,24 +180,24 @@ ion-button[color=danger] {
   max-height: 400px;
   background-color: #111;
   color: white;
-  border: 2px solid #39ff14;
+  border: 2px solid #2bb113;
   border-radius: 12px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 12px #39ff14;
+  box-shadow: 0 0 12px #2bb113;
 }
 
 /* Cabecera del chat */
 .chat-header {
   background-color: #000;
-  color: #39ff14;
+  color: #2bb113;
   padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
-  border-bottom: 1px solid #39ff14;
+  border-bottom: 1px solid #2bb113;
 }
 
 /* Ícono cerrar */
@@ -191,27 +212,40 @@ ion-button[color=danger] {
   overflow-y: auto;
   flex: 1;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; // Espacio entre mensajes
 }
 
 .chat-cuerpo .msg-yo {
-  text-align: right;
-  color: #39ff14;
+  align-self: flex-end;
+  background-color: #28ac11;
+  color: black;
+  padding: 8px 12px;
+  border-radius: 12px 12px 0 12px;
+  max-width: 75%;
+  word-wrap: break-word;
 }
 
 .chat-cuerpo .msg-otro {
-  text-align: left;
-  color: #ffffff;
+  align-self: flex-start;
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px 12px 12px 0;
+  max-width: 75%;
+  word-wrap: break-word;
 }
 
 /* Input de chat */
 .chat-input {
   padding: 6px 10px;
-  border-top: 1px solid #39ff14;
+  border-top: 1px solid #2bb113;
 
   ion-item {
     --background: transparent;
     --color: white;
-    border: 1px solid #39ff14;
+    border: 1px solid #2bb113;
     border-radius: 8px;
   }
 
@@ -220,14 +254,14 @@ ion-button[color=danger] {
   }
 
   ion-button {
-    --color: #39ff14;
+    --color: #2bb113;
   }
 }
 
 .temporizador {
   margin-top: 10px;
   font-size: 1.1rem;
-  color: #39ff14;
+  color: #2bb113;
   display: flex;
   align-items: center;
   gap: 8px;

@@ -5,34 +5,36 @@
 
 
   <div class="header-contenedor">
-    <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
-      <ion-icon name="arrow-back"></ion-icon>
-    </ion-button>
     <h1 class="titulo">SALA EVENTO</h1>
   </div>
+  <!-- <ion-button fill="clear" slot="end" class="boton-invitar" (click)="abrirModalInvitacion()">
+  <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
+</ion-button> -->
 
 
   <div class="espera-contenedor">
     <ion-card class="espera-card">
       <ion-card-header>
         <ion-card-title class="text-center">{{ evento?.nombre }}</ion-card-title>
-        <ion-card-subtitle class="text-center">Organizado por {{ evento?.usuario }}</ion-card-subtitle>
+        <ion-card-subtitle class="text-center">Organizado por: <span style="color: rgb(15, 209, 167);">[  {{ evento?.usuario}}  ]</span></ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
-        <ion-item lines="none">
-          <ion-label>
-            <h2>Lugar</h2>
-            <p>{{ evento?.lugar }}</p>
-          </ion-label>
-        </ion-item>
+        <div class="info-horizontal">
+          <ion-item lines="none" class="info-item">
+            <ion-label>
+              <h2>Lugar</h2>
+              <p>{{ evento?.lugar }}</p>
+            </ion-label>
+          </ion-item>
 
-        <ion-item lines="none">
-          <ion-label>
-            <h2>Hora</h2>
-            <p>{{ evento?.hora }}</p>
-          </ion-label>
-        </ion-item>
+          <ion-item lines="none" class="info-item">
+            <ion-label>
+              <h2>Hora</h2>
+              <p>{{ evento?.hora }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
 
         <ion-item-divider color="dark">Participantes</ion-item-divider>
 
@@ -45,9 +47,16 @@
 
         <div class="acciones">
           <ion-button expand="block" color="success" (click)="iniciarEvento()" [disabled]="cargandoEvento">
-            <ion-spinner *ngIf="cargandoEvento" name="dots"></ion-spinner>
-            <span *ngIf="!cargandoEvento && !eventoEnCurso">Iniciar Evento</span>
-            <span *ngIf="eventoEnCurso">Finalizar Evento</span>
+            <ion-spinner *ngIf="cargandoEvento" name="dots" slot="start"></ion-spinner>
+            <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">
+              Iniciar Evento
+            </ng-container>
+            <ng-container *ngIf="!cargandoEvento && eventoEnCurso">
+              Finalizar Evento
+            </ng-container>
+            <ng-container *ngIf="cargandoEvento">
+              Cargando...
+            </ng-container>
           </ion-button>
 
           <div *ngIf="eventoEnCurso" class="temporizador">
@@ -55,7 +64,7 @@
             <span>{{ tiempoTranscurrido }}</span>
           </div>
 
-          <ion-button [routerLink]="['/home']" expand="block" color="danger">Salir</ion-button>
+          <ion-button expand="block" color="danger" (click)="confirmarSalida()">Salir</ion-button>
         </div>
       </ion-card-content>
     </ion-card>
@@ -76,7 +85,8 @@
 
     <div class="chat-cuerpo">
       <div *ngFor="let msg of mensajes" [ngClass]="{'msg-yo': msg.usuario === 'Tú', 'msg-otro': msg.usuario !== 'Tú'}">
-        <strong>{{ msg.usuario }}:</strong> <span>{{ msg.texto }}</span>
+        <strong>{{ msg.usuario }}:</strong>
+        <span>{{ msg.texto }}</span>
       </div>
     </div>
 
