@@ -7,6 +7,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -37,10 +38,13 @@ export class CrearPublicacionPage implements OnInit {
 
   publicaciones: Publicacion[] = []; // Lista de publicaciones creadas
 
-  constructor(private router: Router,private localStorage: LocalStorageService) { }
+  constructor(private router: Router,
+    private localStorage: LocalStorageService,
+      private publicacionService: PublicacionService
+  ) { }
 
 async ngOnInit() {
-  this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones_personal');
+  this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 }
 
   // Giphy
@@ -88,16 +92,18 @@ async ngOnInit() {
   // Función para crear la publicación
 async publicar() {
   if (!this.contenido.trim() && !this.imagenBase64) return;
+
+   const id_publicacion = await this.publicacionService.getNextPersonalId();
   const nuevaPublicacion: Publicacion = {
-    id_publicacion: this.publicaciones.length + 1,
+    id_publicacion,
     id_usuario: this.usuario.id_usuario,
     contenido: this.contenido || '',
     imagen: this.imagenBase64 || '',
     fecha_publicacion: new Date(),
   };
 
-  await this.localStorage.addToList<Publicacion>('publicaciones_personal', nuevaPublicacion);
-  this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones_personal');
+      await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
+    this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
   console.log('Publicación creada:', nuevaPublicacion);
 

@@ -14,6 +14,15 @@ import { Seguir } from 'src/app/models/seguir.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
+import { GuardaPublicacionService } from 'src/app/services/guardarpublicacion.service';
+import { LikeService } from 'src/app/services/like.service';
+import { SeguirService } from 'src/app/services/seguir.service';
+import { UtilsService } from 'src/app/services/utils.service';
+import { ComentarioService } from 'src/app/services/comentario.service';
+
+
 
 @Component({
   selector: 'app-comentario',
@@ -44,78 +53,7 @@ export class ComentarioPage implements OnInit {
     estado_online: true
   };
 
-  seguimientos: Seguir[] = [
-    { id_usuario_seguidor: 0, id_usuario_seguido: 2, estado_seguimiento: true },
-    { id_usuario_seguidor: 0, id_usuario_seguido: 3, estado_seguimiento: true },
-    // Puedes agregar más relaciones si quieres
-  ];
-
-  usuarios: Usuario[] = [
-    {
-      id_usuario: 0,
-      nombre_usuario: 'Usuario Demo',
-      correo_electronico: 'demo@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    },
-    {
-      id_usuario: 1,
-      nombre_usuario: 'PedritoGamer',
-      correo_electronico: 'pedrito@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    },
-    {
-      id_usuario: 2,
-      nombre_usuario: 'Pan_con_queso',
-      correo_electronico: 'pan@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    },
-    {
-      id_usuario: 3,
-      nombre_usuario: 'gamer78',
-      correo_electronico: 'pan@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    },
-    // ...otros usuarios simulados...
-  ];
-
-
-  // Ejemplo de likes para publicaciones
-  likesPublicaciones: Like[] = [
-    {
-      id_usuario: 1,
-      id_publicacion: 101,
-      fecha_like: new Date('2024-06-01T10:00:00'),
-      estado_like: true
-    },
-    {
-      id_usuario: 2,
-      id_publicacion: 101,
-      fecha_like: new Date('2024-06-01T11:00:00'),
-      estado_like: true
-    },
-    {
-      id_usuario: 3,
-      id_publicacion: 102,
-      fecha_like: new Date('2024-06-02T09:30:00'),
-      estado_like: true
-    }
-  ];
+  seguimientos: Seguir[] = [];
 
   // Ejemplo de likes para comentarios
   likesComentarios: Like[] = [
@@ -134,6 +72,9 @@ export class ComentarioPage implements OnInit {
   ];
 
 
+  usuarios: Usuario[] = [];
+  descripcionExpandida: { [id: number]: boolean } = {};
+  publicacionesLikes: Like[] = [];
 
   usuariosFiltrados: Usuario[] = [];
 
@@ -147,21 +88,55 @@ export class ComentarioPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
-    private localStorage: LocalStorageService
+    private localStorage: LocalStorageService,
+    private likeService: LikeService,
+    private seguirService: SeguirService,
+    private guardaPublicacionService: GuardaPublicacionService,
+    private publicacionService: PublicacionService,
+    private usuarioService: UsuarioService,
+    private UtilsService: UtilsService,
+    private comentarioService: ComentarioService
   ) { }
 
 
-  async ngOnInit() {
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
+  toggleDescripcion(id: number) {
+    this.descripcionExpandida[id] = !this.descripcionExpandida[id];
+  }
 
-    this.followersfriend = this.usuarios.filter(user => idsSeguidos.includes(user.id_usuario));
+  async ngOnInit() {
+
+
+    // Usuarios
+    await this.usuarioService.cargarUsuarios(); // primero carga
+    this.usuarios = this.usuarioService.getUsuarios(); // luego los asignas desde memoria
+
+
+
+
+
     this.postId = this.route.snapshot.paramMap.get('id');
     await this.obtenerPublicacion();
     this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes');
     this.publicacionLikes = await this.localStorage.getList<Like>('publicacionLikes');
-    this.seguimientos = await this.localStorage.getList<Seguir>('seguimientos');
+
+
+
+
+    
+    // Likes de publicaciones
+    await this.likeService.cargarLikes();
+    this.publicacionesLikes = this.likeService.getLikes();
+    
+    // Guardados
+    await this.guardaPublicacionService.cargarGuardados();
+    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+    
+    // Seguimientos
+    await this.seguirService.cargarSeguimientos();
+    this.seguimientos = this.seguirService.getSeguimientos();
+    
+    // Carga publicaciones de amigos
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
     // Desplazar hacia la sección de comentarios después de cargar la página
     setTimeout(() => {
@@ -169,7 +144,8 @@ export class ComentarioPage implements OnInit {
         this.comentariosContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100); // Se le da un pequeño retraso para asegurarse que todo esté cargado
-  }
+
+  }  
 
 
 
@@ -190,21 +166,18 @@ export class ComentarioPage implements OnInit {
 
 
   followersfriend: Usuario[] = [];
-
   // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
     const searchTerm = event.target.value?.toLowerCase() || '';
     console.log('Valor ingresado en el input:', searchTerm);
 
-    // 1. Obtén los IDs de los usuarios que sigues
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
+    // Usa el método del servicio para obtener los seguidos
+    const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-    // 2. Filtra solo los usuarios seguidos y luego por nombre
-    this.followersfriend = this.usuarios
-      .filter(user => idsSeguidos.includes(user.id_usuario))
-      .filter(user => user.nombre_usuario.toLowerCase().includes(searchTerm));
+    // Aplica filtro por nombre
+    this.followersfriend = seguidos.filter(user =>
+      user.nombre_usuario.toLowerCase().includes(searchTerm)
+    );
 
     console.log('Usuarios filtrados:', this.followersfriend);
   }
@@ -339,38 +312,21 @@ export class ComentarioPage implements OnInit {
 
   publicacionLikes: Like[] = [];
 
-  likePublicacion() {
-    const like = this.publicacionLikes.find(
-      l => l.id_usuario === this.usuarioActual.id_usuario &&
-        l.id_publicacion === this.publicacion.id_publicacion
-    );
-
-    if (like) {
-      like.estado_like = !like.estado_like;
-      like.fecha_like = new Date();
-    } else {
-      this.publicacionLikes.push({
-        id_usuario: this.usuarioActual.id_usuario,
-        id_publicacion: this.publicacion.id_publicacion,
-        fecha_like: new Date(),
-        estado_like: true
-      });
-    }
-    this.localStorage.setItem('publicacionLikes', this.publicacionLikes);
+  // Dar o quitar like
+  async likePublicacion(publicacion: Publicacion) {
+    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+    // Vuelve a cargar los likes en memoria para actualizar la vista
+    this.publicacionesLikes = await this.likeService.getLikes();
   }
 
-  getLikesPublicacion(): number {
-    return this.publicacionLikes.filter(
-      l => l.id_publicacion === this.publicacion.id_publicacion && l.estado_like
-    ).length;
+
+  // Métodos síncronos para la vista
+  getLikesPublicacion(publicacion: Publicacion): number {
+    return this.likeService.getLikesCount(publicacion.id_publicacion);
   }
 
-  usuarioLikeoPublicacion(): boolean {
-    return !!this.publicacionLikes.find(
-      l => l.id_publicacion === this.publicacion.id_publicacion &&
-        l.id_usuario === this.usuarioActual.id_usuario &&
-        l.estado_like
-    );
+  usuarioLikeoPublicacion(publicacion: Publicacion): boolean {
+    return this.likeService.usuarioLikeo(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
   enviar(publicacion: Publicacion) {
@@ -397,62 +353,33 @@ export class ComentarioPage implements OnInit {
 
   publicacionesGuardadas: GuardaPublicacion[] = [];
 
-  estaGuardada(): boolean {
-    return !!this.publicacionesGuardadas.find(
-      g => g.id_publicaion === this.publicacion.id_publicacion &&
-        g.id_usuario === this.usuarioActual.id_usuario &&
-        g.estado_guardado
-    );
+  // Guardar publicación
+  async guardar(publicacion: Publicacion) {
+    await this.guardaPublicacionService.toggleGuardado(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
   }
 
-  guardar() {
-    const guardado = this.publicacionesGuardadas.find(
-      g => g.id_publicaion === this.publicacion.id_publicacion &&
-        g.id_usuario === this.usuarioActual.id_usuario
-    );
-
-    if (guardado) {
-      guardado.estado_guardado = !guardado.estado_guardado;
-      guardado.fecha_guardado = new Date();
-    } else {
-      this.publicacionesGuardadas.push({
-        id_publicaion: this.publicacion.id_publicacion,
-        id_usuario: this.usuarioActual.id_usuario,
-        fecha_guardado: new Date(),
-        estado_guardado: true
-      });
-    }
-    this.localStorage.setItem('publicacionesGuardadas', this.publicacionesGuardadas);
+  estaGuardada(publicacion: Publicacion): boolean {
+    return this.guardaPublicacionService.estaGuardada(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
-  // Array para almacenar seguimientos
-
-  seguir(usuario: Usuario) {
-    const seguimiento = this.seguimientos.find(
-      s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.id_usuario_seguido === usuario.id_usuario
-    );
-
-    if (seguimiento) {
-      // Cambia el estado
-      seguimiento.estado_seguimiento = !seguimiento.estado_seguimiento;
-    } else {
-      // Si no existe, lo crea como seguimiento activo
-      this.seguimientos.push({
-        id_usuario_seguidor: this.usuarioActual.id_usuario,
-        id_usuario_seguido: usuario.id_usuario,
-        estado_seguimiento: true
-      });
-    }
-    this.localStorage.setItem('seguimientos', this.seguimientos);
+  // Seguir/Dejar de seguir
+  async seguir(usuario: Usuario) {
+    await this.seguirService.toggleSeguir(this.usuarioActual.id_usuario, usuario.id_usuario);
+    this.seguimientos = this.seguirService.getSeguimientos();
+    // Actualizar lista de seguidos
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
-  sigueAlAutor(): boolean {
-    return !!this.seguimientos.find(
-      s => s.id_usuario_seguidor === this.usuarioActual.id_usuario &&
-        s.id_usuario_seguido === this.publicacion.id_usuario &&
-        s.estado_seguimiento
-    );
+  sigueAlAutor(publicacion: Publicacion): boolean {
+    return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
   }
+
+  // Utilidad para obtener el usuario de una publicación
+  getUsuarioPublicacion(id_usuario: number): Usuario | undefined {
+    return this.usuarioService.getUsuarioPorId(id_usuario);
+  }
+
 
   opcion(publicacion: Publicacion) {
     this.actionSheetCtrl.create({
@@ -488,29 +415,12 @@ export class ComentarioPage implements OnInit {
 
 
   async compartir(publicacion: Publicacion) {
-
-    const urlConMetadatos = `http://localhost:8100/comentario/${publicacion.id_publicacion}`;
-    const mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n`;
-
-    if (Capacitor.getPlatform() !== 'web') {
-      await Share.share({
-        title: 'Descubre esto',
-        text: mensaje,
-        url: urlConMetadatos,
-        dialogTitle: 'Compartir publicación',
-      });
-    } else {
-      // Prueba para navegador: abrir WhatsApp web
-      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
-      const url = `https://wa.me/?text=${mensajeCodificado}`;
-      window.open(url, '_blank');
-    }
+    await this.UtilsService.compartirPublicacion(publicacion);
   }
 
   irAReportar(publicacion: Publicacion) {
     this.router.navigate(['/reportar', publicacion.id_publicacion]);
   }
-
 
 
 

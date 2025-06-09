@@ -9,6 +9,8 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { Usuario } from 'src/app/models/usuario.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
+import { ReporteService } from 'src/app/services/reporte.service';
 
 @Component({
   selector: 'app-reportar',
@@ -65,7 +67,7 @@ export class ReportarPage implements OnInit {
 
   usuarios: Usuario[] = [
     {
-      id_usuario: 1,
+      id_usuario: 2,
       nombre_usuario: 'Pedro Gamer',
       correo_electronico: 'pedro@gamer.com',
       fecha_registro: new Date(),
@@ -78,7 +80,13 @@ export class ReportarPage implements OnInit {
   ];
 
 
-  constructor(private route: ActivatedRoute, private navCtrl: NavController, private toastCtrl: ToastController, private localStorage: LocalStorageService) { }
+  constructor(private route: ActivatedRoute,
+    private navCtrl: NavController,
+    private toastCtrl: ToastController,
+    private localStorage: LocalStorageService,
+    private publicacionService: PublicacionService,
+    private reporteService: ReporteService
+  ) { }
 
   ngOnInit() {
     // Accede al parámetro 'id' en la ruta
@@ -97,20 +105,20 @@ export class ReportarPage implements OnInit {
 
   usuarioPost!: Usuario;
 
-async obtenerPost() {
-  // Obtiene todas las publicaciones del local storage
-  const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
-  // Busca la publicación por ID
-  this.post = publicaciones.find(p => p.id_publicacion === this.postId)!;
+  async obtenerPost() {
+    // Obtiene todas las publicaciones del local storage
+    const post = await this.publicacionService.getPublicacionById(this.postId);
 
-  // Si la publicación existe, busca el usuario
-  if (this.post) {
-    this.usuarioPost = this.usuarios.find(u => u.id_usuario === this.post.id_usuario)!;
-  } else {
-    // Si no existe, puedes mostrar un mensaje o manejar el error
-    console.warn('Publicación no encontrada');
+    console.log('Post encontrado:', post);
+    // Si la publicación existe, busca el usuario
+    if (post) {
+      this.post = post;
+      this.usuarioPost = this.usuarios.find(u => u.id_usuario === this.post.id_usuario)!;
+    } else {
+      // Si no existe, puedes mostrar un mensaje o manejar el error
+      console.warn('Publicación no encontrada');
+    }
   }
-}
 
   async enviarReporte() {
     if (!this.reporte.id_tipo_reporte || !this.reporte.descripcion_reporte.trim()) {
@@ -124,7 +132,7 @@ async obtenerPost() {
     this.reporte.fecha_reporte = new Date();
 
     // Guarda el reporte en el local storage
-    await this.localStorage.addToList<Reporte>('reportes', { ...this.reporte });
+    await this.reporteService.guardarReporte({ ...this.reporte });
 
 
     console.log('Reporte enviado:', this.reporte);

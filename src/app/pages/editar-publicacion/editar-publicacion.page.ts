@@ -5,6 +5,7 @@ import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
 
 
 @Component({
@@ -19,7 +20,7 @@ export class EditarPublicacionPage implements OnInit {
 
   // Usuario simulado (ajustado al modelo real)
   usuario: Usuario = {
-    id_usuario: 1,
+    id_usuario: 0,
     nombre_usuario: 'Juan Pérez',
     correo_electronico: 'juan@correo.com',
     fecha_registro: new Date(),
@@ -36,14 +37,17 @@ export class EditarPublicacionPage implements OnInit {
   vistaPreviaVisible: boolean = false;
   publicaciones: Publicacion[] = []; // Lista de publicaciones cargadas
 
-  constructor(private route: ActivatedRoute,private localStorage: LocalStorageService) {}
+  constructor(private route: ActivatedRoute,
+    private localStorage: LocalStorageService,
+    private publicacionService: PublicacionService
+  ) { }
 
   async ngOnInit() {
     this.route.params.subscribe(async params => {
       this.postId = Number(params['id']);
 
-          // Cargar todas las publicaciones desde el local storage
-      this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones_personal');
+      // Cargar todas las publicaciones desde el local storage
+      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
       // Buscar la publicación por ID
       const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === +this.postId!);
@@ -85,21 +89,17 @@ export class EditarPublicacionPage implements OnInit {
     }
   }
 
-async guardarCambios() {
-  if (this.publicacion) {
-    this.publicacion.contenido = this.contenido;
-    this.publicacion.imagen = this.imagenBase64 || '';
+  async guardarCambios() {
+    if (this.publicacion) {
+      this.publicacion.contenido = this.contenido;
+      this.publicacion.imagen = this.imagenBase64 || '';
 
-    // Actualiza la publicación en el array local
-    const index = this.publicaciones.findIndex(p => p.id_publicacion === this.publicacion.id_publicacion);
-    if (index > -1) {
-      this.publicaciones[index] = { ...this.publicacion };
-      // Guarda el array actualizado en el local storage
-      await this.localStorage.setItem('publicaciones_personal', this.publicaciones);
+      await this.publicacionService.updatePublicacionPersonal(this.publicacion);
+
+      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+
+      console.log('Cambios guardados:', this.publicacion);
+      this.vistaPreviaVisible = true;
     }
-
-    console.log('Cambios guardados:', this.publicacion);
-    this.vistaPreviaVisible = true;
   }
-}
 }
