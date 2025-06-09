@@ -1,68 +1,87 @@
 <app-encabezado></app-encabezado>
-<ion-content class="ion-padding fondo-negro">
 
- <div class="fila-eventos">
-  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
-    <ion-icon name="arrow-back"></ion-icon>
-  </ion-button>
-  <h2 class="titulo">Crear Evento</h2>
-</div>
+<ion-content class="ion-padding fondo-negro" fullscreen="true">
+  <div class="form-wrapper">
 
-
-
-  <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()">
-    <ion-input fill="outline" label="Nombre del Evento" label-placement="floating" formControlName="nombre_evento"
-      placeholder="Ej: Torneo relámpago" class="input-monster"></ion-input>
-
-    <ion-textarea fill="outline" label="Descripción" label-placement="floating" formControlName="descripcion"
-      placeholder="Breve descripción del evento" class="input-monster"></ion-textarea>
-
-    <ion-input fill="outline" label="Tipo de Evento" label-placement="floating" formControlName="tipo_evento"
-      placeholder="Deporte, juego de mesa, videojuego..." class="input-monster"></ion-input>
-
-
-    <!-- Fecha de Inicio -->
-    <ion-item class="input-monster">
-      <ion-label>Fecha de Inicio: </ion-label>
-      <ion-datetime-button datetime="fechaInicio"></ion-datetime-button>
-    </ion-item>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime id="fechaInicio" presentation="date-time" prefer-wheel="false" [min]="fechaMinima"
-          formControlName="fecha_inicio"></ion-datetime>
-      </ng-template>
-    </ion-modal>
-
-    <!-- Fecha Término -->
-    <ion-item class="input-monster">
-      <ion-label>Fecha de Término: </ion-label>
-      <ion-datetime-button datetime="fechaTermino"></ion-datetime-button>
-    </ion-item>
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime id="fechaTermino" presentation="date-time" prefer-wheel="false" [min]="fechaMinima"
-          formControlName="fecha_termino"></ion-datetime>
-      </ng-template>
-    </ion-modal>
-
-    <div class="campo-cupos input-monster" style="display: flex; align-items: center; gap: 12px;">
-      <ion-label class="label-cupos" style="margin-bottom: 0; margin-right: 0; font-size: 1.2rem;">Cupos</ion-label>
-      <div class="cupos-selector" style="display: flex; align-items: center;">
-      <ion-button fill="outline" shape="round" (click)="modificarCupos(-1)">
-        <ion-icon name="remove-outline"></ion-icon>
+    <div class="fila-eventos">
+      <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+        <ion-icon name="arrow-back"></ion-icon>
       </ion-button>
-      <span class="cupos-numero">{{ eventoForm.get('cupos')?.value }}</span>
-      <ion-button fill="outline" shape="round" (click)="modificarCupos(1)">
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-button>
-      </div>
+      <h2 class="titulo">Crear Evento</h2>
     </div>
 
+    <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()" class="form-content">
 
+      <!-- TIPO DE EVENTO -->
+      <ion-segment formControlName="tipo_evento" class="monster-segment">
+        <ion-segment-button value="DEPORTE">
+          <ion-label>DEPORTE</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="JUEGO DE MESA">
+          <ion-label>JUEGO DE <br> MESA</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="VIDEOJUEGO">
+          <ion-label>VIDEOJUEGO</ion-label>
+        </ion-segment-button>
+      </ion-segment>
 
-    <ion-button expand="block" type="submit" class="boton-monster" (click)="crearEvento()">
-      Crear Evento
-    </ion-button>
-  </form>
+      <!-- Nombre -->
+      <ion-input class="input-monster" fill="outline" label="Nombre del Evento" label-placement="floating"
+        formControlName="nombre_evento" placeholder="Ej: Torneo relámpago">
+      </ion-input>
+
+      <!-- Descripción -->
+      <ion-textarea class="input-monster" fill="outline" label="Descripción" label-placement="floating"
+        formControlName="descripcion" placeholder="Breve descripción del evento">
+      </ion-textarea>
+
+      <!-- FECHA DE INICIO -->
+      <ion-item class="input-monster">
+        <ion-label>Fecha de Inicio: </ion-label>
+        <ion-datetime-button datetime="fechaInicio"></ion-datetime-button>
+      </ion-item>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="fechaInicio" presentation="date-time" preferWheel="true" [min]="fechaMinima"
+            (ionChange)="eventoForm.get('fecha_inicio')?.setValue($event.detail.value)">
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+
+      <!-- FECHA DE TÉRMINO -->
+      <ion-item class="input-monster">
+        <ion-label>Fecha de Término: </ion-label>
+        <ion-datetime-button datetime="fechaTermino"></ion-datetime-button>
+      </ion-item>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="fechaTermino" presentation="date-time" preferWheel="true" [min]="fechaMinima"
+            (ionChange)="eventoForm.get('fecha_termino')?.setValue($event.detail.value)">
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+
+      <!-- CUPOS -->
+      <div class="campo-cupos input-monster">
+        <ion-label class="label-cupos">Cupos</ion-label>
+        <div class="cupos-selector">
+          <ion-button fill="outline" shape="round" (click)="modificarCupos(-1)">
+            <ion-icon name="remove-outline"></ion-icon>
+          </ion-button>
+          <span class="cupos-numero">{{ eventoForm.get('cupos')?.value }}</span>
+          <ion-button fill="outline" shape="round" (click)="modificarCupos(1)">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- BOTÓN -->
+      <ion-button expand="block" type="submit" class="boton-monster">
+        Crear Evento
+      </ion-button>
+
+    </form>
+  </div>
 </ion-content>
+
 <app-navbar></app-navbar>

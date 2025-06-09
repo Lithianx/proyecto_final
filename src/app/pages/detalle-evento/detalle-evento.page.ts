@@ -18,7 +18,7 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
   evento: any;
 
   eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX', cupos: '9'},
+    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX', cupos: '9', descripcion: 'Torneo de League of Legends con premios para los ganadores.' },
     { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' ,cupos: ' 2'},
     { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' ,cupos: ' 2'},
     { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666',cupos: '8' },
@@ -85,7 +85,7 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
 }
 
   unirseAlEvento() {
-    const id = this.evento.id; // ← Asegúrate que `evento` tenga `.id`
+    const id = this.evento.id; 
     this.router.navigate(['/sala-evento', id]);
   }
 

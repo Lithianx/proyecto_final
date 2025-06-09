@@ -1,9 +1,10 @@
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { AlertController } from '@ionic/angular';
 import { ChangeDetectorRef } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-sala-evento',
@@ -14,7 +15,7 @@ import { ToastController } from '@ionic/angular';
 export class SalaEventoPage implements OnInit {
 
   evento: any;
-  jugadores: string[] = ['Tú', 'Carlos', 'Ana'];
+  jugadores: string[] = ['Tú', 'Carlos', 'Ana', 'Juan', 'Esteban', 'Pepe', 'Kanguru', 'Lucho', 'Marta', 'Sofia'];
 
   eventos = [
     { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX' },
@@ -27,9 +28,10 @@ export class SalaEventoPage implements OnInit {
 
   constructor(private route: ActivatedRoute,
     private navCtrl: NavController,
-    private alertCtrl: AlertController,
+    private alertController: AlertController,
     private cdr: ChangeDetectorRef,
     private toastCtrl: ToastController,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -37,10 +39,6 @@ export class SalaEventoPage implements OnInit {
     this.evento = this.eventos.find(e => e.id === id);
   }
 
-
-  volverAtras() {
-    this.navCtrl.back();
-  }
 
   chatAbierto: boolean = false;
   mensaje: string = '';
@@ -80,7 +78,7 @@ export class SalaEventoPage implements OnInit {
       this.iniciarTemporizador();
     }, 2000);
   } else {
-    const alerta = await this.alertCtrl.create({
+    const alerta = await this.alertController.create({
       header: 'Finalizar Evento',
       message: '¿Estás seguro que deseas finalizar este evento?',
       buttons: [
@@ -96,7 +94,7 @@ export class SalaEventoPage implements OnInit {
 
             // Mostrar el toast
             const toast = await this.toastCtrl.create({
-              message: '✅ Evento finalizado con éxito',
+              message: '✅ saliste del evento', 
               duration: 2000,
               position: 'bottom',
               color: 'success',
@@ -157,6 +155,29 @@ export class SalaEventoPage implements OnInit {
 
   await toast.present();
 }
+
+async confirmarSalida() {
+  const alert = await this.alertController.create({
+    header: 'Confirmar salida',
+    message: '¿Estás seguro que quieres salir del evento?',
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        cssClass: 'secondary'
+      },
+      {
+        text: 'Sí, salir',
+        handler: () => {
+          this.router.navigate(['/home']);
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
 
 
 }
