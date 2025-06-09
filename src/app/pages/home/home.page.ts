@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ModalController } from '@ionic/angular';
@@ -9,6 +10,18 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
+
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
+import { GuardaPublicacionService } from 'src/app/services/guardarpublicacion.service';
+import { LikeService } from 'src/app/services/like.service';
+import { SeguirService } from 'src/app/services/seguir.service';
+import { UtilsService } from 'src/app/services/utils.service';
+
+
+
 
 
 @Component({
@@ -31,19 +44,11 @@ export class HomePage implements OnInit {
   };
 
   publicaciones: Publicacion[] = [];
-  mostrarDescripcion: boolean = false;
-  usuarios: Usuario[] = [
-    { id_usuario: 1, nombre_usuario: 'PedritoGamer', correo_electronico: 'pedrito@correo.com', fecha_registro: new Date(), contrasena: '', avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', estado_cuenta: true, estado_online: true },
-    { id_usuario: 2, nombre_usuario: 'Pan_con_queso', correo_electronico: 'pan@correo.com', fecha_registro: new Date(), contrasena: '', avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', estado_cuenta: true, estado_online: true },
-    { id_usuario: 3, nombre_usuario: 'GamerPro', correo_electronico: 'gamerpro@correo.com', fecha_registro: new Date(), contrasena: '', avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg', estado_cuenta: true, estado_online: false },
-    // ...otros usuarios simulados
-  ];
+  descripcionExpandida: { [id: number]: boolean } = {};
 
-  seguimientos: Seguir[] = [
-    { id_usuario_seguidor: 0, id_usuario_seguido: 2, estado_seguimiento: true },
-    { id_usuario_seguidor: 0, id_usuario_seguido: 3, estado_seguimiento: true },
-    // Puedes agregar más relaciones si quieres
-  ];
+  usuarios: Usuario[] = [];
+
+  seguimientos: Seguir[] = [];
 
   publicacionesLikes: Like[] = [];
   publicacionesGuardadas: GuardaPublicacion[] = [];
@@ -56,49 +61,50 @@ export class HomePage implements OnInit {
   modalCompartirAbierto: boolean = false;
   publicacionCompartir: Publicacion | null = null;
 
-  constructor(private actionSheetCtrl: ActionSheetController, private modalController: ModalController, private router: Router) { }
+  constructor(private actionSheetCtrl: ActionSheetController,
+    private modalController: ModalController,
+    private router: Router,
+    private localStorage: LocalStorageService,
+    private likeService: LikeService,
+    private seguirService: SeguirService,
+    private guardaPublicacionService: GuardaPublicacionService,
+    private publicacionService: PublicacionService,
+    private usuarioService: UsuarioService,
+    private UtilsService: UtilsService
+  ) { }
+
+
+  toggleDescripcion(id: number) {
+    this.descripcionExpandida[id] = !this.descripcionExpandida[id];
+  }
 
   publicacionesAmigos: Publicacion[] = [];
 
-  loadPublicaciones() {
-    this.publicaciones = [
-      {
-      id_publicacion: 1,
-      id_usuario: 1,
-      contenido: '¡Esa victoria fue épica! 🎮💥',
-      imagen: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-      fecha_publicacion: new Date('2024-05-01T15:30:00')
-      },
-      {
-      id_publicacion: 2,
-      id_usuario: 2,
-      contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-      imagen: '',
-      fecha_publicacion: new Date('2024-06-01T12:00:00')
-      },
-      {
-      id_publicacion: 3,
-      id_usuario: 2,
-      contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-      imagen: 'https://ionicframework.com/docs/img/demos/card-media.png',
-      fecha_publicacion: new Date('2023-06-01T09:00:00')
-      }
-    ];
-    // Ordena de más nueva a más antigua
-    this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
-  }
+
+  async ngOnInit() {
+    // Usuarios
+    await this.usuarioService.cargarUsuarios(); // primero carga
+    this.usuarios = this.usuarioService.getUsuarios(); // luego los asignas desde memoria
+
+    // Publicaciones
+    this.publicaciones = await this.publicacionService.getPublicaciones();
+
+    // Likes de publicaciones
+    await this.likeService.cargarLikes();
+    this.publicacionesLikes = this.likeService.getLikes();
+
+    // Guardados
+    await this.guardaPublicacionService.cargarGuardados();
+    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+
+    // Seguimientos
+    await this.seguirService.cargarSeguimientos();
+    this.seguimientos = this.seguirService.getSeguimientos();
 
 
+    // Carga publicaciones de amigos
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-
-  ngOnInit() {
-    this.loadPublicaciones();
-    // Al iniciar, carga los usuarios seguidos en followersfriend (sin filtro de nombre)
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
-
-    this.followersfriend = this.usuarios.filter(user => idsSeguidos.includes(user.id_usuario));
     this.publicacionesAmigos = [...this.publicaciones];
   }
 
@@ -107,110 +113,54 @@ export class HomePage implements OnInit {
   // Método para refrescar la lista de publicaciones
   doRefresh(event: any) {
     console.log('Recargando publicaciones...');
-    setTimeout(() => {
-      // Aquí actualizar desde Firebase
-      this.loadPublicaciones(); // Recarga los posts como ejemplo sin reiniciar todo el componente
-      // Agrega publicaciones nuevas simuladas
-      this.publicaciones.push(
-        {
-          id_publicacion: this.publicaciones.length + 1,
-          id_usuario: 3,
-          contenido: '¡Nueva publicación agregada al refrescar! 🚀',
-          imagen: '',
-          fecha_publicacion: new Date()
-        }
-      );
-      // Ordena después de agregar nuevas publicaciones
-      this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
+    setTimeout(async () => {
+      // Opcional: recarga desde el local storage si quieres actualizar
+      this.publicaciones = await this.publicacionService.getPublicaciones();
       event.target.complete();
       console.log('Recarga completada');
-    }, 1500); // Simula un tiempo de espera
+    }, 1500);
   }
 
 
-
-  // Likes
-  likePublicacion(publicacion: Publicacion) {
-    const like = this.publicacionesLikes.find(
-      l => l.id_usuario === this.usuarioActual.id_usuario && l.id_publicacion === publicacion.id_publicacion
-    );
-    if (like) {
-      like.estado_like = !like.estado_like;
-      like.fecha_like = new Date();
-    } else {
-      this.publicacionesLikes.push({
-        id_usuario: this.usuarioActual.id_usuario,
-        id_publicacion: publicacion.id_publicacion,
-        fecha_like: new Date(),
-        estado_like: true
-      });
-    }
+  // Dar o quitar like
+  async likePublicacion(publicacion: Publicacion) {
+    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+    // Vuelve a cargar los likes en memoria para actualizar la vista
+    this.publicacionesLikes = await this.likeService.getLikes();
   }
 
+
+  // Métodos síncronos para la vista
   getLikesPublicacion(publicacion: Publicacion): number {
-    return this.publicacionesLikes.filter(
-      l => l.id_publicacion === publicacion.id_publicacion && l.estado_like
-    ).length;
+    return this.likeService.getLikesCount(publicacion.id_publicacion);
   }
 
   usuarioLikeoPublicacion(publicacion: Publicacion): boolean {
-    return !!this.publicacionesLikes.find(
-      l => l.id_publicacion === publicacion.id_publicacion &&
-        l.id_usuario === this.usuarioActual.id_usuario &&
-        l.estado_like
-    );
+    return this.likeService.usuarioLikeo(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
 
   // Guardar publicación
-  guardar(publicacion: Publicacion) {
-    const guardado = this.publicacionesGuardadas.find(
-      g => g.id_publicaion === publicacion.id_publicacion && g.id_usuario === this.usuarioActual.id_usuario
-    );
-    if (guardado) {
-      guardado.estado_guardado = !guardado.estado_guardado;
-      guardado.fecha_guardado = new Date();
-    } else {
-      this.publicacionesGuardadas.push({
-        id_publicaion: publicacion.id_publicacion,
-        id_usuario: this.usuarioActual.id_usuario,
-        fecha_guardado: new Date(),
-        estado_guardado: true
-      });
-    }
+  async guardar(publicacion: Publicacion) {
+    await this.guardaPublicacionService.toggleGuardado(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
   }
 
   estaGuardada(publicacion: Publicacion): boolean {
-    return !!this.publicacionesGuardadas.find(
-      g => g.id_publicaion === publicacion.id_publicacion &&
-        g.id_usuario === this.usuarioActual.id_usuario &&
-        g.estado_guardado
-    );
+    return this.guardaPublicacionService.estaGuardada(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
 
   // Seguir/Dejar de seguir
-  seguir(usuario: Usuario) {
-    const seguimiento = this.seguimientos.find(
-      s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.id_usuario_seguido === usuario.id_usuario
-    );
-    if (seguimiento) {
-      seguimiento.estado_seguimiento = !seguimiento.estado_seguimiento;
-    } else {
-      this.seguimientos.push({
-        id_usuario_seguidor: this.usuarioActual.id_usuario,
-        id_usuario_seguido: usuario.id_usuario,
-        estado_seguimiento: true
-      });
-    }
+  async seguir(usuario: Usuario) {
+    await this.seguirService.toggleSeguir(this.usuarioActual.id_usuario, usuario.id_usuario);
+    this.seguimientos = this.seguirService.getSeguimientos();
+    // Actualizar lista de seguidos
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
   sigueAlAutor(publicacion: Publicacion): boolean {
-    return !!this.seguimientos.find(
-      s => s.id_usuario_seguidor === this.usuarioActual.id_usuario &&
-        s.id_usuario_seguido === publicacion.id_usuario &&
-        s.estado_seguimiento
-    );
+    return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
   }
 
 
@@ -223,15 +173,13 @@ export class HomePage implements OnInit {
     const searchTerm = event.target.value?.toLowerCase() || '';
     console.log('Valor ingresado en el input:', searchTerm);
 
-    // 1. Obtén los IDs de los usuarios que sigues
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
+    // Usa el método del servicio para obtener los seguidos
+    const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-    // 2. Filtra solo los usuarios seguidos y luego por nombre
-    this.followersfriend = this.usuarios
-      .filter(user => idsSeguidos.includes(user.id_usuario))
-      .filter(user => user.nombre_usuario.toLowerCase().includes(searchTerm));
+    // Aplica filtro por nombre
+    this.followersfriend = seguidos.filter(user =>
+      user.nombre_usuario.toLowerCase().includes(searchTerm)
+    );
 
     console.log('Usuarios filtrados:', this.followersfriend);
   }
@@ -310,23 +258,7 @@ export class HomePage implements OnInit {
 
 
   async compartir(publicacion: Publicacion) {
-
-    const urlConMetadatos = `http://localhost:8100/comentario/${publicacion.id_publicacion}`;
-    const mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n`;
-
-    if (Capacitor.getPlatform() !== 'web') {
-      await Share.share({
-        title: 'Descubre esto',
-        text: mensaje,
-        url: urlConMetadatos,
-        dialogTitle: 'Compartir publicación',
-      });
-    } else {
-      // Prueba para navegador: abrir WhatsApp web
-      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
-      const url = `https://wa.me/?text=${mensajeCodificado}`;
-      window.open(url, '_blank');
-    }
+    await this.UtilsService.compartirPublicacion(publicacion);
   }
 
   comentario(publicacion: Publicacion) {
@@ -339,21 +271,19 @@ export class HomePage implements OnInit {
 
   // Utilidad para obtener el usuario de una publicación
   getUsuarioPublicacion(id_usuario: number): Usuario | undefined {
-    return this.usuarios.find(u => u.id_usuario === id_usuario);
+    return this.usuarioService.getUsuarioPorId(id_usuario);
   }
-  
-filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
 
-get publicacionesFiltradas(): Publicacion[] {
-  if (this.filtroPublicaciones === 'publico') {
-    return this.publicaciones;
-  } else {
-    // Solo publicaciones de usuarios seguidos
-    const idsSeguidos = this.seguimientos
-      .filter(s => s.id_usuario_seguidor === this.usuarioActual.id_usuario && s.estado_seguimiento)
-      .map(s => s.id_usuario_seguido);
-    return this.publicaciones.filter(pub => idsSeguidos.includes(pub.id_usuario));
+  filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
+
+  get publicacionesFiltradas(): Publicacion[] {
+    if (this.filtroPublicaciones === 'publico') {
+      return this.publicaciones;
+    } else {
+      return this.publicacionService.getPublicacionesDeSeguidos(
+        this.publicaciones, this.seguimientos, this.usuarioActual.id_usuario
+      );
+    }
   }
-}
 
 }
