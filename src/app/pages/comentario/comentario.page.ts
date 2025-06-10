@@ -55,24 +55,12 @@ export class ComentarioPage implements OnInit {
 
   seguimientos: Seguir[] = [];
 
-  // Ejemplo de likes para comentarios
-  likesComentarios: Like[] = [
-    {
-      id_usuario: 1,
-      id_comentario: 1,
-      fecha_like: new Date('2024-06-01T12:00:00'),
-      estado_like: true
-    },
-    {
-      id_usuario: 3,
-      id_comentario: 1,
-      fecha_like: new Date('2024-06-02T08:00:00'),
-      estado_like: true
-    }
-  ];
+  likesComentarios: Like[] = [];
 
-
+  publicacionesGuardadas: GuardaPublicacion[] = [];
   usuarios: Usuario[] = [];
+  usuarioPost: Usuario | undefined;
+
   descripcionExpandida: { [id: number]: boolean } = {};
   publicacionesLikes: Like[] = [];
 
@@ -103,38 +91,40 @@ export class ComentarioPage implements OnInit {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
   }
 
-  async ngOnInit() {
-
-
+  private async cargarDatos() {
     // Usuarios
-    await this.usuarioService.cargarUsuarios(); // primero carga
-    this.usuarios = this.usuarioService.getUsuarios(); // luego los asignas desde memoria
+    await this.usuarioService.cargarUsuarios();
+    this.usuarios = this.usuarioService.getUsuarios();
 
-
-
-
-
+    // Obtener el ID de la publicación
     this.postId = this.route.snapshot.paramMap.get('id');
-    await this.obtenerPublicacion();
-    this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes');
-    this.publicacionLikes = await this.localStorage.getList<Like>('publicacionLikes');
+    this.publicacion = await this.publicacionService.getPublicacionById(Number(this.postId));
+
+    this.usuarioPost = this.usuarioService.getUsuarioPorId(this.publicacion.id_usuario);
+
+    // Cargar comentarios en memoria
+    await this.comentarioService.cargarComentarios();
+    this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
 
 
 
+    // Likes de comentarios
+    await this.likeService.cargarLikesComentarios();
+    this.likesComentarios = this.likeService.getLikesComentarios();
 
-    
+
     // Likes de publicaciones
     await this.likeService.cargarLikes();
     this.publicacionesLikes = this.likeService.getLikes();
-    
+
     // Guardados
     await this.guardaPublicacionService.cargarGuardados();
     this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
-    
+
     // Seguimientos
     await this.seguirService.cargarSeguimientos();
     this.seguimientos = this.seguirService.getSeguimientos();
-    
+
     // Carga publicaciones de amigos
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
@@ -143,20 +133,19 @@ export class ComentarioPage implements OnInit {
       if (this.comentariosContainer) {
         this.comentariosContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 100); // Se le da un pequeño retraso para asegurarse que todo esté cargado
+    }, 100);
+  }
 
-  }  
-
-
+  async ngOnInit() {
+    await this.cargarDatos();
+  }
 
   // Método para refrescar la lista de comentarios
   async doRefresh(event: any) {
     console.log('Recargando comentarios...');
-    setTimeout(async () => {
-      await this.obtenerPublicacion(); // Recarga los comentarios desde el local storage
-      event.target.complete();
-      console.log('Recarga completada');
-    }, 1500);
+    await this.cargarDatos();
+    event.target.complete();
+    console.log('Recarga completada');
   }
 
 
@@ -194,72 +183,10 @@ export class ComentarioPage implements OnInit {
   }
 
 
-
-  usuarioPost!: Usuario;
-
-  async obtenerPublicacion() {
-    // Obtiene la publicación desde el local storage
-    const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
-    this.publicacion = publicaciones.find(p => p.id_publicacion === Number(this.postId))!;
-
-    // Busca el usuario de la publicación
-    this.usuarioPost = this.usuarios.find(u => u.id_usuario === this.publicacion.id_usuario)!;
-
-    // Obtiene los comentarios asociados a la publicación desde el local storage
-    let comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
-
-    // Si no hay comentarios en el local, inicializa con simulados y guárdalos
-    if (!comentarios || comentarios.length === 0) {
-      comentarios = [
-        {
-          id_comentario: Number(`${this.publicacion.id_publicacion}01`), // Ej: 101 para publicación 1, 201 para publicación 2
-          id_publicacion: this.publicacion.id_publicacion,
-          id_usuario: 2,
-          contenido_comentario: '¡Increíble jugada, ¿cómo lo hiciste?!',
-          fecha_comentario: new Date('2023-05-01T09:00:00')
-        },
-        {
-          id_comentario: Number(`${this.publicacion.id_publicacion}02`),
-          id_publicacion: this.publicacion.id_publicacion,
-          id_usuario: 3,
-          contenido_comentario: 'Me perdí esa parte, ¿hay video?',
-          fecha_comentario: new Date('2022-06-01T09:00:00')
-        },
-        {
-          id_comentario: Number(`${this.publicacion.id_publicacion}03`),
-          id_publicacion: this.publicacion.id_publicacion,
-          id_usuario: 1,
-          contenido_comentario: 'Gracias a todos por el apoyo, ¡fue un gran equipo!',
-          fecha_comentario: new Date('2021-06-01T09:00:00')
-        },
-        {
-          id_comentario: Number(`${this.publicacion.id_publicacion}04`),
-          id_publicacion: this.publicacion.id_publicacion,
-          id_usuario: 3,
-          contenido_comentario: '¡Quiero jugar la próxima vez!',
-          fecha_comentario: new Date('2023-07-01T09:00:00')
-        },
-        {
-          id_comentario: Number(`${this.publicacion.id_publicacion}05`),
-          id_publicacion: this.publicacion.id_publicacion,
-          id_usuario: 3,
-          contenido_comentario: '¿Qué personaje usaste?',
-          fecha_comentario: new Date('2023-06-01T09:00:00')
-        }
-      ];
-      // Guarda los comentarios simulados en el local storage
-      for (const comentario of comentarios) {
-        await this.localStorage.addToList<Comentario>('comentarios', comentario);
-      }
-    }
-
-    // Asigna los comentarios ordenados
-    this.comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
-    this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
-  }
-
   getUsuarioComentario(id_usuario: number): Usuario | undefined {
-    return this.usuarios.find(u => u.id_usuario === id_usuario);
+    console.log('Buscando usuario con ID:', id_usuario);
+    console.log('Buscando', this.usuarioService.getUsuarioPorId(id_usuario));
+    return this.usuarioService.getUsuarioPorId(id_usuario);
   }
 
 
@@ -273,8 +200,8 @@ export class ComentarioPage implements OnInit {
         contenido_comentario: mensaje,
         fecha_comentario: new Date(),
       };
-      await this.localStorage.addToList<Comentario>('comentarios', nuevo);
-      this.comentarios = await this.localStorage.getListByProp<Comentario>('comentarios', 'id_publicacion', this.publicacion.id_publicacion);
+      await this.comentarioService.agregarComentario(nuevo);
+      this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
       this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
       this.nuevoComentario = '';
     }
@@ -291,28 +218,16 @@ export class ComentarioPage implements OnInit {
     );
   }
 
-  comentariolikes(comentario: Comentario) {
-    const like = this.likesComentarios.find(
-      l => l.id_usuario === this.usuarioActual.id_usuario && l.id_comentario === comentario.id_comentario
-    );
 
-    if (like) {
-      like.estado_like = !like.estado_like;
-      like.fecha_like = new Date();
-    } else {
-      this.likesComentarios.push({
-        id_usuario: this.usuarioActual.id_usuario,
-        id_comentario: comentario.id_comentario,
-        fecha_like: new Date(),
-        estado_like: true
-      });
-    }
-    this.localStorage.setItem('comentarioLikes', this.likesComentarios);
+  // Dar o quitar like a un comentario
+  async comentariolikes(comentario: Comentario) {
+    await this.likeService.toggleLikeComentario(this.usuarioActual.id_usuario, comentario.id_comentario);
+    // Recarga los likes en memoria para actualizar la vista
+    await this.likeService.cargarLikesComentarios();
+    this.likesComentarios = this.likeService.getLikesComentarios();
   }
 
-  publicacionLikes: Like[] = [];
-
-  // Dar o quitar like
+  // Dar o quitar like a una publicación
   async likePublicacion(publicacion: Publicacion) {
     await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
     // Vuelve a cargar los likes en memoria para actualizar la vista
@@ -351,7 +266,7 @@ export class ComentarioPage implements OnInit {
     this.closeModal();
   }
 
-  publicacionesGuardadas: GuardaPublicacion[] = [];
+
 
   // Guardar publicación
   async guardar(publicacion: Publicacion) {

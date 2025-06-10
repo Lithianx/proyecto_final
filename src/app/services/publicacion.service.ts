@@ -13,10 +13,11 @@ export class PublicacionService {
   async getPublicaciones(): Promise<Publicacion[]> {
     let publicaciones: Publicacion[] | null = null;
     console.log('Obteniendo publicaciones...', publicaciones);
-    if (navigator.onLine) {
+   // if (navigator.onLine) {
       // Cuando tengas Firebase, usa algo como:
       // publicaciones = await this.firebaseService.getPublicaciones();
-    }
+   
+   // }
 
     if (!publicaciones) {
       publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
@@ -69,6 +70,9 @@ export class PublicacionService {
     const publicaciones = await this.getPublicaciones();
     return publicaciones.find(p => p.id_publicacion === id);
   }
+
+
+
 
   // Agrega publicación según conexión
   async addPublicacion(publicacion: Publicacion) {

@@ -10,7 +10,7 @@ export class UsuarioService {
   constructor(
     private localStorage: LocalStorageService,
     // private firestore: AngularFirestore 
-  ) {}
+  ) { }
 
   // Cargar usuarios en memoria (local o remoto)
   async cargarUsuarios(): Promise<void> {
@@ -27,6 +27,16 @@ export class UsuarioService {
       this.usuariosEnMemoria = usuariosLocal;
     } else {
       this.usuariosEnMemoria = [
+        {
+          id_usuario: 0,
+          nombre_usuario: 'Usuario Demo',
+          correo_electronico: 'demo@correo.com',
+          fecha_registro: new Date(),
+          contrasena: '',
+          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          estado_cuenta: true,
+          estado_online: true
+        },
         {
           id_usuario: 1,
           nombre_usuario: 'techguru',
