@@ -14,11 +14,32 @@
       </ion-label>
     </ion-item>
 
-    <img [src]="post.imagen" class="post-image" />
+      <!-- Parte donde se muestra imagen o descripción -->
+      <ng-container *ngIf="post.imagen; else soloDescripcion">
+        <!-- Si hay imagen, mostrar imagen -->
+        <img [src]="post.imagen" class="post-image" (click)="verImagen(post)"/>
+      </ng-container>
 
-    <ion-card-content>
-      <p>{{ post.contenido }}</p>
-    </ion-card-content>
+      <!-- En caso que NO haya imagen -->
+      <ng-template #soloDescripcion>
+        <ion-card-content>
+          <p class="descripcion-sola">{{ post.contenido }}</p>
+        </ion-card-content>
+      </ng-template>
+    <!-- Siempre muestra acciones y descripción si hay imagen -->
+    <ng-container *ngIf="post.imagen">
+      <ion-card-content>
+        <p>
+          {{ mostrarDescripcion ? post.contenido : (post.contenido | slice:0:100) +
+          (post.contenido.length > 100
+          ? '...' : '') }}
+          <ion-button *ngIf="post.contenido.length > 100" fill="clear" size="small"
+            (click)="mostrarDescripcion = !mostrarDescripcion">
+            {{ mostrarDescripcion ? '...Ver menos' : 'Ver más...' }}
+          </ion-button>
+        </p>
+      </ion-card-content>
+    </ng-container>
   </ion-card>
 
   <!-- FORMULARIO DE REPORTE -->
@@ -36,25 +57,31 @@
       <ion-card-content>
         <form (ngSubmit)="enviarReporte()">
           <ion-item>
-        <ion-label position="floating">Razón del Reporte</ion-label>
-        <ion-select interface="alert" [interfaceOptions]="alertOptions" [(ngModel)]="reporte.id_tipo_reporte" name="razon" required okText="Confirmar"
-          cancelText="Cancelar">
-          <ion-select-option *ngFor="let opcion of TipoReporte" [value]="opcion.id_tipo_reporte">
-            {{ opcion.descripcion_tipo_reporte }}
-          </ion-select-option>
-        </ion-select>
+            <ion-label position="floating">Razón del Reporte</ion-label>
+            <ion-select interface="alert" [interfaceOptions]="alertOptions" [(ngModel)]="reporte.id_tipo_reporte"
+              name="razon" required okText="Confirmar" cancelText="Cancelar">
+              <ion-select-option *ngFor="let opcion of TipoReporte" [value]="opcion.id_tipo_reporte">
+                {{ opcion.descripcion_tipo_reporte }}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
 
           <ion-item>
-        <ion-label position="floating">Detalles Adicionales</ion-label>
-        <ion-textarea [(ngModel)]="reporte.descripcion_reporte" name="detalles" required></ion-textarea>
+            <ion-label position="floating">Detalles Adicionales</ion-label>
+            <ion-textarea [(ngModel)]="reporte.descripcion_reporte" name="detalles" required></ion-textarea>
           </ion-item>
 
-          <ion-button class="ion-padding" expand="full" shape="round" type="submit" [disabled]="!reporte.id_tipo_reporte || !reporte.descripcion_reporte">Enviar Reporte</ion-button>
+          <ion-button class="ion-padding" expand="full" shape="round" type="submit"
+            [disabled]="!reporte.id_tipo_reporte || !reporte.descripcion_reporte">Enviar Reporte</ion-button>
         </form>
       </ion-card-content>
     </ion-card>
   </div>
 </ion-content>
+
+  <!-- VISOR DE IMAGEN (solo se muestra cuando se activa) -->
+  <div *ngIf="imagenSeleccionada" class="overlay" (click)="cerrarVisor()">
+    <img [src]="imagenSeleccionada" class="imagen-expandida" />
+  </div>
 
 <app-navbar></app-navbar>
