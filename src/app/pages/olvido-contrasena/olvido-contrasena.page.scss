@@ -24,33 +24,6 @@ ion-content.login-content {
     overflow-y: auto; /* Permite scroll si el contenido es muy largo */
   }
   
-  /* Contenedor para alinear la flecha y el título */
-  .header-row {
-    display: flex; /* Activa Flexbox */
-    align-items: center; /* Alinea verticalmente los elementos */
-    width: 100%; /* Ocupa todo el ancho del contenedor */
-    margin-bottom: 40px; /* Espacio entre el encabezado y la caja de login */
-    padding-top: 120px;
-  }
-  
-  /* Estilo del botón de retroceso */
-  .back-button {
-    /* fill="clear" en HTML lo hace transparente */
-    --color: #ffffff; /* Color blanco para el ícono */
-    font-size: 20px; /* Tamaño del ícono de flecha */
-    margin-right: 10px; /* Espacio a la derecha del ícono */
-  }
-  
-  /* Título de la página */
-  .app-title {
-    font-size: 1.5rem; /* Tamaño del título */
-    font-weight: bold;
-    color: #ffffff;
-    margin: 0; /* Elimina márgenes por defecto */
-    /* margin-bottom: 1.5rem; ya no es necesario si está dentro de .header-row */
-    text-align: left; /* Asegura alineación a la izquierda junto a la flecha */
-    flex-grow: 1; /* Permite que el título ocupe el espacio restante */
-  }
   
   /* Caja que contiene el ícono grande, texto y input */
   .login-box {

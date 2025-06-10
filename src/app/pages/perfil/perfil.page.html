@@ -41,87 +41,87 @@
       <p>{{ descripcionBio }}</p>
     </div>
 
-    <!-- Navegación de publicaciones/eventos -->
-<div #publicacionesNav class="publicaciones-nav">
-  <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
-    <ion-segment-button value="publicaciones">
-      <ion-icon name="grid-outline"></ion-icon>
-    </ion-segment-button>
-    <ion-segment-button value="eventos-inscritos">
-      <ion-icon name="flash-outline"></ion-icon>
-    </ion-segment-button>
-    <ion-segment-button value="eventos-creados">
-      <ion-icon name="game-controller-outline"></ion-icon>
-    </ion-segment-button>
-  </ion-segment>
-</div>
-
-
-
- <!------------------------------------------------------------------------------------------>
-    <!-- Publicaciones (modo grid) -->
-  <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
-    <div 
-      class="post-thumbnail" 
-      *ngFor="let post of publicaciones"
-      [routerLink]="post.link ? [post.link] : null"
-      [class.linked]="post.link"
-    >
-      <img [src]="post.img" [alt]="post.alt" />
+        <!-- Navegación de publicaciones/eventos -->
+    <div #publicacionesNav class="publicaciones-nav">
+      <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
+        <ion-segment-button value="publicaciones">
+          <ion-icon name="grid-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="eventos-inscritos">
+          <ion-icon name="flash-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="eventos-creados">
+          <ion-icon name="game-controller-outline"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
     </div>
-  </div>
 
 
 
- <!------------------------------------------------------------------------------------------>
-<!-- Eventos inscritos (modo reels) -->
-<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
-  <h2 class="titulo-seccion">Eventos inscritos</h2>
-  
-  <div *ngFor="let evento of eventosinscritos" class="tarjeta-evento">
-    <ion-card>
-      <ion-card-content class="contenido-tarjeta">
-        <div class="texto-tarjeta">
-          <h3 class="titulo-evento">{{ evento.nombre }}</h3>
-          <p class="detalle">Creador: {{ evento.creador }}</p>
-          <p class="detalle">Fecha: {{ evento.fecha }}</p>
-          <p class="detalle">Juego: {{ evento.juego }}</p>
-        </div>
-        <ion-icon 
-          name="chevron-forward-outline" 
-          class="color-verde icono-forward" 
-          size="large" 
-          [routerLink]="['/event-insc-cread', evento.id, 'Evento inscrito']">
-        </ion-icon>
+    <!------------------------------------------------------------------------------------------>
+        <!-- Publicaciones (modo grid) -->
+    <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
+      <div 
+        class="post-thumbnail" 
+        *ngFor="let post of publicaciones"
+        (click)="comentario(post)"
+        [class.linked]="post.link"
+      >
+        <img [src]="post.img" [alt]="post.alt" />
+      </div>
+    </div>
 
-      </ion-card-content>
-    </ion-card>
-  </div>
-</div>
 
-<!-- Eventos creados -->
-<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
-  <h2 class="titulo-seccion">Eventos creados</h2>
-  
-  <div *ngFor="let evento of eventosCreados" class="tarjeta-evento">
-    <ion-card>
-      <ion-card-content class="contenido-tarjeta">
-        <div class="texto-tarjeta">
-          <h3 class="titulo-evento">{{ evento.nombre }}</h3>
-          <p class="detalle">Fecha: {{ evento.fecha }}</p>
-          <p class="detalle">Juego: {{ evento.juego }}</p>
-        </div>
-      <ion-icon 
-        name="chevron-forward-outline" 
-        class="color-verde icono-forward" 
-        size="large" 
-        [routerLink]="['/event-insc-cread', evento.id, 'Evento Creado']">
-      </ion-icon>
 
-      </ion-card-content>
-    </ion-card>
-  </div>
-</div>
+    <!------------------------------------------------------------------------------------------>
+    <!-- Eventos inscritos (modo reels) -->
+    <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
+      <h2 class="titulo-seccion">Eventos inscritos</h2>
+      
+      <div *ngFor="let evento of eventosinscritos" class="tarjeta-evento">
+        <ion-card>
+          <ion-card-content class="contenido-tarjeta">
+            <div class="texto-tarjeta">
+              <h3 class="titulo-evento">{{ evento.nombre }}</h3>
+              <p class="detalle">Creador: {{ evento.creador }}</p>
+              <p class="detalle">Fecha: {{ evento.fecha }}</p>
+              <p class="detalle">Juego: {{ evento.juego }}</p>
+            </div>
+            <ion-icon 
+              name="chevron-forward-outline" 
+              class="color-verde icono-forward" 
+              size="large" 
+              [routerLink]="['/event-insc-cread', evento.id, 'Evento inscrito']">
+            </ion-icon>
+
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- Eventos creados -->
+    <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-creados'">
+      <h2 class="titulo-seccion">Eventos creados</h2>
+      
+      <div *ngFor="let evento of eventosCreados" class="tarjeta-evento">
+        <ion-card>
+          <ion-card-content class="contenido-tarjeta">
+            <div class="texto-tarjeta">
+              <h3 class="titulo-evento">{{ evento.nombre }}</h3>
+              <p class="detalle">Fecha: {{ evento.fecha }}</p>
+              <p class="detalle">Juego: {{ evento.juego }}</p>
+            </div>
+          <ion-icon 
+            name="chevron-forward-outline" 
+            class="color-verde icono-forward" 
+            size="large" 
+            [routerLink]="['/event-insc-cread', evento.id, 'Evento Creado']">
+          </ion-icon>
+
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
 
 
 

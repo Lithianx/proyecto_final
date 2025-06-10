@@ -105,10 +105,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
   },
   {
-    path: 'detalles-publicacion-personal',
-    loadChildren: () => import('./pages/detalles-publicacion-personal/detalles-publicacion-personal.module').then( m => m.DetallesPublicacionPersonalPageModule)
-  },
-  {
     path: 'notificaciones',
     loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
   },

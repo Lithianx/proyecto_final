@@ -58,12 +58,13 @@
       <div 
         class="post-thumbnail" 
         *ngFor="let post of publicaciones"
-        [routerLink]="post.link ? [post.link] : null"
+        (click)="comentario(post)"
         [class.linked]="post.link"
       >
         <img [src]="post.img" [alt]="post.alt" />
       </div>
     </div>
+
 
     <!-- Eventos Inscritos -->
     <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">

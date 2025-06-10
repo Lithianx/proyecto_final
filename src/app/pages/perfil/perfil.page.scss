@@ -330,3 +330,6 @@ body {
 .color-verde {
   color: var(--ion-color-primary); // Verde principal
 }
+::ng-deep .cerrar-sesion-btn {
+  --color: var(--ion-color-danger);
+}

@@ -83,14 +83,14 @@ export class PerfilUserPage implements OnInit {
     let position = 0;
 
     switch (value) {
-      case 'publicaciones':
-        position = 0;
+     case 'publicaciones':
+        position = 3;
         break;
       case 'eventos-inscritos':
-        position = 33.33;
+        position = 320 / 3; // ~33.33%
         break;
       case 'eventos-creados':
-        position = 66.66;
+        position = (315 / 3) * 2; // ~66.66%
         break;
     }
 
@@ -177,4 +177,8 @@ export class PerfilUserPage implements OnInit {
 
     await actionSheet.present();
   }
+  comentario(publicacion: any) {
+    this.router.navigate(['/comentario', publicacion.id]);
+  }
+
 }

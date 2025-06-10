@@ -23,15 +23,19 @@
   display: block;
 }
 
-/* Ícono de bookmark en la esquina superior derecha */
 .bookmark-icon {
   position: absolute;
   top: 6px;
   right: 6px;
   color: white;
   font-size: 22px;
-  text-shadow: 0 0 6px rgba(0,0,0,0.7);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+  background: transparent !important;
+
 }
+
+
+
 
 
   
