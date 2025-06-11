@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs,addDoc } from '@angular/fire/firestore';
 import { Usuario } from 'src/app/models/usuario.model';
+import { Publicacion } from 'src/app/models/publicacion.model';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -20,4 +21,15 @@ export class FirebaseService {
     });
     return usuarios;
   }
+
+  async addPublicacion(publicacion: Publicacion): Promise<void> {
+    const publicacionesRef = collection(this.firestore, 'Publicacion');
+    await addDoc(publicacionesRef, {
+      ...publicacion,
+      fecha_publicacion: publicacion.fecha_publicacion instanceof Date
+        ? publicacion.fecha_publicacion.toISOString()
+        : publicacion.fecha_publicacion
+    });
+  }
+
 }

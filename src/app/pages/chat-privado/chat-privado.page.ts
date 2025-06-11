@@ -8,6 +8,7 @@ import { Mensaje } from 'src/app/models/mensaje.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
@@ -66,15 +67,18 @@ export class ChatPrivadoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
-    private comunicacionService: ComunicacionService
+    private comunicacionService: ComunicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
-    }
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  }
 
     // idConversacionActual ahora es string
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';

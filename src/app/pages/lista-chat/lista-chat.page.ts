@@ -7,6 +7,7 @@ import { Conversacion } from 'src/app/models/conversacion.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 
 @Component({
@@ -49,14 +50,17 @@ export class ListaChatPage implements OnInit {
     private navCtrl: NavController,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
-    }
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  }
 
     // Suscribirse a los mensajes y conversaciones del service
     this.comunicacionService.mensajes$.subscribe(mensajes => {

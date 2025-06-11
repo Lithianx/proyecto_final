@@ -79,13 +79,13 @@ export class HomePage implements OnInit {
   }
 
   async ngOnInit() {
-    // Guardar usuario demo en Ionic Storage si no existe
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (!usuarioGuardado) {
-      await this.localStorage.setItem('usuarioActual', this.usuarioActual);
-    } else {
-      this.usuarioActual = usuarioGuardado;
-    }
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  }
 
     // Usuarios
     await this.usuarioService.cargarUsuarios();

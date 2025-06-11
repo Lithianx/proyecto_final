@@ -136,11 +136,13 @@ export class ComentarioPage implements OnInit {
   }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
-    }
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  }
     await this.cargarDatos();
   }
 

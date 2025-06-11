@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -40,15 +41,18 @@ export class CrearPublicacionPage implements OnInit {
   constructor(
     private router: Router,
     private localStorage: LocalStorageService,
-    private publicacionService: PublicacionService
+    private publicacionService: PublicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
-    }
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  }
 
     console.log(this.usuarioActual.avatar);
 

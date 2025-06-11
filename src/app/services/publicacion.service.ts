@@ -2,10 +2,13 @@ import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Publicacion } from '../models/publicacion.model';
 import { Seguir } from '../models/seguir.model';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({ providedIn: 'root' })
 export class PublicacionService {
-  constructor(private localStorage: LocalStorageService) { }
+  constructor(private localStorage: LocalStorageService,
+    private firebaseService: FirebaseService
+  ) { }
 
   // Obtiene publicaciones según conexión (y con precarga si no hay)
   async getPublicaciones(): Promise<Publicacion[]> {
@@ -61,7 +64,7 @@ export class PublicacionService {
   // Agrega publicación según conexión
   async addPublicacion(publicacion: Publicacion) {
     if (navigator.onLine) {
-      // await this.firebaseService.addPublicacion(publicacion);
+      await this.firebaseService.addPublicacion(publicacion);
       await this.localStorage.addToList<Publicacion>('publicaciones', publicacion);
     } else {
       await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacion);
@@ -112,8 +115,8 @@ export class PublicacionService {
 
   async addPublicacionPersonal(publicacion: Publicacion) {
     if (navigator.onLine) {
-      // await this.firebaseService.addPublicacion(publicacion);
-      await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacion);
+      await this.firebaseService.addPublicacion(publicacion);
+      await this.localStorage.addToList<Publicacion>('publicaciones', publicacion);
     } else {
       await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacion);
     }

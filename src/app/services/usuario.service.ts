@@ -7,7 +7,9 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   fetchSignInMethodsForEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  User, 
+  onAuthStateChanged 
 } from '@angular/fire/auth';
 import {
   Firestore,
@@ -86,6 +88,27 @@ export class UsuarioService {
       throw error;
     }
   }
+
+
+
+  async getUsuarioActualConectado(): Promise<Usuario | null> {
+    return new Promise((resolve) => {
+      onAuthStateChanged(this.auth, async (user: User | null) => {
+        if (user && user.email) {
+          await this.cargarUsuarios();
+          const usuarios = this.getUsuarios();
+          const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
+          resolve(usuarioEncontrado ?? null);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+
+
+
 
   async cargarUsuarios(): Promise<void> {
 
