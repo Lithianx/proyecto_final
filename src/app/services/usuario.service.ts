@@ -8,8 +8,8 @@ import {
   sendEmailVerification,
   fetchSignInMethodsForEmail,
   sendPasswordResetEmail,
-  User, 
-  onAuthStateChanged 
+  User,
+  onAuthStateChanged
 } from '@angular/fire/auth';
 import {
   Firestore,
@@ -28,8 +28,8 @@ export class UsuarioService {
     private localStorage: LocalStorageService,
     private firestore: Firestore,
     private auth: Auth,
-  private firebaseService: FirebaseService
-  ) {}
+    private firebaseService: FirebaseService
+  ) { }
 
   async loginConFirebase(correo: string, contrasena: string): Promise<any> {
     try {
@@ -42,44 +42,44 @@ export class UsuarioService {
 
 
 
- async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
-  try {
-    const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
-    if (signInMethods && signInMethods.length > 0) {
-      throw new Error('El correo ya está en uso');
-    }
-
-    const cred = await createUserWithEmailAndPassword(this.auth, correo, contrasena);
-
-    if (cred.user) {
-      try {
-        await sendEmailVerification(cred.user);
-      } catch (error) {
-        console.warn('No se pudo enviar el correo de verificación:', error);
+  async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
+      if (signInMethods && signInMethods.length > 0) {
+        throw new Error('El correo ya está en uso');
       }
 
-      const nuevoUsuario: Usuario = {
-        id_usuario: cred.user.uid, // Aquí usamos el UID de Firebase
-        nombre_usuario: nombre,
-        correo_electronico: correo,
-        contrasena: contrasena,
-        fecha_registro: new Date(),
-        estado_cuenta: true,
-        estado_online: false,
-        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
-      };
+      const cred = await createUserWithEmailAndPassword(this.auth, correo, contrasena);
 
-      await this.agregarUsuario(nuevoUsuario);
+      if (cred.user) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch (error) {
+          console.warn('No se pudo enviar el correo de verificación:', error);
+        }
 
-      return nuevoUsuario;
-    } else {
-      throw new Error('No se obtuvo usuario de Firebase');
+        const nuevoUsuario: Usuario = {
+          id_usuario: cred.user.uid, // Aquí usamos el UID de Firebase
+          nombre_usuario: nombre,
+          correo_electronico: correo,
+          contrasena: contrasena,
+          fecha_registro: new Date(),
+          estado_cuenta: true,
+          estado_online: false,
+          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
+        };
+
+        await this.agregarUsuario(nuevoUsuario);
+
+        return nuevoUsuario;
+      } else {
+        throw new Error('No se obtuvo usuario de Firebase');
+      }
+    } catch (error: any) {
+      console.error('Error general en crearCuenta:', error.message || error);
+      throw error;
     }
-  } catch (error: any) {
-    console.error('Error general en crearCuenta:', error.message || error);
-    throw error;
   }
-}
 
   async restablecerContrasena(correo: string): Promise<void> {
     try {
@@ -111,14 +111,13 @@ export class UsuarioService {
 
 
   async cargarUsuarios(): Promise<void> {
-
-      try {
-    const usuarios = await this.firebaseService.getUsuarios();
-    this.usuariosEnMemoria = usuarios;
-    await this.localStorage.setItem('usuarios', usuarios);
-  } catch (error) {
-    // fallback a localStorage como ya tienes implementado
-  }
+    try {
+      const usuarios = await this.firebaseService.getUsuarios();
+      this.usuariosEnMemoria = usuarios;
+      await this.localStorage.setItem('usuarios', usuarios);
+    } catch (error) {
+      console.error('Error al cargar usuarios desde Firebase:', error);
+    }
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
@@ -127,40 +126,8 @@ export class UsuarioService {
         fecha_registro: u.fecha_registro ? new Date(u.fecha_registro) : new Date()
       }));
     } else {
-      this.usuariosEnMemoria = [
-        {
-          id_usuario: 'techguru',
-          nombre_usuario: 'techguru',
-          correo_electronico: 'techguru@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        },
-        {
-          id_usuario: 'techguru',
-          nombre_usuario: 'catlover',
-          correo_electronico: 'catlover@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        },
-        {
-          id_usuario: 'techguru',
-          nombre_usuario: 'pan_con_queso',
-          correo_electronico: 'pan_con_queso@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        }
-      ];
-
-      await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+      this.usuariosEnMemoria = [];
+      await this.localStorage.setItem('usuarios', []);
     }
   }
 

@@ -45,35 +45,16 @@ export class ReportarPage implements OnInit {
 
   // Ahora usamos correctamente la interface Reporte
   reporte: Reporte = {
-    id_reporte: '1', // string
-    id_usuario: this.usuarioActual.id_usuario,
-    id_tipo_reporte: '0', // string
-    id_publicacion: '', // string, se actualizará en ngOnInit
+    id_reporte: '',
+    id_usuario: '',
+    id_tipo_reporte: '',
+    id_publicacion: '',
     descripcion_reporte: '',
     fecha_reporte: new Date()
   };
 
   // Opciones del select
-  TipoReporte: TipoReporte[] = [
-    { id_tipo_reporte: '1', descripcion_tipo_reporte: 'Contenido Inapropiado' },
-    { id_tipo_reporte: '2', descripcion_tipo_reporte: 'Spam' },
-    { id_tipo_reporte: '3', descripcion_tipo_reporte: 'Violencia' },
-    { id_tipo_reporte: '4', descripcion_tipo_reporte: 'Otro' }
-  ];
-
-  usuarios: Usuario[] = [
-    {
-      id_usuario: '2',
-      nombre_usuario: 'Pedro Gamer',
-      correo_electronico: 'pedro@gamer.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    },
-    // ...otros usuarios...
-  ];
+  TipoReporte: TipoReporte[] = [];
 
   usuarioPost!: Usuario;
   imagenSeleccionada: string | null = null;
@@ -97,6 +78,7 @@ export class ReportarPage implements OnInit {
     await this.localStorage.setItem('usuarioActual', this.usuarioActual);
   }
 
+
     // Accede al parámetro 'id' en la ruta
     this.route.params.subscribe(params => {
       this.postId = params['id'];
@@ -109,6 +91,8 @@ export class ReportarPage implements OnInit {
         this.reportarContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+
+      this.TipoReporte = await this.reporteService.getTiposReporte(); // Debes tener este método en tu servicio
   }
 
   async obtenerPost() {
@@ -130,14 +114,14 @@ export class ReportarPage implements OnInit {
       console.log('Formulario incompleto');
       return;
     }
-
-    // Genera un ID único para el reporte (string)
-    this.reporte.id_reporte = Date.now().toString();
     this.reporte.id_usuario = this.usuarioActual.id_usuario;
     this.reporte.fecha_reporte = new Date();
 
-    // Guarda el reporte en el local storage
-    await this.reporteService.guardarReporte({ ...this.reporte });
+  // Guarda el reporte y recibe el id generado
+  const id = await this.reporteService.guardarReporte({ ...this.reporte });
+  this.reporte.id_reporte = id as string; // Ahora el id_reporte tiene el valor correcto
+
+  console.log('Reporte guardado:', this.reporte);
 
     // Limpiar formulario
     this.reporte = {
