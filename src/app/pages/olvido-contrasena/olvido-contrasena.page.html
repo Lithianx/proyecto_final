@@ -1,11 +1,12 @@
 <ion-content class="login-content" [fullscreen]="true">
   <div class="container">
-    <div class="header-row">
-      <ion-button fill="clear" class="back-button" [routerLink]="['/login']" aria-label="Volver atrás">
-        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
-      </ion-button>
-      <h1 class="app-title">Recuperar contraseña</h1>
-    </div>
+      <div class="header-row">
+        <ion-button fill="buttonclear" class="back-button" [routerLink]="['/login']" >
+          <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+        </ion-button>
+        <h1 class="app-title">Recuperar contraseña</h1>
+      </div>
+ 
     <div class="login-box">
       <div class="icon-container">
           <ion-icon name="shield-checkmark" class="big-lock-icon" aria-hidden="true"></ion-icon>
@@ -15,16 +16,19 @@
           <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
           <ion-input
             type="email"
-            placeholder="Correo electronico"
+            placeholder="Correo electrónico"
             class="custom-input"
             aria-label="Correo electrónico"
+            [(ngModel)]="correo"
           >
           </ion-input>
+
         </ion-item>
 
-        <ion-button expand="block" class="login-button" [routerLink]="['/login']">
+        <ion-button expand="block" class="login-button" (click)="enviarRestablecimiento()">
           Restaurar contraseña
         </ion-button>
+
       </div>
   </div>
 </ion-content>

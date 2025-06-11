@@ -159,6 +159,7 @@ export class PerfilPage implements OnInit {
           text: 'Cerrar sesión',
           icon: 'log-out-outline',
           role: 'destructive',
+          cssClass: 'cerrar-sesion-btn',
           handler: () => {
             console.log('Cerrar sesión');
             this.router.navigate(['/login']);
@@ -168,5 +169,8 @@ export class PerfilPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+    comentario(publicacion: any) {
+    this.router.navigate(['/comentario', publicacion.id]);
   }
 }

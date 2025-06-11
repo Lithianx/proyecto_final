@@ -22,6 +22,7 @@ import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComentarioService } from 'src/app/services/comentario.service';
 
+import { AlertController } from '@ionic/angular';
 
 
 @Component({
@@ -76,6 +77,8 @@ export class ComentarioPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
+    private alertCtrl: AlertController
+,
     private localStorage: LocalStorageService,
     private likeService: LikeService,
     private seguirService: SeguirService,
@@ -267,7 +270,7 @@ export class ComentarioPage implements OnInit {
 
 
 
-  // Guardar publicación
+   // Guardar publicación
   async guardar(publicacion: Publicacion) {
     await this.guardaPublicacionService.toggleGuardado(this.usuarioActual.id_usuario, publicacion.id_publicacion);
     this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
@@ -283,6 +286,7 @@ export class ComentarioPage implements OnInit {
     this.seguimientos = this.seguirService.getSeguimientos();
     // Actualizar lista de seguidos
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+
   }
 
   sigueAlAutor(publicacion: Publicacion): boolean {
@@ -295,16 +299,56 @@ export class ComentarioPage implements OnInit {
   }
 
 
-  opcion(publicacion: Publicacion) {
-    this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
+opcion(publicacion: any) {
+  console.log('publicacion recibida:', publicacion);
+//para que se mustre una opcion o otra, con datos dumi
+
+    localStorage.setItem('id_usuario', '1');
+   // localStorage.removeItem('id_usuario');
+
+  const idUsuarioActual = Number(localStorage.getItem('id_usuario'));
+
+  console.log('idUsuarioActual (desde localStorage):', idUsuarioActual);
+
+  const esPropietario = publicacion.id_usuario === idUsuarioActual;
+  console.log('esPropietario:', esPropietario);
+  console.log('ID de usaurio publicacion:', publicacion.id_usuario);
+  const botones = esPropietario
+    ? [
+        {
+          text: 'Editar',
+          icon: 'pencil-outline',
+          handler: () => {
+            console.log('Editar seleccionado');
+            this.modificar(publicacion);
+          },
+        },
+        {
+          text: 'Eliminar publicacion',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            console.log('Eliminar seleccionado');
+            this.confirmarEliminacion(publicacion);
+          },
+        },
+
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+          handler: () => {
+            console.log('Cancelado');
+          }
+        }
+      ]
+    : [
         {
           text: 'Compartir',
           icon: 'share-outline',
           handler: () => {
+            console.log('Compartir seleccionado');
             this.compartir(publicacion);
-            console.log('Compartir post');
           },
         },
         {
@@ -312,19 +356,32 @@ export class ComentarioPage implements OnInit {
           icon: 'alert-circle-outline',
           role: 'destructive',
           handler: () => {
+            console.log('Reportar seleccionado');
             this.irAReportar(publicacion);
-            console.log('Post reportado');
           },
         },
         {
           text: 'Cancelar',
           icon: 'close-outline',
           role: 'cancel',
-        },
-      ],
-      cssClass: 'custom-action-sheet'
-    }).then(actionSheet => actionSheet.present());
-  }
+          handler: () => {
+            console.log('Cancelado');
+          }
+        }
+      ];
+
+  console.log('Botones a mostrar:', botones);
+
+  this.actionSheetCtrl.create({
+    header: 'Opciones',
+    buttons: botones,
+    cssClass: 'custom-action-sheet'
+  }).then(actionSheet => {
+    console.log('Mostrando action sheet');
+    actionSheet.present();
+  });
+}
+
 
 
 
@@ -336,9 +393,41 @@ export class ComentarioPage implements OnInit {
     this.router.navigate(['/reportar', publicacion.id_publicacion]);
   }
 
+  modificar(publicacion: Publicacion) {
+  this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
+}
 
 
   volver() {
     this.navCtrl.back();
   }
+  async confirmarEliminacion(publicacion: any) {
+  const alert = await this.alertCtrl.create({
+    header: '¿Eliminar publicación?',
+    message: '¿Estás seguro de que deseas eliminar esta publicación?',
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        cssClass: 'alert-button-cancel',
+        handler: () => {
+          console.log('Eliminación cancelada');
+        }
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        cssClass: 'alert-button-delete',
+        handler: () => {
+          console.log('Confirmado eliminar publicación');
+          this.volver(); 
+         // Aquí puedes usar tu función de eliminación real
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
 }
