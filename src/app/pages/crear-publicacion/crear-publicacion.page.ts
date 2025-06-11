@@ -46,13 +46,13 @@ export class CrearPublicacionPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-  const usuario = await this.usuarioService.getUsuarioActualConectado();
-  if (usuario) {
-    this.usuarioActual = usuario;
-    await this.localStorage.setItem('usuarioActual', usuario);
-  } else {
-    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
-  }
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+    }
 
     console.log(this.usuarioActual.avatar);
 
@@ -105,17 +105,25 @@ export class CrearPublicacionPage implements OnInit {
   async publicar() {
     if (!this.contenido.trim() && !this.imagenBase64) return;
 
-    const id_publicacion = (await this.publicacionService.getNextPersonalId()).toString();
     const nuevaPublicacion: Publicacion = {
-      id_publicacion,
+      id_publicacion: '', // Temporal
       id_usuario: this.usuarioActual.id_usuario,
       contenido: this.contenido || '',
       imagen: this.imagenBase64 || '',
       fecha_publicacion: new Date(),
     };
 
-    await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
-    this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+    // Guardar en Firebase y obtener el ID generado
+    const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
+    nuevaPublicacion.id_publicacion = id_publicacion;
+
+    // Cargar publicaciones según conexión
+    if (navigator.onLine) {
+      this.publicaciones = await this.publicacionService.getPublicaciones();
+      console.log('Publicaciones obtenidas desde Firebase:', this.publicaciones);
+    } else {
+      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+    }
 
     console.log('Publicación creada:', nuevaPublicacion);
 
@@ -128,6 +136,7 @@ export class CrearPublicacionPage implements OnInit {
 
   // Función para navegar a la pantalla de edición
   modificar(post: Publicacion) {
+    console.log('Modificar publicación:', post);
     this.router.navigate(['/editar-publicacion', post.id_publicacion]);
   }
 }

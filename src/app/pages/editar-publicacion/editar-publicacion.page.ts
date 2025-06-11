@@ -45,19 +45,23 @@ export class EditarPublicacionPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-  const usuario = await this.usuarioService.getUsuarioActualConectado();
-  if (usuario) {
-    this.usuarioActual = usuario;
-    await this.localStorage.setItem('usuarioActual', usuario);
-  } else {
-    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
-  }
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+    }
 
     this.route.params.subscribe(async params => {
       this.postId = params['id'];
 
-      // Cargar todas las publicaciones desde el local storage
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      // Cargar publicaciones según conexión
+      if (navigator.onLine) {
+        this.publicaciones = await this.publicacionService.getPublicaciones();
+      } else {
+        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      }
 
       // Buscar la publicación por ID (id_publicacion ahora es string)
       const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === this.postId);
@@ -122,9 +126,14 @@ export class EditarPublicacionPage implements OnInit {
       this.publicacion.contenido = this.contenido;
       this.publicacion.imagen = this.imagenBase64 || '';
 
-      await this.publicacionService.updatePublicacionPersonal(this.publicacion);
+      await this.publicacionService.updatePublicacion(this.publicacion);
 
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      // Si quieres mostrar todas las publicaciones (online/offline)
+      if (navigator.onLine) {
+        this.publicaciones = await this.publicacionService.getPublicaciones();
+      } else {
+        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      }
 
       console.log('Cambios guardados:', this.publicaciones);
       this.vistaPreviaVisible = true;

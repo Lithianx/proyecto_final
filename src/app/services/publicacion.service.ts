@@ -13,74 +13,61 @@ export class PublicacionService {
   // Obtiene publicaciones según conexión (y con precarga si no hay)
   async getPublicaciones(): Promise<Publicacion[]> {
     let publicaciones: Publicacion[] | null = null;
-    // if (navigator.onLine) {
-    //   publicaciones = await this.firebaseService.getPublicaciones();
-    // }
+    if (navigator.onLine) {
+      publicaciones = await this.firebaseService.getPublicaciones();
+    }
     if (!publicaciones) {
       publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
     }
     if (!publicaciones || publicaciones.length === 0) {
-      publicaciones = this.getPublicacionesPorDefecto();
-      await this.localStorage.setItem('publicaciones', publicaciones);
+      publicaciones = [];
     }
     // Ordenar por fecha descendente
     publicaciones.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
     return publicaciones;
   }
 
-  // Publicaciones simuladas por defecto
-  private getPublicacionesPorDefecto(): Publicacion[] {
-    return [
-      {
-        id_publicacion: '1',
-        id_usuario: '1',
-        contenido: '¡Esa victoria fue épica! 🎮💥',
-        imagen: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png',
-        fecha_publicacion: new Date('2024-05-01T15:30:00')
-      },
-      {
-        id_publicacion: '2',
-        id_usuario: '2',
-        contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-        imagen: '',
-        fecha_publicacion: new Date('2024-06-01T12:00:00')
-      },
-      {
-        id_publicacion: '3',
-        id_usuario: '3',
-        contenido: '¡Acabamos de ganar una partida en squad! 🏆🎮',
-        imagen: 'https://ionicframework.com/docs/img/demos/card-media.png',
-        fecha_publicacion: new Date('2023-06-01T09:00:00')
-      }
-    ];
-  }
+                        ////ONLINE//////
 
-  // Obtiene publicación por ID según conexión (id ahora string)
+  // Obtiene publicación por ID según conexión
   async getPublicacionById(id: string): Promise<Publicacion | undefined> {
     const publicaciones = await this.getPublicaciones();
     return publicaciones.find(p => p.id_publicacion === id);
   }
 
   // Agrega publicación según conexión
-  async addPublicacion(publicacion: Publicacion) {
-    if (navigator.onLine) {
-      await this.firebaseService.addPublicacion(publicacion);
-      await this.localStorage.addToList<Publicacion>('publicaciones', publicacion);
-    } else {
-      await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacion);
-    }
+async addPublicacion(publicacion: Publicacion) {
+  if (navigator.onLine) {
+    const id = await this.firebaseService.addPublicacion(publicacion);
+    // Asigna el id generado por Firebase antes de guardar en localStorage
+    const publicacionConId = { ...publicacion, id_publicacion: id };
+    await this.localStorage.addToList<Publicacion>('publicaciones', publicacionConId);
+    return id;
+  } else {
+    const id = Date.now().toString();
+    const publicacionConId = { ...publicacion, id_publicacion: id };
+    await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacionConId);
+    return id;
   }
+}
 
   // Edita publicación según conexión
   async updatePublicacion(publicacion: Publicacion) {
     if (navigator.onLine) {
-      // const publicaciones = await this.firebaseService.updatePublicacion(publicacion);
+      await this.firebaseService.updatePublicacion(publicacion);
+      // Actualiza también el localStorage para mantener la caché sincronizada
       const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
       const actualizadas = publicaciones.map(p =>
         p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
       );
       await this.localStorage.setItem('publicaciones', actualizadas);
+
+      // Si la publicación estaba en publicaciones_personal (pendiente de sincronizar), elimínala
+      const personales = await this.getPublicacionesPersonal();
+      const filtradas = personales.filter(p => p.id_publicacion !== publicacion.id_publicacion);
+      await this.localStorage.setItem('publicaciones_personal', filtradas);
     } else {
+      // Si no hay conexión, guarda el cambio en publicaciones_personal para sincronizar después
       await this.updatePublicacionPersonal(publicacion);
     }
   }
@@ -88,23 +75,22 @@ export class PublicacionService {
   // Elimina publicación según conexión
   async removePublicacion(id: string) {
     if (navigator.onLine) {
-      // const publicaciones = await this.firebaseService.removePublicacion(id);
+      await this.firebaseService.removePublicacion(id);
+      // Actualiza el localStorage principal
       const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
       const filtradas = publicaciones.filter(p => p.id_publicacion !== id);
       await this.localStorage.setItem('publicaciones', filtradas);
+
+      // También elimina de publicaciones_personal si existía pendiente de sincronizar
+      const personales = await this.getPublicacionesPersonal();
+      const personalesFiltradas = personales.filter(p => p.id_publicacion !== id);
+      await this.localStorage.setItem('publicaciones_personal', personalesFiltradas);
     } else {
       await this.removePublicacionPersonal(id);
     }
   }
 
-  async getNextId(): Promise<string> {
-    const publicaciones = await this.getPublicaciones();
-    if (publicaciones.length > 0) {
-      const maxId = Math.max(...publicaciones.map(p => Number(p.id_publicacion)));
-      return (maxId + 1).toString();
-    }
-    return '1';
-  }
+                        ////OFFLINE//////
 
   // Publicaciones personales (creadas offline, no sincronizadas)
   async getPublicacionesPersonal(): Promise<Publicacion[]> {
@@ -113,56 +99,46 @@ export class PublicacionService {
     return publicaciones.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
   }
 
-  async addPublicacionPersonal(publicacion: Publicacion) {
-    if (navigator.onLine) {
-      await this.firebaseService.addPublicacion(publicacion);
-      await this.localStorage.addToList<Publicacion>('publicaciones', publicacion);
-    } else {
-      await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacion);
-    }
-  }
 
   async updatePublicacionPersonal(publicacion: Publicacion) {
-    // if (navigator.onLine) {
-    //   await this.firebaseService.updatePublicacion(publicacion);
-    // } else {
-      const publicaciones = await this.getPublicacionesPersonal();
-      const actualizadas = publicaciones.map(p =>
-        p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
-      );
-      await this.localStorage.setItem('publicaciones_personal', actualizadas);
-    // }
+    const publicaciones = await this.getPublicacionesPersonal();
+    const actualizadas = publicaciones.map(p =>
+      p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
+    );
+    await this.localStorage.setItem('publicaciones_personal', actualizadas);
   }
 
   // Elimina publicación personal según conexión
   async removePublicacionPersonal(id: string) {
-    if (navigator.onLine) {
-      // await this.firebaseService.removePublicacion(id);
-    } else {
-      const publicaciones = await this.getPublicacionesPersonal();
-      const filtradas = publicaciones.filter(p => p.id_publicacion !== id);
-      await this.localStorage.setItem('publicaciones_personal', filtradas);
-    }
+    const publicaciones = await this.getPublicacionesPersonal();
+    const filtradas = publicaciones.filter(p => p.id_publicacion !== id);
+    await this.localStorage.setItem('publicaciones_personal', filtradas);
   }
 
-  async getNextPersonalId(): Promise<string> {
-    const publicaciones = await this.getPublicacionesPersonal();
-    if (publicaciones.length > 0) {
-      const maxId = Math.max(...publicaciones.map(p => Number(p.id_publicacion)));
-      return (maxId + 1).toString();
-    }
-    return '1';
-  }
+
+
+
+
 
   // Sincroniza publicaciones personales cuando haya internet
   async sincronizarPublicacionesPersonales() {
+    if (!navigator.onLine) return;
+
     const personales = await this.getPublicacionesPersonal();
     for (const pub of personales) {
-      // await this.firebaseService.addPublicacion(pub);
+      // Sube la publicación a Firebase y obtiene el nuevo ID
+      const id = await this.firebaseService.addPublicacion(pub);
+      // Actualiza el id_publicacion con el generado por Firebase
+      pub.id_publicacion = id;
+      // Guarda en el localStorage principal
       await this.localStorage.addToList<Publicacion>('publicaciones', pub);
     }
+    // Limpia las publicaciones personales pendientes
     await this.localStorage.setItem('publicaciones_personal', []);
   }
+
+
+
 
   getPublicacionesDeSeguidos(publicaciones: Publicacion[], seguimientos: Seguir[], idUsuario: string): Publicacion[] {
     const idsSeguidos = seguimientos
