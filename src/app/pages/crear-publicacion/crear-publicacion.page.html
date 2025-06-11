@@ -12,10 +12,10 @@
   <ion-card class="crear-publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="usuario.avatar" />
+        <img [src]="usuarioActual.avatar" />
       </ion-avatar>
       <ion-label>
-        <h2>{{usuario.nombre_usuario}}</h2>
+        <h2>{{usuarioActual.nombre_usuario}}</h2>
       </ion-label>
     </ion-item>
 
@@ -83,10 +83,10 @@
     <ion-card *ngFor="let publicacion of publicaciones">
       <ion-item>
         <ion-avatar slot="start">
-          <img [src]="usuario.avatar" />
+          <img [src]="usuarioActual.avatar" />
         </ion-avatar>
         <ion-label>
-          <h2>{{ usuario.nombre_usuario }}</h2>
+          <h2>{{ usuarioActual.nombre_usuario }}</h2>
           <p>{{ publicacion.fecha_publicacion }}</p>
         </ion-label>
         <ion-chip (click)="modificar(publicacion)">

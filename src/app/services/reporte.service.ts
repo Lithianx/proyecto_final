@@ -11,12 +11,13 @@ export class ReporteService {
   }
 
   async guardarReporte(reporte: Reporte) {
-    if (navigator.onLine) {
+ //   if (navigator.onLine) {
       // await this.firebaseService.addReporte(reporte);
-    } else {
+  
+  //  } else {
       // Si no hay conexión, obtenemos los reportes del local storage 
       await this.localStorage.addToList<Reporte>('reportes', reporte);
-    }
+  ///  }
   }
 
   async obtenerReportesAdmin(): Promise<Reporte[]> {

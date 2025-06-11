@@ -9,48 +9,45 @@
     </ion-buttons>
 
     <div class="avatar-container">
-      <ion-avatar>
-        <img [src]="chatInfo.avatar">
-      </ion-avatar>
-      <ion-title>{{ chatInfo.nombre_usuario }}</ion-title>
+      <ng-container *ngIf="chatInfo">
+        <ion-avatar>
+          <img [src]="chatInfo.avatar" />
+        </ion-avatar>
+        <ion-title>{{ chatInfo.nombre_usuario }}</ion-title>
+      </ng-container>
     </div>
   </ion-toolbar>
 
   <!-- Espacio debajo del header -->
   <div class="spacer-header"></div>
 
-
   <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes" [ngClass]="mensaje.id_emisor === 0 ? 'message sent' : 'message received'">
+    <div *ngFor="let mensaje of mensajes"
+      [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
       <div class="bubble">
         <!-- Gif -->
-        <ng-container
-          *ngIf="mensaje.contenido_conversacion?.endsWith('.gif') || mensaje.contenido_conversacion?.includes('giphy.com/media/')">
-          <img [src]="mensaje.contenido_conversacion" class="gif-chat" />
+        <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
+          <img [src]="mensaje.contenido" class="gif-chat" />
         </ng-container>
 
         <!-- Imagen -->
-        <img *ngIf="mensaje.contenido_conversacion?.startsWith('[imagen]')"
-          [src]="mensaje.contenido_conversacion.replace('[imagen]', '').trim()" class="imagen-mensaje"
-          (load)="onImageLoad()" />
+        <img *ngIf="mensaje.contenido?.startsWith('[imagen]')" [src]="mensaje.contenido.replace('[imagen]', '').trim()"
+          class="imagen-mensaje" (load)="onImageLoad()" />
 
         <!-- Video -->
-        <video *ngIf="mensaje.contenido_conversacion?.startsWith('[video]')"
-          [src]="mensaje.contenido_conversacion.replace('[video]', '').trim()" controls class="video-chat"
-          (canplay)="onMediaLoad()"></video>
+        <video *ngIf="mensaje.contenido?.startsWith('[video]')" [src]="mensaje.contenido.replace('[video]', '').trim()"
+          controls class="video-chat" (canplay)="onMediaLoad()"></video>
 
         <!-- Audio -->
-        <audio *ngIf="mensaje.contenido_conversacion?.startsWith('[audio]')"
-          [src]="mensaje.contenido_conversacion.replace('[audio]', '').trim()" controls type="audio/*"
-          class="audio-chat" (canplay)="onMediaLoad()"></audio>
+        <audio *ngIf="mensaje.contenido?.startsWith('[audio]')" [src]="mensaje.contenido.replace('[audio]', '').trim()"
+          controls type="audio/*" class="audio-chat" (canplay)="onMediaLoad()"></audio>
 
         <!-- Texto -->
-        <p
-          *ngIf="!mensaje.contenido_conversacion?.startsWith('[imagen]') 
-                && !mensaje.contenido_conversacion?.startsWith('[video]') 
-                && !mensaje.contenido_conversacion?.startsWith('[audio]')
-                && !(mensaje.contenido_conversacion?.endsWith('.gif') || mensaje.contenido_conversacion?.includes('giphy.com/media/'))">
-          {{ mensaje.contenido_conversacion }}
+        <p *ngIf="!mensaje.contenido?.startsWith('[imagen]') 
+                && !mensaje.contenido?.startsWith('[video]') 
+                && !mensaje.contenido?.startsWith('[audio]')
+                && !(mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/'))">
+          {{ mensaje.contenido }}
         </p>
 
         <!-- Hora y visto -->
@@ -64,8 +61,6 @@
     <div #endOfMessages></div>
   </div>
 
-
-
 </ion-content>
 
 <ion-footer class="chat-footer">
@@ -76,9 +71,6 @@
       </ion-button>
       <!-- Input oculto para subir imagen -->
       <input type="file" #fileInput accept="image/*,video/*" hidden (change)="onArchivoSeleccionado($event)" />
-
-
-
 
       <!-- Botón para grabar audio -->
       <ion-button class="grabar" fill="clear" (mousedown)="iniciarGrabacion()" (mouseup)="detenerGrabacion()"
@@ -94,8 +86,6 @@
     </ion-item>
   </ion-toolbar>
 </ion-footer>
-
-
 
 <!-- Modal de opciones para enviar archivos -->
 <ion-modal [isOpen]="mostrarModalArchivos" (didDismiss)="mostrarModalArchivos = false">
@@ -131,8 +121,8 @@
   </ng-template>
 </ion-modal>
 
-
 <input type="file" accept="video/*" capture="environment" #videoInput hidden (change)="onVideoSeleccionado($event)" />
+
 <!-- Modal o sección para buscar y mostrar GIFs -->
 <ion-modal class="modal-giphy" *ngIf="mostrarBuscadorGiphy" [isOpen]="mostrarBuscadorGiphy"
   (didDismiss)="mostrarBuscadorGiphy = false">
