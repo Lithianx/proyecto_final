@@ -46,4 +46,9 @@ export class ComentarioService {
     this.comentariosEnMemoria = this.comentariosEnMemoria.filter(c => c.id_comentario !== id_comentario);
     await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
   }
+
+  getComentariosOrdenadosPorFecha(id_publicacion: number): Comentario[] {
+  return this.getComentariosPorPublicacion(id_publicacion)
+    .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+}
 }

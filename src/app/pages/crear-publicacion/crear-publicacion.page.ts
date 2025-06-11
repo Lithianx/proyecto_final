@@ -21,7 +21,7 @@ export class CrearPublicacionPage implements OnInit {
 
   // Usuario simulado (ajustado al modelo real)
   usuario: Usuario = {
-    id_usuario: 1,
+    id_usuario: 0,
     nombre_usuario: 'Juan Pérez',
     correo_electronico: 'juan@correo.com',
     fecha_registro: new Date(),

@@ -27,18 +27,22 @@
         <!-- Mostrar imagen actual si existe -->
         <ng-container *ngIf="imagenBase64">
             <img [src]="imagenBase64" class="media-item" />
-          
+
         </ng-container>
-        
+
         <ion-row class="acciones-publicacion">
             <ion-col>
                 <ion-button class="btn-eliminar" fill="clear" size="small" expand="block" (click)="eliminarImagen()">
-                  <ion-icon name="trash-outline" slot="start"></ion-icon>
-                  Eliminar Imagen
+                    <ion-icon name="trash-outline" slot="start"></ion-icon>
+                    Eliminar Imagen
                 </ion-button>
                 <ion-button class="btn-cambiar" fill="clear" expand="full" (click)="seleccionarArchivo()">
                     <ion-icon name="image-outline" slot="start"></ion-icon>
                     Cambiar Foto
+                </ion-button>
+                <ion-button fill="clear" expand="full" (click)="mostrarBuscadorGiphy = true">
+                    <ion-icon name="happy-outline" slot="start"></ion-icon>
+                    Buscar GIF
                 </ion-button>
                 <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
             </ion-col>
@@ -50,18 +54,51 @@
     </ion-card>
 
 
-<!-- vista previa de publicación guardada -->
 
-<ion-card *ngIf="vistaPreviaVisible" class="vista-previa-card">
-    <ion-card-header>
-        <ion-card-title>Vista previa de publicación guardada</ion-card-title>
-    </ion-card-header>
 
-    <ion-card-content>
-        <p>{{ publicacion.contenido }}</p>
-        <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="media-item" />
-    </ion-card-content>
-</ion-card>
+    <!-- Modal o sección para buscar y mostrar GIFs -->
+    <ion-modal class="modal-giphy" *ngIf="mostrarBuscadorGiphy" [isOpen]="mostrarBuscadorGiphy"
+        (didDismiss)="mostrarBuscadorGiphy = false">
+        <ng-template>
+            <ion-header>
+                <ion-toolbar>
+                    <ion-title>Buscar GIF</ion-title>
+                    <ion-buttons slot="end">
+                        <ion-button (click)="mostrarBuscadorGiphy = false">Cerrar</ion-button>
+                    </ion-buttons>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content>
+                <ion-searchbar (ionInput)="buscarGiphy($event.target.value || '' )"></ion-searchbar>
+                <ion-grid>
+                    <ion-row>
+                        <ion-col size="4" *ngFor="let gif of giphyResults">
+                            <img [src]="gif.images.fixed_height.url"
+                                (click)="seleccionarGifGiphy(gif.images.original.url)"
+                                style="width: 100%; cursor: pointer;" />
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-content>
+        </ng-template>
+    </ion-modal>
+
+
+
+
+
+    <!-- vista previa de publicación guardada -->
+
+    <ion-card *ngIf="vistaPreviaVisible" class="vista-previa-card">
+        <ion-card-header>
+            <ion-card-title>Vista previa de publicación guardada</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+            <p>{{ publicacion.contenido }}</p>
+            <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="media-item" />
+        </ion-card-content>
+    </ion-card>
 
 
 </ion-content>

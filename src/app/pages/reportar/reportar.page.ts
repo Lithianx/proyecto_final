@@ -11,6 +11,7 @@ import { Usuario } from 'src/app/models/usuario.model';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { ReporteService } from 'src/app/services/reporte.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-reportar',
@@ -85,7 +86,8 @@ export class ReportarPage implements OnInit {
     private toastCtrl: ToastController,
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
-    private reporteService: ReporteService
+    private reporteService: ReporteService,
+    private usuarioService: UsuarioService
   ) { }
 
   ngOnInit() {
@@ -106,6 +108,8 @@ export class ReportarPage implements OnInit {
   usuarioPost!: Usuario;
 
   async obtenerPost() {
+      // Carga los usuarios antes de buscar el post
+  await this.usuarioService.cargarUsuarios();
     // Obtiene todas las publicaciones del local storage
     const post = await this.publicacionService.getPublicacionById(this.postId);
 
@@ -113,7 +117,8 @@ export class ReportarPage implements OnInit {
     // Si la publicación existe, busca el usuario
     if (post) {
       this.post = post;
-      this.usuarioPost = this.usuarios.find(u => u.id_usuario === this.post.id_usuario)!;
+      this.usuarioPost = this.usuarioService.getUsuarioPorId(this.post.id_usuario)!;
+      console.log('Usuario de la publicación:', this.usuarioPost);
     } else {
       // Si no existe, puedes mostrar un mensaje o manejar el error
       console.warn('Publicación no encontrada');

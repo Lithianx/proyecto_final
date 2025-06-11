@@ -156,20 +156,14 @@ export class ComentarioPage implements OnInit {
 
   followersfriend: Usuario[] = [];
   // Filtrado por texto SOLO para los usuarios que sigues
-  handleInput(event: any): void {
-    const searchTerm = event.target.value?.toLowerCase() || '';
-    console.log('Valor ingresado en el input:', searchTerm);
-
-    // Usa el método del servicio para obtener los seguidos
-    const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-
-    // Aplica filtro por nombre
-    this.followersfriend = seguidos.filter(user =>
-      user.nombre_usuario.toLowerCase().includes(searchTerm)
-    );
-
-    console.log('Usuarios filtrados:', this.followersfriend);
-  }
+handleInput(event: any): void {
+  const searchTerm = event.target.value?.toLowerCase() || '';
+  this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
+    this.usuarios,
+    this.usuarioActual.id_usuario,
+    searchTerm
+  );
+}
 
 
   imagenSeleccionada: string | null = null;
@@ -202,7 +196,7 @@ export class ComentarioPage implements OnInit {
       };
       await this.comentarioService.agregarComentario(nuevo);
       this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
-      this.comentarios.sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+      this.comentarios = this.comentarioService.getComentariosOrdenadosPorFecha(this.publicacion.id_publicacion);
       this.nuevoComentario = '';
     }
   }

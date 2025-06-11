@@ -140,15 +140,15 @@ export class PublicacionService {
   }
 
   async updatePublicacionPersonal(publicacion: Publicacion) {
-    if (navigator.onLine) {
+ //   if (navigator.onLine) {
       // await this.firebaseService.updatePublicacion(publicacion); // Cuando tengas Firebase
-    } else {
+ //   } else {
       const publicaciones = await this.getPublicacionesPersonal();
       const actualizadas = publicaciones.map(p =>
         p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
       );
       await this.localStorage.setItem('publicaciones_personal', actualizadas);
-    }
+  //  }
   }
 
   // Elimina publicación personal según conexión
@@ -197,5 +197,21 @@ export class PublicacionService {
       .filter(pub => idsSeguidos.includes(pub.id_usuario))
       .sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
   }
+
+
+
+getPublicacionesFiltradas(
+  publicaciones: Publicacion[],
+  seguimientos: Seguir[],
+  usuarioActualId: number,
+  filtro: 'publico' | 'seguidos'
+): Publicacion[] {
+  if (filtro === 'publico') {
+    return publicaciones;
+  } else {
+    return this.getPublicacionesDeSeguidos(publicaciones, seguimientos, usuarioActualId);
+  }
+}
+
 
 }

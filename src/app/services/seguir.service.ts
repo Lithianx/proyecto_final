@@ -77,4 +77,13 @@ getUsuariosSeguidos(usuarios: Usuario[], idUsuario: number): Usuario[] {
 
   return usuarios.filter(u => idsSeguidos.includes(u.id_usuario));
 }
+
+
+
+filtrarUsuariosSeguidos(usuarios: Usuario[], usuarioActualId: number, searchTerm: string): Usuario[] {
+  const seguidos = this.getUsuariosSeguidos(usuarios, usuarioActualId);
+  return seguidos.filter(user =>
+    user.nombre_usuario.toLowerCase().includes(searchTerm)
+  );
+}
 }

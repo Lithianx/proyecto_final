@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
-
+import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 
@@ -66,6 +66,30 @@ export class EditarPublicacionPage implements OnInit {
     this.imagenBase64 = null;
   }
 
+
+  // Giphy
+  giphyResults: any[] = [];
+
+  async buscarGiphy(query: string) {
+    const giphyApiKey = environment.giphyApiKey;
+    const url = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${encodeURIComponent(query)}&limit=20&rating=g`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    this.giphyResults = data.data; // Array de GIFs
+  }
+
+  mostrarBuscadorGiphy = false;
+
+  seleccionarGifGiphy(url: string) {
+    this.imagenBase64 = url; // Guarda la URL del GIF
+    this.mostrarBuscadorGiphy = false;
+  }
+
+
+
+
+
+
   seleccionarArchivo() {
     this.fileInput.nativeElement.click();
   }
@@ -98,7 +122,7 @@ export class EditarPublicacionPage implements OnInit {
 
       this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
-      console.log('Cambios guardados:', this.publicacion);
+      console.log('Cambios guardados:', this.publicaciones);
       this.vistaPreviaVisible = true;
     }
   }

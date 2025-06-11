@@ -169,20 +169,14 @@ export class HomePage implements OnInit {
   followersfriend: Usuario[] = [];
 
   // Filtrado por texto SOLO para los usuarios que sigues
-  handleInput(event: any): void {
-    const searchTerm = event.target.value?.toLowerCase() || '';
-    console.log('Valor ingresado en el input:', searchTerm);
-
-    // Usa el método del servicio para obtener los seguidos
-    const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-
-    // Aplica filtro por nombre
-    this.followersfriend = seguidos.filter(user =>
-      user.nombre_usuario.toLowerCase().includes(searchTerm)
-    );
-
-    console.log('Usuarios filtrados:', this.followersfriend);
-  }
+handleInput(event: any): void {
+  const searchTerm = event.target.value?.toLowerCase() || '';
+  this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
+    this.usuarios,
+    this.usuarioActual.id_usuario,
+    searchTerm
+  );
+}
 
 
 
@@ -276,14 +270,13 @@ export class HomePage implements OnInit {
 
   filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
 
-  get publicacionesFiltradas(): Publicacion[] {
-    if (this.filtroPublicaciones === 'publico') {
-      return this.publicaciones;
-    } else {
-      return this.publicacionService.getPublicacionesDeSeguidos(
-        this.publicaciones, this.seguimientos, this.usuarioActual.id_usuario
-      );
-    }
-  }
+get publicacionesFiltradas(): Publicacion[] {
+  return this.publicacionService.getPublicacionesFiltradas(
+    this.publicaciones,
+    this.seguimientos,
+    this.usuarioActual.id_usuario,
+    this.filtroPublicaciones
+  );
+}
 
 }
