@@ -20,17 +20,16 @@ export class CrearPublicacionPage implements OnInit {
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
 
   // Usuario simulado (ajustado al modelo real)
-  usuario: Usuario = {
+  usuarioActual: Usuario = {
     id_usuario: 0,
-    nombre_usuario: 'Juan Pérez',
-    correo_electronico: 'juan@correo.com',
+    nombre_usuario: 'Usuario Demo',
+    correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
     contrasena: '',
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
     estado_cuenta: true,
     estado_online: true
   };
-
 
   contenido: string = '';
   imagenBase64: string | null = null;
@@ -44,6 +43,15 @@ export class CrearPublicacionPage implements OnInit {
   ) { }
 
 async ngOnInit() {
+
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
+
+console.log(this.usuarioActual.avatar);
+
   this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 }
 
@@ -96,7 +104,7 @@ async publicar() {
    const id_publicacion = await this.publicacionService.getNextPersonalId();
   const nuevaPublicacion: Publicacion = {
     id_publicacion,
-    id_usuario: this.usuario.id_usuario,
+    id_usuario: this.usuarioActual.id_usuario,
     contenido: this.contenido || '',
     imagen: this.imagenBase64 || '',
     fecha_publicacion: new Date(),

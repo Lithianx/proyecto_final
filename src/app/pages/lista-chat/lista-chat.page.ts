@@ -17,7 +17,18 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';
 })
 export class ListaChatPage implements OnInit {
 
-  usuarioActual!: Usuario;
+  // Simulación del usuario actual (en producción esto viene de un servicio de autenticación)
+  usuarioActual: Usuario = {
+    id_usuario: 999,
+    nombre_usuario: 'Usuario no Demo',
+    correo_electronico: 'demo@correo.com',
+    fecha_registro: new Date(),
+    contrasena: '',
+    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    estado_cuenta: true,
+    estado_online: true
+  };
+
   usuarios: Usuario[] = [
     {
         id_usuario: 900,
@@ -42,6 +53,13 @@ export class ListaChatPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
+
+
     // Suscribirse a los mensajes y conversaciones del service
     this.comunicacionService.mensajes$.subscribe(mensajes => {
       this.mensajes = mensajes;
@@ -62,7 +80,7 @@ export class ListaChatPage implements OnInit {
         id_conversacion: this.conversaciones.length + 1,
         fecha_envio: new Date(),
         id_usuario_emisor: 900,
-        id_usuario_receptor: 123
+        id_usuario_receptor: this.usuarioActual.id_usuario,
       };
       await this.comunicacionService.agregarConversacion(nuevaConversacion);
 

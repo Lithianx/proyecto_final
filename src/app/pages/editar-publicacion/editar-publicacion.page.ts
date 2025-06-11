@@ -19,10 +19,10 @@ export class EditarPublicacionPage implements OnInit {
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
 
   // Usuario simulado (ajustado al modelo real)
-  usuario: Usuario = {
+  usuarioActual: Usuario = {
     id_usuario: 0,
-    nombre_usuario: 'Juan Pérez',
-    correo_electronico: 'juan@correo.com',
+    nombre_usuario: 'Usuario Demo',
+    correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
     contrasena: '',
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
@@ -43,6 +43,14 @@ export class EditarPublicacionPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
+
+
     this.route.params.subscribe(async params => {
       this.postId = Number(params['id']);
 

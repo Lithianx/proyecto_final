@@ -43,8 +43,8 @@ export class ComentarioPage implements OnInit {
 
   // Simulación del usuario actual (en producción esto viene de un servicio de autenticación)
   usuarioActual: Usuario = {
-    id_usuario: 0,
-    nombre_usuario: 'Usuario Demo',
+    id_usuario: 999,
+    nombre_usuario: 'Usuario no Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
     contrasena: '',
@@ -137,6 +137,11 @@ export class ComentarioPage implements OnInit {
   }
 
   async ngOnInit() {
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
     await this.cargarDatos();
   }
 
@@ -156,14 +161,14 @@ export class ComentarioPage implements OnInit {
 
   followersfriend: Usuario[] = [];
   // Filtrado por texto SOLO para los usuarios que sigues
-handleInput(event: any): void {
-  const searchTerm = event.target.value?.toLowerCase() || '';
-  this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
-    this.usuarios,
-    this.usuarioActual.id_usuario,
-    searchTerm
-  );
-}
+  handleInput(event: any): void {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
+      this.usuarios,
+      this.usuarioActual.id_usuario,
+      searchTerm
+    );
+  }
 
 
   imagenSeleccionada: string | null = null;

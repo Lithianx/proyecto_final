@@ -37,17 +37,30 @@ export class ChatPrivadoPage implements OnInit {
   audioChunks: any[] = [];
   audioBlob: Blob | null = null;
 
+
+  usuarioActual: Usuario = {
+    id_usuario: 999,
+    nombre_usuario: 'Usuario no Demo',
+    correo_electronico: 'demo@correo.com',
+    fecha_registro: new Date(),
+    contrasena: '',
+    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    estado_cuenta: true,
+    estado_online: true
+  };
+
+
   usuariosMock: Usuario[] = [
     {
-        id_usuario: 900,
-        nombre_usuario: 'Bot',
-        correo_electronico: 'bot@correo.com',
-        fecha_registro: new Date(),
-        contrasena: '',
-        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        estado_cuenta: true,
-        estado_online: true
-      }
+      id_usuario: 900,
+      nombre_usuario: 'Bot',
+      correo_electronico: 'bot@correo.com',
+      fecha_registro: new Date(),
+      contrasena: '',
+      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+      estado_cuenta: true,
+      estado_online: true
+    }
   ];
 
   mensajes: Mensaje[] = [];
@@ -55,10 +68,16 @@ export class ChatPrivadoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
-        private comunicacionService: ComunicacionService
+    private comunicacionService: ComunicacionService
   ) { }
 
-async ngOnInit() {
+  async ngOnInit() {
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
+
     this.idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
 
     // Suscríbete a los mensajes del service
@@ -66,40 +85,28 @@ async ngOnInit() {
       this.mensajes = mensajes.filter(m => m.id_conversacion === this.idConversacionActual);
     });
 
-    // Si no hay mensajes, usa el usuario prueba
-    if (this.mensajes.length === 0) {
-      this.chatInfo = {
-        id_usuario: 99,
-        nombre_usuario: 'PRUEBA',
-        correo_electronico: '',
-        fecha_registro: new Date(),
-        contrasena: '',
-        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        estado_cuenta: true,
-        estado_online: false
-      };
-    } else {
-      // Busca el usuario contraparte (el que NO es "yo", asumiendo que "yo" es id 0)
-      const mensajeEjemplo = this.mensajes[0];
-      const idUsuarioContraparte = mensajeEjemplo.id_usuario_emisor !== 0 ? mensajeEjemplo.id_usuario_emisor : 0;
-      this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte) || {
-        id_usuario: 99,
-        nombre_usuario: 'PRUEBA',
-        correo_electronico: '',
-        fecha_registro: new Date(),
-        contrasena: '',
-        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        estado_cuenta: true,
-        estado_online: false
-      };
-    }
+    // Busca la conversación actual
+    this.comunicacionService.conversaciones$.subscribe(conversaciones => {
+      const conversacion = conversaciones.find(
+        c => c.id_conversacion === this.idConversacionActual
+      );
+
+      // Deducir el id del usuario contraparte
+      let idUsuarioContraparte = conversacion?.id_usuario_emisor;
+      if (idUsuarioContraparte === this.usuarioActual.id_usuario) {
+        idUsuarioContraparte = conversacion?.id_usuario_receptor;
+      }
+
+      // Buscar el usuario contraparte en el mock (o en tu base real)
+      this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte)!;
+    });
     // Marcar como vistos los mensajes recibidos
     await this.marcarMensajesRecibidosComoVistos();
   }
 
   async marcarMensajesRecibidosComoVistos() {
     // Asumiendo que el usuario actual es id_usuario = 0
-    await this.comunicacionService.marcarMensajesComoVistos(this.idConversacionActual, 0);
+    await this.comunicacionService.marcarMensajesComoVistos(this.idConversacionActual, this.usuarioActual.id_usuario);
   }
 
   autoResize(event: Event): void {
@@ -164,7 +171,7 @@ async ngOnInit() {
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime(),
       id_conversacion: this.idConversacionActual,
-      id_usuario_emisor: 0,
+      id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: url,
       fecha_envio: horaActual,
       estado_visto: false,
@@ -175,13 +182,13 @@ async ngOnInit() {
     this.scrollToBottom();
 
     // Simula respuesta
-setTimeout(async () => {
-  await this.comunicacionService.enviarRespuestaAutomatica(
-    this.idConversacionActual,
-    this.chatInfo.id_usuario
-  );
-  await this.marcarMensajesRecibidosComoVistos();
-}, 1000);
+    setTimeout(async () => {
+      await this.comunicacionService.enviarRespuestaAutomatica(
+        this.idConversacionActual,
+        this.chatInfo.id_usuario
+      );
+      await this.marcarMensajesRecibidosComoVistos();
+    }, 1000);
   }
 
   abrirSelectorArchivos() {
@@ -198,22 +205,22 @@ setTimeout(async () => {
         source: CameraSource.Camera,
       });
 
-    if (image && image.dataUrl) {
-      await this.comunicacionService.enviarMensajeMultimedia(
-        'imagen',
-        image.dataUrl,
-        this.idConversacionActual,
-        0  // Asumiendo que el usuario emisor es el id 0
-      );
-      this.scrollToBottom();
+      if (image && image.dataUrl) {
+        await this.comunicacionService.enviarMensajeMultimedia(
+          'imagen',
+          image.dataUrl,
+          this.idConversacionActual,
+          this.usuarioActual.id_usuario,  // Asegúrate de usar el ID del usuario actual
+        );
+        this.scrollToBottom();
 
-setTimeout(async () => {
-  await this.comunicacionService.enviarRespuestaAutomatica(
-    this.idConversacionActual,
-    this.chatInfo.id_usuario
-  );
-  await this.marcarMensajesRecibidosComoVistos();
-}, 1000);
+        setTimeout(async () => {
+          await this.comunicacionService.enviarRespuestaAutomatica(
+            this.idConversacionActual,
+            this.chatInfo.id_usuario
+          );
+          await this.marcarMensajesRecibidosComoVistos();
+        }, 1000);
       }
     } catch (error: any) {
       if (error.message?.toLowerCase().includes('permission')) {
@@ -228,59 +235,59 @@ setTimeout(async () => {
     this.videoInput.nativeElement.click();
   }
 
-async onVideoSeleccionado(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      await this.comunicacionService.enviarMensajeMultimedia(
-        'video',
-        base64,
-        this.idConversacionActual,
-        0
-      );
-      this.scrollToBottom();
-    };
-    reader.readAsDataURL(file);
+  async onVideoSeleccionado(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        await this.comunicacionService.enviarMensajeMultimedia(
+          'video',
+          base64,
+          this.idConversacionActual,
+          this.usuarioActual.id_usuario,
+        );
+        this.scrollToBottom();
+      };
+      reader.readAsDataURL(file);
+    }
   }
-}
 
   seleccionarArchivo() {
     this.fileInput.nativeElement.click();
   }
 
-async onArchivoSeleccionado(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
+  async onArchivoSeleccionado(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
 
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      if (file.type.startsWith('image/')) {
-        await this.comunicacionService.enviarMensajeMultimedia(
-          'imagen',
-          base64,
-          this.idConversacionActual,
-          0
-        );
-      } else if (file.type.startsWith('video/')) {
-        await this.comunicacionService.enviarMensajeMultimedia(
-          'video',
-          base64,
-          this.idConversacionActual,
-          0
-        );
-      }
-      this.scrollToBottom();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        if (file.type.startsWith('image/')) {
+          await this.comunicacionService.enviarMensajeMultimedia(
+            'imagen',
+            base64,
+            this.idConversacionActual,
+            this.usuarioActual.id_usuario,
+          );
+        } else if (file.type.startsWith('video/')) {
+          await this.comunicacionService.enviarMensajeMultimedia(
+            'video',
+            base64,
+            this.idConversacionActual,
+            this.usuarioActual.id_usuario,
+          );
+        }
+        this.scrollToBottom();
 
-setTimeout(async () => {
-  await this.comunicacionService.enviarRespuestaAutomatica(
-    this.idConversacionActual,
-    this.chatInfo.id_usuario
-  );
-  await this.marcarMensajesRecibidosComoVistos();
-}, 1000);
+        setTimeout(async () => {
+          await this.comunicacionService.enviarRespuestaAutomatica(
+            this.idConversacionActual,
+            this.chatInfo.id_usuario
+          );
+          await this.marcarMensajesRecibidosComoVistos();
+        }, 1000);
 
         event.target.value = '';
       };
@@ -307,22 +314,22 @@ setTimeout(async () => {
     }
   }
 
-async enviarMensajeDeVoz(audioBase64: string) {
-  await this.comunicacionService.enviarMensajeMultimedia(
-    'audio',
-    audioBase64,
-    this.idConversacionActual,
-    0
-  );
-  this.scrollToBottom();
+  async enviarMensajeDeVoz(audioBase64: string) {
+    await this.comunicacionService.enviarMensajeMultimedia(
+      'audio',
+      audioBase64,
+      this.idConversacionActual,
+      this.usuarioActual.id_usuario,
+    );
+    this.scrollToBottom();
 
-setTimeout(async () => {
-  await this.comunicacionService.enviarRespuestaAutomatica(
-    this.idConversacionActual,
-    this.chatInfo.id_usuario
-  );
-  await this.marcarMensajesRecibidosComoVistos();
-}, 1000);
+    setTimeout(async () => {
+      await this.comunicacionService.enviarRespuestaAutomatica(
+        this.idConversacionActual,
+        this.chatInfo.id_usuario
+      );
+      await this.marcarMensajesRecibidosComoVistos();
+    }, 1000);
   }
 
   async enviarMensaje() {
@@ -332,13 +339,13 @@ setTimeout(async () => {
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime(),
       id_conversacion: this.idConversacionActual,
-      id_usuario_emisor: 0,
+      id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: this.nuevoMensaje,
       fecha_envio: horaActual,
       estado_visto: false,
     };
 
-await this.comunicacionService.enviarMensaje(mensaje);
+    await this.comunicacionService.enviarMensaje(mensaje);
 
     const textarea = document.querySelector('textarea');
     if (textarea) {
@@ -348,13 +355,13 @@ await this.comunicacionService.enviarMensaje(mensaje);
     this.nuevoMensaje = '';
     this.scrollToBottom();
 
-setTimeout(async () => {
-  await this.comunicacionService.enviarRespuestaAutomatica(
-    this.idConversacionActual,
-    this.chatInfo.id_usuario
-  );
-  await this.marcarMensajesRecibidosComoVistos();
-}, 1000);
+    setTimeout(async () => {
+      await this.comunicacionService.enviarRespuestaAutomatica(
+        this.idConversacionActual,
+        this.chatInfo.id_usuario
+      );
+      await this.marcarMensajesRecibidosComoVistos();
+    }, 1000);
   }
 
   ionViewWillLeave() {

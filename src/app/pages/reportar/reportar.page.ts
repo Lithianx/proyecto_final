@@ -25,9 +25,9 @@ export class ReportarPage implements OnInit {
 
   // Simulación del usuario actual (esto luego vendrá de auth)
   usuarioActual: Usuario = {
-    id_usuario: 2,
+    id_usuario: 0,
     nombre_usuario: 'Usuario Demo',
-    correo_electronico: 'usuario@demo.com',
+    correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
     contrasena: '',
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
@@ -90,7 +90,14 @@ export class ReportarPage implements OnInit {
     private usuarioService: UsuarioService
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+
+    // Cargar usuario actual desde Ionic Storage
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioGuardado) {
+      this.usuarioActual = usuarioGuardado;
+    }
+
     // Accede al parámetro 'id' en la ruta
     this.route.params.subscribe(params => {
       this.postId = Number(params['id']);  // Asigna el valor del parámetro 'id'

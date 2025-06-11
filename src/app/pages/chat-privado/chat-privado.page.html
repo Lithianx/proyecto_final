@@ -23,7 +23,7 @@
 
   <div class="chat-container">
     <div *ngFor="let mensaje of mensajes"
-      [ngClass]="mensaje.id_usuario_emisor === 0 ? 'message sent' : 'message received'">
+      [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
       <div class="bubble">
         <!-- Gif -->
         <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">

@@ -82,6 +82,16 @@ export class HomePage implements OnInit {
 
 
   async ngOnInit() {
+
+  // Guardar usuario demo en Ionic Storage si no existe
+  const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+  if (!usuarioGuardado) {
+    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+  } else {
+    this.usuarioActual = usuarioGuardado;
+  }
+
+
     // Usuarios
     await this.usuarioService.cargarUsuarios(); // primero carga
     this.usuarios = this.usuarioService.getUsuarios(); // luego los asignas desde memoria
@@ -169,14 +179,14 @@ export class HomePage implements OnInit {
   followersfriend: Usuario[] = [];
 
   // Filtrado por texto SOLO para los usuarios que sigues
-handleInput(event: any): void {
-  const searchTerm = event.target.value?.toLowerCase() || '';
-  this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
-    this.usuarios,
-    this.usuarioActual.id_usuario,
-    searchTerm
-  );
-}
+  handleInput(event: any): void {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    this.followersfriend = this.seguirService.filtrarUsuariosSeguidos(
+      this.usuarios,
+      this.usuarioActual.id_usuario,
+      searchTerm
+    );
+  }
 
 
 
@@ -270,13 +280,13 @@ handleInput(event: any): void {
 
   filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
 
-get publicacionesFiltradas(): Publicacion[] {
-  return this.publicacionService.getPublicacionesFiltradas(
-    this.publicaciones,
-    this.seguimientos,
-    this.usuarioActual.id_usuario,
-    this.filtroPublicaciones
-  );
-}
+  get publicacionesFiltradas(): Publicacion[] {
+    return this.publicacionService.getPublicacionesFiltradas(
+      this.publicaciones,
+      this.seguimientos,
+      this.usuarioActual.id_usuario,
+      this.filtroPublicaciones
+    );
+  }
 
 }
