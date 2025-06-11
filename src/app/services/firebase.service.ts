@@ -5,6 +5,7 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { Seguir } from 'src/app/models/seguir.model';
 import { TipoReporte } from 'src/app/models/tipo-reporte.model';
 import { Reporte } from 'src/app/models/reporte.model';
+import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -127,5 +128,39 @@ async addReporte(reporte: Reporte): Promise<string> {
 
   return docRef.id;
 }
+
+
+
+
+//GUARDADO DE PUBLICACIONES////
+
+// Obtiene todos los guardados
+async getGuardados(): Promise<GuardaPublicacion[]> {
+  const ref = collection(this.firestore, 'GuardaPublicacion');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => doc.data() as GuardaPublicacion);
+}
+
+// Agrega un guardado
+async addGuardado(guardado: GuardaPublicacion): Promise<void> {
+  const ref = collection(this.firestore, 'GuardaPublicacion');
+  await addDoc(ref, { ...guardado });
+}
+
+// Actualiza un guardado existente
+async updateGuardado(guardado: GuardaPublicacion): Promise<void> {
+  const ref = collection(this.firestore, 'GuardaPublicacion');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === guardado.id_usuario &&
+    doc.data()["id_publicacion"] === guardado.id_publicacion
+  );
+  if (docSnap) {
+    const docRef = doc(this.firestore, 'GuardaPublicacion', docSnap.id);
+    await updateDoc(docRef, { ...guardado });
+  }
+}
+
+
 
 }
