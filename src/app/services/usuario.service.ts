@@ -64,7 +64,7 @@ export class UsuarioService {
         fecha_registro: new Date(),
         estado_cuenta: true,
         estado_online: false,
-        avatar: ''
+        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
       };
 
       await this.agregarUsuario(nuevoUsuario);
@@ -154,7 +154,7 @@ export class UsuarioService {
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
-  getUsuarioPorId(id_usuario: string): Usuario | undefined {
+
   getUsuarioPorId(id_usuario: string): Usuario | undefined {
     return this.usuariosEnMemoria.find(u => u.id_usuario === id_usuario);
   }
