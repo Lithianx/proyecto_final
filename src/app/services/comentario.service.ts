@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Comentario } from 'src/app/models/comentario.model';
@@ -19,8 +18,8 @@ export class ComentarioService {
     return this.comentariosEnMemoria;
   }
 
-  // Obtener comentarios por publicación
-  getComentariosPorPublicacion(id_publicacion: number): Comentario[] {
+  // Obtener comentarios por publicación (id_publicacion ahora string)
+  getComentariosPorPublicacion(id_publicacion: string): Comentario[] {
     return this.comentariosEnMemoria
       .filter(c => c.id_publicacion === id_publicacion)
       .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
@@ -41,14 +40,14 @@ export class ComentarioService {
     }
   }
 
-  // Eliminar un comentario
-  async eliminarComentario(id_comentario: number): Promise<void> {
+  // Eliminar un comentario (id_comentario ahora string)
+  async eliminarComentario(id_comentario: string): Promise<void> {
     this.comentariosEnMemoria = this.comentariosEnMemoria.filter(c => c.id_comentario !== id_comentario);
     await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
   }
 
-  getComentariosOrdenadosPorFecha(id_publicacion: number): Comentario[] {
-  return this.getComentariosPorPublicacion(id_publicacion)
-    .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
-}
+  getComentariosOrdenadosPorFecha(id_publicacion: string): Comentario[] {
+    return this.getComentariosPorPublicacion(id_publicacion)
+      .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+  }
 }

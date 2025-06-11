@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ModalController } from '@ionic/angular';
@@ -20,10 +19,6 @@ import { LikeService } from 'src/app/services/like.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
-
-
-
-
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -33,7 +28,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class HomePage implements OnInit {
 
   usuarioActual: Usuario = {
-    id_usuario: 0,
+    id_usuario: '0', // string
     nombre_usuario: 'Usuario Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -44,7 +39,7 @@ export class HomePage implements OnInit {
   };
 
   publicaciones: Publicacion[] = [];
-  descripcionExpandida: { [id: number]: boolean } = {};
+  descripcionExpandida: { [id: string]: boolean } = {}; // string key
 
   usuarios: Usuario[] = [];
 
@@ -56,12 +51,18 @@ export class HomePage implements OnInit {
   isModalOpen: boolean = false;
   selectedPublicacion: Publicacion | undefined;
 
-
-
   modalCompartirAbierto: boolean = false;
   publicacionCompartir: Publicacion | null = null;
 
-  constructor(private actionSheetCtrl: ActionSheetController,
+  publicacionesAmigos: Publicacion[] = [];
+  followersfriend: Usuario[] = [];
+
+  imagenSeleccionada: string | null = null;
+
+  filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
+
+  constructor(
+    private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
     private localStorage: LocalStorageService,
@@ -73,28 +74,22 @@ export class HomePage implements OnInit {
     private UtilsService: UtilsService
   ) { }
 
-
-  toggleDescripcion(id: number) {
+  toggleDescripcion(id: string) {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
   }
 
-  publicacionesAmigos: Publicacion[] = [];
-
-
   async ngOnInit() {
-
-  // Guardar usuario demo en Ionic Storage si no existe
-  const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-  if (!usuarioGuardado) {
-    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
-  } else {
-    this.usuarioActual = usuarioGuardado;
-  }
-
+    // Guardar usuario demo en Ionic Storage si no existe
+    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (!usuarioGuardado) {
+      await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+    } else {
+      this.usuarioActual = usuarioGuardado;
+    }
 
     // Usuarios
-    await this.usuarioService.cargarUsuarios(); // primero carga
-    this.usuarios = this.usuarioService.getUsuarios(); // luego los asignas desde memoria
+    await this.usuarioService.cargarUsuarios();
+    this.usuarios = this.usuarioService.getUsuarios();
 
     // Publicaciones
     this.publicaciones = await this.publicacionService.getPublicaciones();
@@ -111,34 +106,27 @@ export class HomePage implements OnInit {
     await this.seguirService.cargarSeguimientos();
     this.seguimientos = this.seguirService.getSeguimientos();
 
-
     // Carga publicaciones de amigos
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
     this.publicacionesAmigos = [...this.publicaciones];
   }
 
-
-
   // Método para refrescar la lista de publicaciones
   doRefresh(event: any) {
     console.log('Recargando publicaciones...');
     setTimeout(async () => {
-      // Opcional: recarga desde el local storage si quieres actualizar
       this.publicaciones = await this.publicacionService.getPublicaciones();
       event.target.complete();
       console.log('Recarga completada');
     }, 1500);
   }
 
-
   // Dar o quitar like
   async likePublicacion(publicacion: Publicacion) {
     await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-    // Vuelve a cargar los likes en memoria para actualizar la vista
     this.publicacionesLikes = await this.likeService.getLikes();
   }
-
 
   // Métodos síncronos para la vista
   getLikesPublicacion(publicacion: Publicacion): number {
@@ -148,7 +136,6 @@ export class HomePage implements OnInit {
   usuarioLikeoPublicacion(publicacion: Publicacion): boolean {
     return this.likeService.usuarioLikeo(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
-
 
   // Guardar publicación
   async guardar(publicacion: Publicacion) {
@@ -160,23 +147,16 @@ export class HomePage implements OnInit {
     return this.guardaPublicacionService.estaGuardada(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
-
   // Seguir/Dejar de seguir
   async seguir(usuario: Usuario) {
     await this.seguirService.toggleSeguir(this.usuarioActual.id_usuario, usuario.id_usuario);
     this.seguimientos = this.seguirService.getSeguimientos();
-    // Actualizar lista de seguidos
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
   sigueAlAutor(publicacion: Publicacion): boolean {
     return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
   }
-
-
-
-
-  followersfriend: Usuario[] = [];
 
   // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
@@ -188,12 +168,6 @@ export class HomePage implements OnInit {
     );
   }
 
-
-
-
-
-  imagenSeleccionada: string | null = null;
-
   verImagen(publicacion: Publicacion) {
     this.imagenSeleccionada = publicacion.imagen ?? null;
   }
@@ -201,9 +175,6 @@ export class HomePage implements OnInit {
   cerrarVisor() {
     this.imagenSeleccionada = null;
   }
-
-
-
 
   // Modal de compartir
   enviar(publicacion: Publicacion) {
@@ -259,8 +230,6 @@ export class HomePage implements OnInit {
     }).then(actionSheet => actionSheet.present());
   }
 
-
-
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);
   }
@@ -274,11 +243,9 @@ export class HomePage implements OnInit {
   }
 
   // Utilidad para obtener el usuario de una publicación
-  getUsuarioPublicacion(id_usuario: number): Usuario | undefined {
+  getUsuarioPublicacion(id_usuario: string): Usuario | undefined {
     return this.usuarioService.getUsuarioPorId(id_usuario);
   }
-
-  filtroPublicaciones: 'publico' | 'seguidos' = 'publico';
 
   get publicacionesFiltradas(): Publicacion[] {
     return this.publicacionService.getPublicacionesFiltradas(

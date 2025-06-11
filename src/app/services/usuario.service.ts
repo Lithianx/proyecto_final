@@ -11,13 +11,12 @@ import {
 } from '@angular/fire/auth';
 import {
   Firestore,
-  collection,
   doc,
   setDoc,
   updateDoc
 } from '@angular/fire/firestore';
-import { collectionData } from '@angular/fire/firestore';
-import { docData } from '@angular/fire/firestore';
+
+import { FirebaseService } from './firebase.service';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -26,7 +25,8 @@ export class UsuarioService {
   constructor(
     private localStorage: LocalStorageService,
     private firestore: Firestore,
-    private auth: Auth
+    private auth: Auth,
+  private firebaseService: FirebaseService
   ) {}
 
   async loginConFirebase(correo: string, contrasena: string): Promise<any> {
@@ -40,7 +40,8 @@ export class UsuarioService {
 
   async obtenerUltimoIdUsuario(): Promise<number> {
     if (this.usuariosEnMemoria.length === 0) return 0;
-    return Math.max(...this.usuariosEnMemoria.map(u => u.id_usuario));
+    // Ahora los ids son string, así que convertimos a number para obtener el máximo
+    return Math.max(...this.usuariosEnMemoria.map(u => Number(u.id_usuario)));
   }
 
   async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
@@ -67,7 +68,7 @@ export class UsuarioService {
       }
 
       const ultimoId = await this.obtenerUltimoIdUsuario();
-      const nuevoId = ultimoId + 1;
+      const nuevoId = (ultimoId + 1).toString();
 
       const nuevoUsuario: Usuario = {
         id_usuario: nuevoId,
@@ -103,13 +104,25 @@ export class UsuarioService {
   }
 
   async cargarUsuarios(): Promise<void> {
+
+      try {
+    const usuarios = await this.firebaseService.getUsuarios();
+    this.usuariosEnMemoria = usuarios;
+    await this.localStorage.setItem('usuarios', usuarios);
+  } catch (error) {
+    // fallback a localStorage como ya tienes implementado
+  }
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
-      this.usuariosEnMemoria = usuariosLocal;
+      this.usuariosEnMemoria = usuariosLocal.map(u => ({
+        ...u,
+        id_usuario: String(u.id_usuario),
+        fecha_registro: u.fecha_registro ? new Date(u.fecha_registro) : new Date()
+      }));
     } else {
       this.usuariosEnMemoria = [
         {
-          id_usuario: 0,
+          id_usuario: '0',
           nombre_usuario: 'Usuario Demo',
           correo_electronico: 'demo@correo.com',
           fecha_registro: new Date(),
@@ -119,7 +132,7 @@ export class UsuarioService {
           estado_online: true
         },
         {
-          id_usuario: 1,
+          id_usuario: '1',
           nombre_usuario: 'techguru',
           correo_electronico: 'techguru@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -129,7 +142,7 @@ export class UsuarioService {
           estado_online: true
         },
         {
-          id_usuario: 2,
+          id_usuario: '2',
           nombre_usuario: 'catlover',
           correo_electronico: 'catlover@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -139,7 +152,7 @@ export class UsuarioService {
           estado_online: true
         },
         {
-          id_usuario: 3,
+          id_usuario: '3',
           nombre_usuario: 'pan_con_queso',
           correo_electronico: 'pan_con_queso@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -159,27 +172,34 @@ export class UsuarioService {
   }
 
   async setUsuarios(usuarios: Usuario[]): Promise<void> {
-    this.usuariosEnMemoria = usuarios;
-    await this.localStorage.setItem('usuarios', usuarios);
+    this.usuariosEnMemoria = usuarios.map(u => ({
+      ...u,
+      id_usuario: String(u.id_usuario),
+      fecha_registro: u.fecha_registro ? new Date(u.fecha_registro) : new Date()
+    }));
+    await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
-  getUsuarioPorId(id_usuario: number): Usuario | undefined {
+  getUsuarioPorId(id_usuario: string): Usuario | undefined {
     return this.usuariosEnMemoria.find(u => u.id_usuario === id_usuario);
   }
 
   async agregarUsuario(usuario: Usuario): Promise<void> {
+    usuario.id_usuario = String(usuario.id_usuario);
     this.usuariosEnMemoria.push(usuario);
-    const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario.toString());
+    const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
     await setDoc(userRef, usuario);
+    await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
   async actualizarUsuario(usuario: Usuario): Promise<void> {
+    usuario.id_usuario = String(usuario.id_usuario);
     const idx = this.usuariosEnMemoria.findIndex(u => u.id_usuario === usuario.id_usuario);
     if (idx !== -1) {
       this.usuariosEnMemoria[idx] = usuario;
       await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
 
-      const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario.toString());
+      const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
       await updateDoc(userRef, { ...usuario });
     }
   }

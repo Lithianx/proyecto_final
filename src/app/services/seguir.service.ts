@@ -11,17 +11,8 @@ export class SeguirService {
 
   // Cargar seguimientos en memoria (llamar en ngOnInit del componente)
   async cargarSeguimientos(): Promise<void> {
-    //  if (navigator.onLine) {
-    // const seguimientosFirebase = await this.firestore.collection<Seguir>('seguimientos').valueChanges().toPromise();
-    // if (seguimientosFirebase && seguimientosFirebase.length > 0) {
-    //   this.seguimientosEnMemoria = seguimientosFirebase;
-    //   await this.localStorage.setItem('seguimientos', seguimientosFirebase);
-    //   return;
-    // }
-    //}
-    // Por ahora, solo local:
     const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
-  if (seguimientos && seguimientos.length > 0) {
+    if (seguimientos && seguimientos.length > 0) {
       this.seguimientosEnMemoria = seguimientos;
     } else {
       this.seguimientosEnMemoria = this.getSeguimientosPorDefecto();
@@ -29,21 +20,20 @@ export class SeguirService {
     }
   }
 
-
-private getSeguimientosPorDefecto(): Seguir[] {
-  return [
-    { id_usuario_seguidor: 0, id_usuario_seguido: 2, estado_seguimiento: true },
-    { id_usuario_seguidor: 0, id_usuario_seguido: 1, estado_seguimiento: false }
-  ];
-}
+  private getSeguimientosPorDefecto(): Seguir[] {
+    return [
+      { id_usuario_seguidor: '0', id_usuario_seguido: '2', estado_seguimiento: true },
+      { id_usuario_seguidor: '0', id_usuario_seguido: '1', estado_seguimiento: false }
+    ];
+  }
 
   // Obtener todos los seguimientos en memoria
   getSeguimientos(): Seguir[] {
     return this.seguimientosEnMemoria;
   }
 
-  // Seguir o dejar de seguir a un usuario
-  async toggleSeguir(idSeguidor: number, idSeguido: number): Promise<void> {
+  // Seguir o dejar de seguir a un usuario (ahora string)
+  async toggleSeguir(idSeguidor: string, idSeguido: string): Promise<void> {
     const seguimiento = this.seguimientosEnMemoria.find(
       s => s.id_usuario_seguidor === idSeguidor && s.id_usuario_seguido === idSeguido
     );
@@ -59,8 +49,8 @@ private getSeguimientosPorDefecto(): Seguir[] {
     await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
   }
 
-  // Saber si el usuario ya sigue a otro usuario
-  sigue(idSeguidor: number, idSeguido: number): boolean {
+  // Saber si el usuario ya sigue a otro usuario (ahora string)
+  sigue(idSeguidor: string, idSeguido: string): boolean {
     return !!this.seguimientosEnMemoria.find(
       s => s.id_usuario_seguidor === idSeguidor &&
         s.id_usuario_seguido === idSeguido &&
@@ -68,22 +58,20 @@ private getSeguimientosPorDefecto(): Seguir[] {
     );
   }
 
+  // Obtiene los usuarios que el usuario actual sigue (ahora string)
+  getUsuariosSeguidos(usuarios: Usuario[], idUsuario: string): Usuario[] {
+    const idsSeguidos = this.seguimientosEnMemoria
+      .filter(s => s.id_usuario_seguidor === idUsuario && s.estado_seguimiento)
+      .map(s => s.id_usuario_seguido);
 
-  // Obtiene los usuarios que el usuario actual sigue
-getUsuariosSeguidos(usuarios: Usuario[], idUsuario: number): Usuario[] {
-  const idsSeguidos = this.seguimientosEnMemoria
-    .filter(s => s.id_usuario_seguidor === idUsuario && s.estado_seguimiento)
-    .map(s => s.id_usuario_seguido);
+    return usuarios.filter(u => idsSeguidos.includes(u.id_usuario));
+  }
 
-  return usuarios.filter(u => idsSeguidos.includes(u.id_usuario));
-}
-
-
-
-filtrarUsuariosSeguidos(usuarios: Usuario[], usuarioActualId: number, searchTerm: string): Usuario[] {
-  const seguidos = this.getUsuariosSeguidos(usuarios, usuarioActualId);
-  return seguidos.filter(user =>
-    user.nombre_usuario.toLowerCase().includes(searchTerm)
-  );
-}
+  // Filtra usuarios seguidos por nombre (ahora string)
+  filtrarUsuariosSeguidos(usuarios: Usuario[], usuarioActualId: string, searchTerm: string): Usuario[] {
+    const seguidos = this.getUsuariosSeguidos(usuarios, usuarioActualId);
+    return seguidos.filter(user =>
+      user.nombre_usuario.toLowerCase().includes(searchTerm)
+    );
+  }
 }

@@ -33,8 +33,9 @@ export class ComunicacionService {
     this.conversacionesSubject.next(conversaciones);
   }
 
-  getMensajesPorConversacion(id_conversacion: number): Mensaje[] {
-    return this.mensajesSubject.getValue().filter(m => m.id_conversacion === id_conversacion);
+  // Cambia a string
+  getMensajesPorConversacion(id_conversacion: string): Mensaje[] {
+    return this.mensajesSubject.getValue().filter(m => String(m.id_conversacion) === id_conversacion);
   }
 
   getConversaciones(): Conversacion[] {
@@ -48,12 +49,12 @@ export class ComunicacionService {
     this.mensajesSubject.next([...mensajes]);
   }
 
-  async marcarMensajesComoVistos(id_conversacion: number, idUsuarioActual: number) {
+  async marcarMensajesComoVistos(id_conversacion: string, idUsuarioActual: string) {
     let mensajes = this.mensajesSubject.getValue();
     let huboCambio = false;
     mensajes = mensajes.map(m => {
       if (
-        m.id_conversacion === id_conversacion &&
+        String(m.id_conversacion) === id_conversacion &&
         m.id_usuario_emisor !== idUsuarioActual &&
         !m.estado_visto
       ) {
@@ -75,54 +76,51 @@ export class ComunicacionService {
     this.conversacionesSubject.next([...conversaciones]);
   }
 
+  filtrarConversacionesPorNombre(
+    conversaciones: Conversacion[],
+    usuarios: Usuario[],
+    query: string
+  ): Conversacion[] {
+    return conversaciones.filter(conv => {
+      const usuario = usuarios.find(
+        u => u.id_usuario === conv.id_usuario_emisor || u.id_usuario === conv.id_usuario_receptor
+      );
+      return usuario ? usuario.nombre_usuario.toLowerCase().includes(query) : false;
+    });
+  }
 
-filtrarConversacionesPorNombre(
-  conversaciones: Conversacion[],
-  usuarios: Usuario[],
-  query: string
-): Conversacion[] {
-  return conversaciones.filter(conv => {
-    const usuario = usuarios.find(
-      u => u.id_usuario === conv.id_usuario_emisor || u.id_usuario === conv.id_usuario_receptor
-    );
-    return usuario ? usuario.nombre_usuario.toLowerCase().includes(query) : false;
-  });
-}
+  getUltimoMensajeDeConversacion(id_conversacion: string): Mensaje | undefined {
+    return this.getMensajesPorConversacion(id_conversacion)
+      .sort((a, b) => (b.fecha_envio?.getTime() || 0) - (a.fecha_envio?.getTime() || 0))[0];
+  }
 
+  async enviarMensajeMultimedia(
+    tipo: 'imagen' | 'video' | 'audio',
+    base64: string,
+    idConversacion: string,
+    idUsuario: string
+  ) {
+    const mensaje: Mensaje = {
+      id_mensaje: new Date().getTime().toString(),
+      id_conversacion: idConversacion,
+      id_usuario_emisor: idUsuario,
+      contenido: `[${tipo}] ${base64}`,
+      fecha_envio: new Date(),
+      estado_visto: false,
+    };
+    await this.enviarMensaje(mensaje);
+  }
 
-getUltimoMensajeDeConversacion(id_conversacion: number): Mensaje | undefined {
-  return this.getMensajesPorConversacion(id_conversacion)
-    .sort((a, b) => (b.fecha_envio?.getTime() || 0) - (a.fecha_envio?.getTime() || 0))[0];
-}
-
-async enviarMensajeMultimedia(
-  tipo: 'imagen' | 'video' | 'audio',
-  base64: string,
-  idConversacion: number,
-  idUsuario: number
-) {
-  const mensaje: Mensaje = {
-    id_mensaje: new Date().getTime(),
-    id_conversacion: idConversacion,
-    id_usuario_emisor: idUsuario,
-    contenido: `[${tipo}] ${base64}`,
-    fecha_envio: new Date(),
-    estado_visto: false,
-  };
-  await this.enviarMensaje(mensaje);
-}
-
-
-//respuestas automáticas
-async enviarRespuestaAutomatica(idConversacion: number, idUsuario: number, contenido: string = '¡Entendido!') {
-  const respuesta: Mensaje = {
-    id_mensaje: new Date().getTime(),
-    id_conversacion: idConversacion,
-    id_usuario_emisor: idUsuario,
-    contenido,
-    fecha_envio: new Date(),
-    estado_visto: false
-  };
-  await this.enviarMensaje(respuesta);
-}
+  // Respuestas automáticas
+  async enviarRespuestaAutomatica(idConversacion: string, idUsuario: string, contenido: string = '¡Entendido!') {
+    const respuesta: Mensaje = {
+      id_mensaje: new Date().getTime().toString(),
+      id_conversacion: idConversacion,
+      id_usuario_emisor: idUsuario,
+      contenido,
+      fecha_envio: new Date(),
+      estado_visto: false
+    };
+    await this.enviarMensaje(respuesta);
+  }
 }

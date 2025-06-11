@@ -1,4 +1,3 @@
-
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
@@ -44,7 +43,7 @@ export class ComentarioPage implements OnInit {
 
   // Simulación del usuario actual (en producción esto viene de un servicio de autenticación)
   usuarioActual: Usuario = {
-    id_usuario: 999,
+    id_usuario: '999', // string
     nombre_usuario: 'Usuario no Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -62,7 +61,7 @@ export class ComentarioPage implements OnInit {
   usuarios: Usuario[] = [];
   usuarioPost: Usuario | undefined;
 
-  descripcionExpandida: { [id: number]: boolean } = {};
+  descripcionExpandida: { [id: string]: boolean } = {}; // string key
   publicacionesLikes: Like[] = [];
 
   usuariosFiltrados: Usuario[] = [];
@@ -70,6 +69,8 @@ export class ComentarioPage implements OnInit {
   isModalOpen: boolean = false;
   selectedPost: Publicacion | undefined;
 
+  followersfriend: Usuario[] = [];
+  imagenSeleccionada: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -77,8 +78,7 @@ export class ComentarioPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
-    private alertCtrl: AlertController
-,
+    private alertCtrl: AlertController,
     private localStorage: LocalStorageService,
     private likeService: LikeService,
     private seguirService: SeguirService,
@@ -89,8 +89,7 @@ export class ComentarioPage implements OnInit {
     private comentarioService: ComentarioService
   ) { }
 
-
-  toggleDescripcion(id: number) {
+  toggleDescripcion(id: string) {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
   }
 
@@ -101,7 +100,7 @@ export class ComentarioPage implements OnInit {
 
     // Obtener el ID de la publicación
     this.postId = this.route.snapshot.paramMap.get('id');
-    this.publicacion = await this.publicacionService.getPublicacionById(Number(this.postId));
+    this.publicacion = await this.publicacionService.getPublicacionById(this.postId!);
 
     this.usuarioPost = this.usuarioService.getUsuarioPorId(this.publicacion.id_usuario);
 
@@ -109,12 +108,9 @@ export class ComentarioPage implements OnInit {
     await this.comentarioService.cargarComentarios();
     this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
 
-
-
     // Likes de comentarios
     await this.likeService.cargarLikesComentarios();
     this.likesComentarios = this.likeService.getLikesComentarios();
-
 
     // Likes de publicaciones
     await this.likeService.cargarLikes();
@@ -150,19 +146,10 @@ export class ComentarioPage implements OnInit {
 
   // Método para refrescar la lista de comentarios
   async doRefresh(event: any) {
-    console.log('Recargando comentarios...');
     await this.cargarDatos();
     event.target.complete();
-    console.log('Recarga completada');
   }
 
-
-
-
-
-
-
-  followersfriend: Usuario[] = [];
   // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
     const searchTerm = event.target.value?.toLowerCase() || '';
@@ -173,9 +160,6 @@ export class ComentarioPage implements OnInit {
     );
   }
 
-
-  imagenSeleccionada: string | null = null;
-
   verImagen(publicacion: Publicacion) {
     this.imagenSeleccionada = publicacion.imagen ?? null;
   }
@@ -184,19 +168,15 @@ export class ComentarioPage implements OnInit {
     this.imagenSeleccionada = null;
   }
 
-
-  getUsuarioComentario(id_usuario: number): Usuario | undefined {
-    console.log('Buscando usuario con ID:', id_usuario);
-    console.log('Buscando', this.usuarioService.getUsuarioPorId(id_usuario));
+  getUsuarioComentario(id_usuario: string): Usuario | undefined {
     return this.usuarioService.getUsuarioPorId(id_usuario);
   }
-
 
   async publicarComentario() {
     const mensaje = this.nuevoComentario.trim();
     if (mensaje) {
       const nuevo: Comentario = {
-        id_comentario: Date.now(),
+        id_comentario: Date.now().toString(),
         id_publicacion: this.publicacion.id_publicacion,
         id_usuario: this.usuarioActual.id_usuario,
         contenido_comentario: mensaje,
@@ -209,17 +189,15 @@ export class ComentarioPage implements OnInit {
     }
   }
 
-
-  getLikesComentario(id_comentario: number): number {
+  getLikesComentario(id_comentario: string): number {
     return this.likesComentarios.filter(l => l.id_comentario === id_comentario && l.estado_like).length;
   }
 
-  usuarioLikeoComentario(id_comentario: number): boolean {
+  usuarioLikeoComentario(id_comentario: string): boolean {
     return !!this.likesComentarios.find(
       l => l.id_comentario === id_comentario && l.id_usuario === this.usuarioActual.id_usuario && l.estado_like
     );
   }
-
 
   // Dar o quitar like a un comentario
   async comentariolikes(comentario: Comentario) {
@@ -235,7 +213,6 @@ export class ComentarioPage implements OnInit {
     // Vuelve a cargar los likes en memoria para actualizar la vista
     this.publicacionesLikes = await this.likeService.getLikes();
   }
-
 
   // Métodos síncronos para la vista
   getLikesPublicacion(publicacion: Publicacion): number {
@@ -258,19 +235,12 @@ export class ComentarioPage implements OnInit {
   sendPostToUser(usuario: Usuario) {
     if (this.selectedPost) {
       const publicacion = this.selectedPost;
-      console.log(`Enviando publicación con id ${publicacion.id_publicacion} a ${usuario.nombre_usuario}`);
-      console.log(`Contenido: ${publicacion.contenido}`);
-      console.log(`Imagen: ${publicacion.imagen}`);
-      console.log(`Fecha: ${publicacion.fecha_publicacion}`);
-    } else {
-      console.log('No hay una publicación seleccionada');
+      // Aquí puedes implementar la lógica de envío real
     }
     this.closeModal();
   }
 
-
-
-   // Guardar publicación
+  // Guardar publicación
   async guardar(publicacion: Publicacion) {
     await this.guardaPublicacionService.toggleGuardado(this.usuarioActual.id_usuario, publicacion.id_publicacion);
     this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
@@ -286,7 +256,6 @@ export class ComentarioPage implements OnInit {
     this.seguimientos = this.seguirService.getSeguimientos();
     // Actualizar lista de seguidos
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-
   }
 
   sigueAlAutor(publicacion: Publicacion): boolean {
@@ -294,96 +263,70 @@ export class ComentarioPage implements OnInit {
   }
 
   // Utilidad para obtener el usuario de una publicación
-  getUsuarioPublicacion(id_usuario: number): Usuario | undefined {
+  getUsuarioPublicacion(id_usuario: string): Usuario | undefined {
     return this.usuarioService.getUsuarioPorId(id_usuario);
   }
 
-
-opcion(publicacion: any) {
-  console.log('publicacion recibida:', publicacion);
-//para que se mustre una opcion o otra, con datos dumi
-
-    localStorage.setItem('id_usuario', '1');
-   // localStorage.removeItem('id_usuario');
-
-  const idUsuarioActual = Number(localStorage.getItem('id_usuario'));
-
-  console.log('idUsuarioActual (desde localStorage):', idUsuarioActual);
-
-  const esPropietario = publicacion.id_usuario === idUsuarioActual;
-  console.log('esPropietario:', esPropietario);
-  console.log('ID de usaurio publicacion:', publicacion.id_usuario);
-  const botones = esPropietario
-    ? [
-        {
-          text: 'Editar',
-          icon: 'pencil-outline',
-          handler: () => {
-            console.log('Editar seleccionado');
-            this.modificar(publicacion);
+  opcion(publicacion: any) {
+    localStorage.setItem('id_usuario', this.usuarioActual.id_usuario);
+    const idUsuarioActual = localStorage.getItem('id_usuario') ?? '';
+    const esPropietario = publicacion.id_usuario === idUsuarioActual;
+    const botones = esPropietario
+      ? [
+          {
+            text: 'Editar',
+            icon: 'pencil-outline',
+            handler: () => {
+              this.modificar(publicacion);
+            },
           },
-        },
-        {
-          text: 'Eliminar publicacion',
-          icon: 'alert-circle-outline',
-          role: 'destructive',
-          handler: () => {
-            console.log('Eliminar seleccionado');
-            this.confirmarEliminacion(publicacion);
+          {
+            text: 'Eliminar publicacion',
+            icon: 'alert-circle-outline',
+            role: 'destructive',
+            handler: () => {
+              this.confirmarEliminacion(publicacion);
+            },
           },
-        },
-
-        {
-          text: 'Cancelar',
-          icon: 'close-outline',
-          role: 'cancel',
-          handler: () => {
-            console.log('Cancelado');
+          {
+            text: 'Cancelar',
+            icon: 'close-outline',
+            role: 'cancel',
+            handler: () => {}
           }
-        }
-      ]
-    : [
-        {
-          text: 'Compartir',
-          icon: 'share-outline',
-          handler: () => {
-            console.log('Compartir seleccionado');
-            this.compartir(publicacion);
+        ]
+      : [
+          {
+            text: 'Compartir',
+            icon: 'share-outline',
+            handler: () => {
+              this.compartir(publicacion);
+            },
           },
-        },
-        {
-          text: 'Reportar',
-          icon: 'alert-circle-outline',
-          role: 'destructive',
-          handler: () => {
-            console.log('Reportar seleccionado');
-            this.irAReportar(publicacion);
+          {
+            text: 'Reportar',
+            icon: 'alert-circle-outline',
+            role: 'destructive',
+            handler: () => {
+              this.irAReportar(publicacion);
+            },
           },
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close-outline',
-          role: 'cancel',
-          handler: () => {
-            console.log('Cancelado');
+          {
+            text: 'Cancelar',
+            icon: 'close-outline',
+            role: 'cancel',
+            handler: () => {}
           }
-        }
-      ];
+        ];
 
-  console.log('Botones a mostrar:', botones);
-
-  this.actionSheetCtrl.create({
-    header: 'Opciones',
-    buttons: botones,
-    cssClass: 'custom-action-sheet'
-  }).then(actionSheet => {
-    console.log('Mostrando action sheet');
-    actionSheet.present();
-  });
-}
-
-
-
+    this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: botones,
+      cssClass: 'custom-action-sheet'
+    }).then(actionSheet => {
+      actionSheet.present();
+    });
+  }
 
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);
@@ -394,40 +337,36 @@ opcion(publicacion: any) {
   }
 
   modificar(publicacion: Publicacion) {
-  this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
-}
-
+    this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
+  }
 
   volver() {
     this.navCtrl.back();
   }
+
   async confirmarEliminacion(publicacion: any) {
-  const alert = await this.alertCtrl.create({
-    header: '¿Eliminar publicación?',
-    message: '¿Estás seguro de que deseas eliminar esta publicación?',
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        cssClass: 'alert-button-cancel',
-        handler: () => {
-          console.log('Eliminación cancelada');
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar publicación?',
+      message: '¿Estás seguro de que deseas eliminar esta publicación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => {}
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          cssClass: 'alert-button-delete',
+          handler: () => {
+            this.volver();
+            // Aquí puedes usar tu función de eliminación real
+          }
         }
-      },
-      {
-        text: 'Eliminar',
-        role: 'destructive',
-        cssClass: 'alert-button-delete',
-        handler: () => {
-          console.log('Confirmado eliminar publicación');
-          this.volver(); 
-         // Aquí puedes usar tu función de eliminación real
-        }
-      }
-    ]
-  });
+      ]
+    });
 
-  await alert.present();
-}
-
+    await alert.present();
+  }
 }

@@ -9,7 +9,6 @@ import { Mensaje } from 'src/app/models/mensaje.model';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 
-
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
 
@@ -29,7 +28,7 @@ export class ChatPrivadoPage implements OnInit {
 
   chatId: string | null = '';
   chatInfo!: Usuario;
-  idConversacionActual!: number;
+  idConversacionActual!: string;
   nuevoMensaje: string = '';
 
   grabando: boolean = false;
@@ -37,9 +36,9 @@ export class ChatPrivadoPage implements OnInit {
   audioChunks: any[] = [];
   audioBlob: Blob | null = null;
 
-
+  // id_usuario ahora es string
   usuarioActual: Usuario = {
-    id_usuario: 999,
+    id_usuario: '999',
     nombre_usuario: 'Usuario no Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -49,10 +48,9 @@ export class ChatPrivadoPage implements OnInit {
     estado_online: true
   };
 
-
   usuariosMock: Usuario[] = [
     {
-      id_usuario: 900,
+      id_usuario: '900',
       nombre_usuario: 'Bot',
       correo_electronico: 'bot@correo.com',
       fecha_registro: new Date(),
@@ -78,7 +76,8 @@ export class ChatPrivadoPage implements OnInit {
       this.usuarioActual = usuarioGuardado;
     }
 
-    this.idConversacionActual = Number(this.route.snapshot.paramMap.get('id'));
+    // idConversacionActual ahora es string
+    this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
 
     // Suscríbete a los mensajes del service
     this.comunicacionService.mensajes$.subscribe(mensajes => {
@@ -88,7 +87,7 @@ export class ChatPrivadoPage implements OnInit {
     // Busca la conversación actual
     this.comunicacionService.conversaciones$.subscribe(conversaciones => {
       const conversacion = conversaciones.find(
-        c => c.id_conversacion === this.idConversacionActual
+        c => String(c.id_conversacion) === this.idConversacionActual
       );
 
       // Deducir el id del usuario contraparte
@@ -105,7 +104,6 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   async marcarMensajesRecibidosComoVistos() {
-    // Asumiendo que el usuario actual es id_usuario = 0
     await this.comunicacionService.marcarMensajesComoVistos(this.idConversacionActual, this.usuarioActual.id_usuario);
   }
 
@@ -169,7 +167,7 @@ export class ChatPrivadoPage implements OnInit {
   async enviarGifGiphy(url: string) {
     const horaActual = new Date();
     const mensaje: Mensaje = {
-      id_mensaje: new Date().getTime(),
+      id_mensaje: new Date().getTime().toString(),
       id_conversacion: this.idConversacionActual,
       id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: url,
@@ -210,7 +208,7 @@ export class ChatPrivadoPage implements OnInit {
           'imagen',
           image.dataUrl,
           this.idConversacionActual,
-          this.usuarioActual.id_usuario,  // Asegúrate de usar el ID del usuario actual
+          this.usuarioActual.id_usuario,
         );
         this.scrollToBottom();
 
@@ -337,7 +335,7 @@ export class ChatPrivadoPage implements OnInit {
 
     const horaActual = new Date();
     const mensaje: Mensaje = {
-      id_mensaje: new Date().getTime(),
+      id_mensaje: new Date().getTime().toString(),
       id_conversacion: this.idConversacionActual,
       id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: this.nuevoMensaje,

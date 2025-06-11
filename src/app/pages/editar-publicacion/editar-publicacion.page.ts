@@ -7,7 +7,6 @@ import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 
-
 @Component({
   selector: 'app-editar-publicacion',
   templateUrl: './editar-publicacion.page.html',
@@ -18,9 +17,9 @@ export class EditarPublicacionPage implements OnInit {
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
 
-  // Usuario simulado (ajustado al modelo real)
+  // Usuario simulado (ajustado al modelo real, id_usuario string)
   usuarioActual: Usuario = {
-    id_usuario: 0,
+    id_usuario: '0',
     nombre_usuario: 'Usuario Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -30,35 +29,34 @@ export class EditarPublicacionPage implements OnInit {
     estado_online: true
   };
 
-  postId!: number;
+  postId!: string;
   publicacion!: Publicacion;
   contenido: string = '';
   imagenBase64: string | null = null;
   vistaPreviaVisible: boolean = false;
   publicaciones: Publicacion[] = []; // Lista de publicaciones cargadas
 
-  constructor(private route: ActivatedRoute,
+  constructor(
+    private route: ActivatedRoute,
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService
   ) { }
 
   async ngOnInit() {
-
     // Cargar usuario actual desde Ionic Storage
     const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
     if (usuarioGuardado) {
       this.usuarioActual = usuarioGuardado;
     }
 
-
     this.route.params.subscribe(async params => {
-      this.postId = Number(params['id']);
+      this.postId = params['id'];
 
       // Cargar todas las publicaciones desde el local storage
       this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
-      // Buscar la publicación por ID
-      const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === +this.postId!);
+      // Buscar la publicación por ID (id_publicacion ahora es string)
+      const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === this.postId);
 
       if (publicacionEncontrada) {
         this.publicacion = publicacionEncontrada;
@@ -73,7 +71,6 @@ export class EditarPublicacionPage implements OnInit {
   eliminarImagen() {
     this.imagenBase64 = null;
   }
-
 
   // Giphy
   giphyResults: any[] = [];
@@ -92,11 +89,6 @@ export class EditarPublicacionPage implements OnInit {
     this.imagenBase64 = url; // Guarda la URL del GIF
     this.mostrarBuscadorGiphy = false;
   }
-
-
-
-
-
 
   seleccionarArchivo() {
     this.fileInput.nativeElement.click();

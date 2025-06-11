@@ -19,9 +19,9 @@ export class CrearPublicacionPage implements OnInit {
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
 
-  // Usuario simulado (ajustado al modelo real)
+  // Usuario simulado (ajustado al modelo real, id_usuario string)
   usuarioActual: Usuario = {
-    id_usuario: 0,
+    id_usuario: '0',
     nombre_usuario: 'Usuario Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -37,23 +37,23 @@ export class CrearPublicacionPage implements OnInit {
 
   publicaciones: Publicacion[] = []; // Lista de publicaciones creadas
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private localStorage: LocalStorageService,
-      private publicacionService: PublicacionService
+    private publicacionService: PublicacionService
   ) { }
 
-async ngOnInit() {
-
+  async ngOnInit() {
     // Cargar usuario actual desde Ionic Storage
     const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
     if (usuarioGuardado) {
       this.usuarioActual = usuarioGuardado;
     }
 
-console.log(this.usuarioActual.avatar);
+    console.log(this.usuarioActual.avatar);
 
-  this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
-}
+    this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+  }
 
   // Giphy
   giphyResults: any[] = [];
@@ -98,29 +98,29 @@ console.log(this.usuarioActual.avatar);
   }
 
   // Función para crear la publicación
-async publicar() {
-  if (!this.contenido.trim() && !this.imagenBase64) return;
+  async publicar() {
+    if (!this.contenido.trim() && !this.imagenBase64) return;
 
-   const id_publicacion = await this.publicacionService.getNextPersonalId();
-  const nuevaPublicacion: Publicacion = {
-    id_publicacion,
-    id_usuario: this.usuarioActual.id_usuario,
-    contenido: this.contenido || '',
-    imagen: this.imagenBase64 || '',
-    fecha_publicacion: new Date(),
-  };
+    const id_publicacion = (await this.publicacionService.getNextPersonalId()).toString();
+    const nuevaPublicacion: Publicacion = {
+      id_publicacion,
+      id_usuario: this.usuarioActual.id_usuario,
+      contenido: this.contenido || '',
+      imagen: this.imagenBase64 || '',
+      fecha_publicacion: new Date(),
+    };
 
-      await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
+    await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
     this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
-  console.log('Publicación creada:', nuevaPublicacion);
+    console.log('Publicación creada:', nuevaPublicacion);
 
-  this.contenido = '';
-  this.imagenBase64 = null;
-  if (this.fileInput) {
-    this.fileInput.nativeElement.value = '';
+    this.contenido = '';
+    this.imagenBase64 = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
-}
 
   // Función para navegar a la pantalla de edición
   modificar(post: Publicacion) {

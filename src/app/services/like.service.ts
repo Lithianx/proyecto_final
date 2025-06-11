@@ -29,8 +29,8 @@ export class LikeService {
     return this.likesComentarios;
   }
 
-  // Dar o quitar like a una publicación
-  async toggleLike(idUsuario: number, idPublicacion: number): Promise<void> {
+  // Dar o quitar like a una publicación (ahora string)
+  async toggleLike(idUsuario: string, idPublicacion: string): Promise<void> {
     const like = this.likes.find(l => l.id_usuario === idUsuario && l.id_publicacion === idPublicacion);
     if (like) {
       like.estado_like = !like.estado_like;
@@ -46,8 +46,8 @@ export class LikeService {
     await this.localStorage.setItem('publicacionLikes', this.likes);
   }
 
-  // Dar o quitar like a un comentario
-  async toggleLikeComentario(idUsuario: number, idComentario: number): Promise<void> {
+  // Dar o quitar like a un comentario (ahora string)
+  async toggleLikeComentario(idUsuario: string, idComentario: string): Promise<void> {
     const like = this.likesComentarios.find(l => l.id_usuario === idUsuario && l.id_comentario === idComentario);
     if (like) {
       like.estado_like = !like.estado_like;
@@ -63,18 +63,18 @@ export class LikeService {
     await this.localStorage.setItem('comentarioLikes', this.likesComentarios);
   }
 
-  // Contar likes de una publicación
-  getLikesCount(idPublicacion: number): number {
+  // Contar likes de una publicación (ahora string)
+  getLikesCount(idPublicacion: string): number {
     return this.likes.filter(l => l.id_publicacion === idPublicacion && l.estado_like).length;
   }
 
-  // Contar likes de un comentario
-  getLikesCountComentario(idComentario: number): number {
+  // Contar likes de un comentario (ahora string)
+  getLikesCountComentario(idComentario: string): number {
     return this.likesComentarios.filter(l => l.id_comentario === idComentario && l.estado_like).length;
   }
 
-  // Saber si el usuario ya dio like a una publicación
-  usuarioLikeo(idUsuario: number, idPublicacion: number): boolean {
+  // Saber si el usuario ya dio like a una publicación (ahora string)
+  usuarioLikeo(idUsuario: string, idPublicacion: string): boolean {
     return !!this.likes.find(l =>
       l.id_usuario === idUsuario &&
       l.id_publicacion === idPublicacion &&
@@ -82,8 +82,8 @@ export class LikeService {
     );
   }
 
-  // Saber si el usuario ya dio like a un comentario
-  usuarioLikeoComentario(idUsuario: number, idComentario: number): boolean {
+  // Saber si el usuario ya dio like a un comentario (ahora string)
+  usuarioLikeoComentario(idUsuario: string, idComentario: string): boolean {
     return !!this.likesComentarios.find(l =>
       l.id_usuario === idUsuario &&
       l.id_comentario === idComentario &&

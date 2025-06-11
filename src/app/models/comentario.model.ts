@@ -1,7 +1,7 @@
 export interface Comentario {
-    id_comentario: number;
-    id_publicacion: number;
-    id_usuario: number;
+    id_comentario: string;
+    id_publicacion: string;
+    id_usuario: string;
     contenido_comentario: string;
     fecha_comentario: Date;
 }

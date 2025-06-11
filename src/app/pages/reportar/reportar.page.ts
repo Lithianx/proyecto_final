@@ -1,4 +1,3 @@
-
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController, ToastController } from '@ionic/angular';
@@ -25,7 +24,7 @@ export class ReportarPage implements OnInit {
 
   // Simulación del usuario actual (esto luego vendrá de auth)
   usuarioActual: Usuario = {
-    id_usuario: 0,
+    id_usuario: '0', // string
     nombre_usuario: 'Usuario Demo',
     correo_electronico: 'demo@correo.com',
     fecha_registro: new Date(),
@@ -35,10 +34,9 @@ export class ReportarPage implements OnInit {
     estado_online: true
   };
 
-  postId: number = 0; // Inicializar con un valor por defecto
+  postId: string = ''; // string
   post!: Publicacion;
   mostrarDescripcion: boolean = false;
-
 
   alertOptions = {
     header: 'Selecciona una razón',
@@ -47,28 +45,25 @@ export class ReportarPage implements OnInit {
 
   // Ahora usamos correctamente la interface Reporte
   reporte: Reporte = {
-    id_reporte: 1, // Simulación de ID aleatorio
+    id_reporte: '1', // string
     id_usuario: this.usuarioActual.id_usuario,
-    id_tipo_reporte: 0,
-    id_publicacion: 0, // Se actualizará en ngOnInit
+    id_tipo_reporte: '0', // string
+    id_publicacion: '', // string, se actualizará en ngOnInit
     descripcion_reporte: '',
     fecha_reporte: new Date()
   };
 
   // Opciones del select
   TipoReporte: TipoReporte[] = [
-    { id_tipo_reporte: 1, descripcion_tipo_reporte: 'Contenido Inapropiado' },
-    { id_tipo_reporte: 2, descripcion_tipo_reporte: 'Spam' },
-    { id_tipo_reporte: 3, descripcion_tipo_reporte: 'Violencia' },
-    { id_tipo_reporte: 4, descripcion_tipo_reporte: 'Otro' }
+    { id_tipo_reporte: '1', descripcion_tipo_reporte: 'Contenido Inapropiado' },
+    { id_tipo_reporte: '2', descripcion_tipo_reporte: 'Spam' },
+    { id_tipo_reporte: '3', descripcion_tipo_reporte: 'Violencia' },
+    { id_tipo_reporte: '4', descripcion_tipo_reporte: 'Otro' }
   ];
-
-
-
 
   usuarios: Usuario[] = [
     {
-      id_usuario: 2,
+      id_usuario: '2',
       nombre_usuario: 'Pedro Gamer',
       correo_electronico: 'pedro@gamer.com',
       fecha_registro: new Date(),
@@ -80,8 +75,11 @@ export class ReportarPage implements OnInit {
     // ...otros usuarios...
   ];
 
+  usuarioPost!: Usuario;
+  imagenSeleccionada: string | null = null;
 
-  constructor(private route: ActivatedRoute,
+  constructor(
+    private route: ActivatedRoute,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
     private localStorage: LocalStorageService,
@@ -91,7 +89,6 @@ export class ReportarPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-
     // Cargar usuario actual desde Ionic Storage
     const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
     if (usuarioGuardado) {
@@ -100,7 +97,7 @@ export class ReportarPage implements OnInit {
 
     // Accede al parámetro 'id' en la ruta
     this.route.params.subscribe(params => {
-      this.postId = Number(params['id']);  // Asigna el valor del parámetro 'id'
+      this.postId = params['id'];
       this.reporte.id_publicacion = this.postId; // Actualiza el id_publicacion en el reporte
       this.obtenerPost();
     });
@@ -112,22 +109,16 @@ export class ReportarPage implements OnInit {
     }, 100);
   }
 
-  usuarioPost!: Usuario;
-
   async obtenerPost() {
-      // Carga los usuarios antes de buscar el post
-  await this.usuarioService.cargarUsuarios();
-    // Obtiene todas las publicaciones del local storage
+    // Carga los usuarios antes de buscar el post
+    await this.usuarioService.cargarUsuarios();
+    // Obtiene la publicación por ID (string)
     const post = await this.publicacionService.getPublicacionById(this.postId);
 
-    console.log('Post encontrado:', post);
-    // Si la publicación existe, busca el usuario
     if (post) {
       this.post = post;
       this.usuarioPost = this.usuarioService.getUsuarioPorId(this.post.id_usuario)!;
-      console.log('Usuario de la publicación:', this.usuarioPost);
     } else {
-      // Si no existe, puedes mostrar un mensaje o manejar el error
       console.warn('Publicación no encontrada');
     }
   }
@@ -138,23 +129,20 @@ export class ReportarPage implements OnInit {
       return;
     }
 
-    // Genera un ID único para el reporte (puedes mejorarlo según tu lógica)
-    this.reporte.id_reporte = Date.now();
+    // Genera un ID único para el reporte (string)
+    this.reporte.id_reporte = Date.now().toString();
     this.reporte.id_usuario = this.usuarioActual.id_usuario;
     this.reporte.fecha_reporte = new Date();
 
     // Guarda el reporte en el local storage
     await this.reporteService.guardarReporte({ ...this.reporte });
 
-
-    console.log('Reporte enviado:', this.reporte);
-
     // Limpiar formulario
     this.reporte = {
-      id_reporte: 0,
-      id_usuario: 0,
-      id_tipo_reporte: 0,
-      id_publicacion: 0,
+      id_reporte: '',
+      id_usuario: '',
+      id_tipo_reporte: '',
+      id_publicacion: '',
       descripcion_reporte: '',
       fecha_reporte: new Date()
     };
@@ -167,14 +155,10 @@ export class ReportarPage implements OnInit {
       color: 'success'
     });
 
-
-
     await toast.present();
 
     this.volver();
   }
-
-  imagenSeleccionada: string | null = null;
 
   verImagen(publicacion: Publicacion) {
     this.imagenSeleccionada = publicacion.imagen ?? null;

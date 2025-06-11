@@ -1,6 +1,6 @@
 export interface Conversacion {
-    id_conversacion: number;
+    id_conversacion: string;
     fecha_envio: Date;
-    id_usuario_emisor: number;
-    id_usuario_receptor: number;
+    id_usuario_emisor: string;
+    id_usuario_receptor: string;
 }

@@ -1,6 +1,6 @@
 export interface Publicacion {
-    id_publicacion: number;
-    id_usuario: number;
+    id_publicacion: string;
+    id_usuario: string;
     contenido: string;
     imagen?: string;
     fecha_publicacion: Date;

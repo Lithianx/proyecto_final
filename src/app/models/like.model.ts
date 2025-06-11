@@ -1,7 +1,7 @@
 export interface Like {
-    id_publicacion?: number;
-    id_usuario: number;
-    id_comentario?: number;
+    id_publicacion?: string;
+    id_usuario: string;
+    id_comentario?: string;
     fecha_like: Date;
     estado_like: boolean;
 }
