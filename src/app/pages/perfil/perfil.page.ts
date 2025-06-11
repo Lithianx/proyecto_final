@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { Usuario } from 'src/app/models/usuario.model';
 
 @Component({
   selector: 'app-perfil',
@@ -12,13 +14,14 @@ export class PerfilPage implements OnInit {
 
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
-  // Lista de eventos inscritos
+  usuarios: Usuario[] = [];
+  usuarioActual: Usuario | null = null;
+
   eventosinscritos = [
     { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends', creador: 'usuario1' },
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
-  // Lista de eventos creados
   eventosCreados = [
     { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends' },
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant' }
@@ -26,8 +29,7 @@ export class PerfilPage implements OnInit {
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
-  nombreCompleto: string = 'Nombre Completo';
-  descripcionBio: string = `🌍 Amante de los viajes | 📸 Capturando momentos\n☕ Café y libros | 🎧 Música 24/7\n📍Chile`;
+  descripcionBio: string = `No hay descripcion`;
 
   publicaciones = [
     { id: 1, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 1', link: '/detalles-publicacion-personal' },
@@ -65,11 +67,37 @@ export class PerfilPage implements OnInit {
 
   constructor(
     private actionSheetCtrl: ActionSheetController,
-    private router: Router
+    private router: Router,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+  }
+
+  async ionViewWillEnter() {
+    await this.cargarDatos();
+  }
+
+  private async cargarDatos() {
+    try {
+      await this.usuarioService.cargarUsuarios();
+      this.usuarios = this.usuarioService.getUsuarios();
+      console.log('Cantidad de usuarios cargados:', this.usuarios.length);
+
+      const idUsuario = localStorage.getItem('id_usuario');
+      if (idUsuario) {
+        const usuario = await this.usuarioService.getUsuarioPorId(idUsuario);
+        if (usuario) {
+          this.usuarioActual = usuario;
+          this.fotoPerfil = usuario.avatar || this.fotoPerfil;
+          this.nombreUsuario = usuario.nombre_usuario || this.nombreUsuario;
+          console.log('Usuario actual cargado:', this.usuarioActual);
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando datos en perfil:', error);
+    }
   }
 
   ionViewDidEnter() {
@@ -92,7 +120,7 @@ export class PerfilPage implements OnInit {
     let position = 0;
 
     switch (value) {
-      case 'publicaciones':
+     case 'publicaciones':
         position = 3;
         break;
       case 'eventos-inscritos':
@@ -101,9 +129,6 @@ export class PerfilPage implements OnInit {
       case 'eventos-creados':
         position = (315 / 3) * 2; // ~66.66%
         break;
-    
-
-    const adjustedPosition = position - 1; // ajustar si es necesario
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
@@ -127,7 +152,6 @@ export class PerfilPage implements OnInit {
           text: 'Editar perfil',
           icon: 'person-outline',
           handler: () => {
-            console.log('Editar perfil');
             this.router.navigate(['/editar-perfil']);
           }
         },
@@ -135,7 +159,6 @@ export class PerfilPage implements OnInit {
           text: 'Historial de eventos',
           icon: 'time-outline',
           handler: () => {
-            console.log('Historial de eventos');
             this.router.navigate(['/historial-eventos']);
           }
         },
@@ -143,7 +166,6 @@ export class PerfilPage implements OnInit {
           text: 'Guardados',
           icon: 'bookmark',
           handler: () => {
-            console.log('Publicaciones guardadas');
             this.router.navigate(['/publicaciones-guardadas']);
           }
         },
@@ -151,7 +173,6 @@ export class PerfilPage implements OnInit {
           text: 'Términos y condiciones',
           icon: 'school-outline',
           handler: () => {
-            console.log('Validar cuenta institucional');
             this.router.navigate(['/info-cuenta-institucional']);
           }
         },
@@ -161,7 +182,7 @@ export class PerfilPage implements OnInit {
           role: 'destructive',
           cssClass: 'cerrar-sesion-btn',
           handler: () => {
-            console.log('Cerrar sesión');
+            localStorage.removeItem('id_usuario');
             this.router.navigate(['/login']);
           }
         }
@@ -170,7 +191,9 @@ export class PerfilPage implements OnInit {
 
     await actionSheet.present();
   }
-    comentario(publicacion: any) {
+
+  comentario(publicacion: any) {
     this.router.navigate(['/comentario', publicacion.id]);
   }
+
 }

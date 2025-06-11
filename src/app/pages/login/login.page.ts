@@ -39,17 +39,27 @@ async iniciarSesion() {
     if (credenciales.user && !credenciales.user.emailVerified) {
       await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
       await credenciales.user.sendEmailVerification(); // Opcional: reenviar verificación
-      return; // Detiene el login hasta que se verifique
+      return;
     }
 
-    console.log('Usuario autenticado:', credenciales.user.email);
+    const uid = credenciales.user.uid;
+    const datosUsuario = await this.usuarioService.obtenerUsuarioDesdeFirestore(uid);
+
+    if (datosUsuario) {
+      await this.usuarioService.setUsuarios([datosUsuario]); // guarda en memoria y localStorage
+      console.log('Usuario cargado:', datosUsuario);
+    } else {
+      await this.mostrarToast('No se encontraron datos del usuario');
+      return;
+    }
+
     this.router.navigate(['/home']);
   } catch (error: any) {
     this.errorAutenticacion = true;
     this.mostrarToast('Contraseña o correo incorrecto');
   }
-      this.errorAutenticacion = false;
 }
+
 
 
   async mostrarToast(mensaje: string) {
