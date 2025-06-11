@@ -1,118 +1,171 @@
-/* Estilo para el contenido principal con degradado */
-/* Se mantiene la clase 'login-content' como en tu HTML proporcionado */
 ion-content.login-content {
-    --background: linear-gradient(to top, #2ecc71, #1a1a1a); /* Gradiente del login original */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    width: 100%; /* Asegura que ocupe todo el ancho */
-  }
-  
-  /* Contenedor principal dentro de ion-content */
-  .container {
-    display: flex;
+  --background: linear-gradient(135deg, #2ecc71 0%, #1a1a1a 100%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* para que no quede pegado al centro vertical */
+  min-height: 100%;
+  width: 100%;
+  padding-top: 80px; /* un poco de espacio arriba */
+  box-sizing: border-box;
+}
 
-    flex-direction: column;
-    align-items: center;
-    /* justify-content: center; remueve esto si quieres que el contenido se alinee arriba después del header */
-    width: 100%;
-    max-width: 400px; /* Limita el ancho máximo del contenido */
-    padding: 20px;
-    /* min-height: 100%; remueve esto si el contenido es corto y no necesitas que ocupe toda la altura */
-    box-sizing: border-box;
-    overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+/* Contenedor principal dentro de ion-content */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 20px 40px; /* más espacio abajo para scroll */
+  box-sizing: border-box;
+    padding-top: 80px; /* un poco de espacio arriba */
+  overflow-y: auto;
+}
+
+/* Encabezado */
+.header-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+    color: var(--color-iconos);
+}
+
+.back-button ion-icon {
+  font-size: 26px;
+  color: #ecf0f1;
+}
+
+.app-title {
+  flex: 1;
+  color: #ecf0f1;
+  font-weight: 700;
+  font-size: 1.7rem;
+  text-align: center;
+  margin: 0;
+  user-select: none;
+}
+
+/* Caja login-box */
+.login-box {
+  background-color: #121212; /* un negro más profundo */
+  color: #fff;
+  width: 100%;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Icono grande y texto */
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.big-lock-icon {
+  font-size: 96px;
+  color: #3498db;
+  margin-bottom: 16px;
+}
+
+.info-text {
+  color: #bbb;
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+  padding: 0 12px;
+  line-height: 1.4;
+}
+
+/* Input item */
+.input-item {
+  --background: #fff;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --border-radius: 10px;
+  margin-bottom: 1.2rem;
+  color: #333;
+
+  ion-icon {
+    font-size: 1.3rem;
+    margin-right: 8px;
+    color: #333;
   }
-  
-  
-  /* Caja que contiene el ícono grande, texto y input */
+
+  ion-input {
+    --color: #222;
+    font-size: 1rem;
+  }
+}
+
+/* Botón */
+.login-button {
+  --border-radius: 10px;
+  --box-shadow: 0 4px 12px rgba(46, 204, 113, 0.6);
+  font-weight: 700;
+  height: 48px;
+  margin-top: 28px;
+  --background: #2ecc71;
+  --background-hover: #27ae60;
+  --background-activated: #27ae60;
+  --color: #fff;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 360px;
+  text-transform: uppercase;
+}
+
+.login-button:hover {
+  --background: #27ae60;
+  --box-shadow: 0 6px 18px rgba(39, 174, 96, 0.8);
+}
+
+.login-button:focus {
+  outline: 2px solid #2ecc71;
+  outline-offset: 3px;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustes ion-item para consistencia */
+ion-item.sc-ion-input-md-h,
+ion-item.sc-ion-input-ios-h {
+  --inner-padding-bottom: 0;
+  --inner-padding-top: 0;
+  --min-height: 44px;
+  border-radius: 10px;
+  --background-focused: #eafaf1;
+}
+
+/* Responsive: menor padding en móviles */
+@media (max-width: 350px) {
+  .container {
+    padding: 0 12px 30px;
+  }
+
   .login-box {
-    background-color: #000000; /* Fondo negro */
-    color: #ffffff; /* Texto blanco por defecto */
-    width: 100%;
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    animation: fadeIn 0.6s ease-in-out; /* Mantiene la animación si la usas */
-    /* margin-top: 1rem; // Ya no es necesario si .header-row tiene margin-bottom */
+    padding: 2rem 1.5rem;
   }
-  
-  /* Contenedor para el ícono grande y el texto informativo */
-  .icon-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centra horizontalmente el contenido */
-    margin-bottom: 30px; /* Espacio debajo del contenedor de ícono/texto */
-  }
-  
-  /* Estilo para el ícono grande de candado */
-  .big-lock-icon {
-    font-size: 100px; /* Tamaño del ícono según tu indicación */
-    color: #3498db; /* Color azul */
-    margin-bottom: 15px; /* Espacio entre el ícono y el texto */
-  }
-  
-  /* Estilo para el texto informativo */
-  .info-text {
-    color: #ccc; /* Color gris claro */
-    font-size: 1rem; /* Tamaño del texto */
-    text-align: center; /* Centra el texto */
-    margin: 0; /* Elimina márgenes por defecto */
-    padding: 0 10px;
-  }
-  
-  /* Contenedor para el input con icono (basado en tu estructura original) */
-  .input-item {
-    --background: #ffffff; /* Fondo blanco para el item */
-    --padding-start: 10px;
-    --border-radius: 8px;
-    --inner-padding-end: 10px;
-    margin-bottom: 1rem;
-    color: #000000; /* Color por defecto para el ícono y texto en items blancos */
-  
-    ion-icon {
-      font-size: 1.2rem;
-      margin-right: 5px;
-      color: #000000; /* Asegura icono negro */
-    }
-  
-    ion-input {
-      --color: #000000; /* Texto input negro */
-      font-size: 1rem;
-    }
-  }
-  
-  /* Botón de Restaurar Contraseña (se mantiene la clase login-button) */
-  .login-button {
-    --border-radius: 8px;
-    --box-shadow: none;
-    font-weight: bold;
-    height: 48px;
-    margin-top: 20px; /* Espacio arriba del botón */
-    /* Mantenemos el color verde por defecto para el primer botón */
-    --background: #2ecc71;
-    --background-hover: #27ae60;
-    --background-activated: #27ae60;
-    --color: #ffffff; /* Asegura texto blanco */
-  }
-  
-  /* Animación simple de entrada (mantenida) */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Ajustes menores para consistencia (mantenidos) */
-  ion-item.sc-ion-input-md-h, ion-item.sc-ion-input-ios-h {
-    --inner-padding-bottom: 0;
-    --inner-padding-top: 0;
-    --min-height: 40px;
-  }
-  
-  /* --- FIN: CSS Actualizado --- */
+}

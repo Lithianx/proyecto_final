@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Usuario } from 'src/app/models/usuario.model';
-// import { AngularFirestore } from '@angular/fire/compat/firestore'; 
+import { AngularFireAuth } from '@angular/fire/compat/auth';       // Importa AngularFireAuth
+import { AngularFirestore } from '@angular/fire/compat/firestore'; 
+
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -9,11 +11,59 @@ export class UsuarioService {
 
   constructor(
     private localStorage: LocalStorageService,
-    // private firestore: AngularFirestore 
+    private firestore: AngularFirestore,
+    private afAuth: AngularFireAuth       // Inyecta AngularFireAuth
   ) {}
+
+  // 🔐 Login con Firebase Authentication usando AngularFireAuth
+  async loginConFirebase(correo: string, contrasena: string): Promise<any> {
+    try {
+      const credenciales = await this.afAuth.signInWithEmailAndPassword(correo, contrasena);
+      return credenciales;
+    } catch (error) {
+      throw error;
+    }
+  }
+  // Crear cuenta de usuario en Firebase y guardarlo en memoria/localStorage
+async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
+  try {
+    // Crear cuenta en Firebase Auth
+    const cred = await this.afAuth.createUserWithEmailAndPassword(correo, contrasena);
+    
+    // Crear objeto Usuario
+    const nuevoUsuario: Usuario = {
+      id_usuario: Date.now(), // ID único 
+      nombre_usuario: nombre,
+      correo_electronico: correo,
+      contrasena: contrasena, // ⚠️ Puedes enmascarar o encriptar en un entorno real
+      fecha_registro: new Date(),
+      estado_cuenta: true,
+      estado_online: false,
+      avatar: null
+    };
+
+    // Guardar usuario en memoria y local
+    await this.agregarUsuario(nuevoUsuario);
+
+    return nuevoUsuario;
+  } catch (error) {
+    console.error('Error al crear cuenta:', error);
+    throw error;
+  }
+}
+async restablecerContrasena(correo: string): Promise<void> {
+  try {
+    await this.afAuth.sendPasswordResetEmail(correo);
+  } catch (error) {
+    throw error;
+  }
+}
+
+
 
   // Cargar usuarios en memoria (local o remoto)
   async cargarUsuarios(): Promise<void> {
+    // Si quieres usar Firestore remoto, descomenta y adapta esta línea:
     // const usuariosFirebase = await this.firestore.collection<Usuario>('usuarios').valueChanges().toPromise();
     // if (usuariosFirebase && usuariosFirebase.length > 0) {
     //   this.usuariosEnMemoria = usuariosFirebase;
@@ -71,7 +121,7 @@ export class UsuarioService {
   async setUsuarios(usuarios: Usuario[]): Promise<void> {
     this.usuariosEnMemoria = usuarios;
     await this.localStorage.setItem('usuarios', usuarios);
-    // Si usas Firebase, también podrías guardar aquí
+    // Aquí podrías sincronizar con Firebase si quieres
   }
 
   // Obtener un usuario por su ID (rápido y síncrono)
@@ -83,7 +133,7 @@ export class UsuarioService {
   async agregarUsuario(usuario: Usuario): Promise<void> {
     this.usuariosEnMemoria.push(usuario);
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
-    // Si usas Firebase, también podrías agregar aquí
+    // También podrías agregarlo en Firestore aquí
   }
 
   // Actualizar un usuario existente
@@ -92,7 +142,7 @@ export class UsuarioService {
     if (idx !== -1) {
       this.usuariosEnMemoria[idx] = usuario;
       await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
-      // Si usas Firebase, también podrías actualizar aquí
+      // También podrías actualizarlo en Firestore aquí
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-crear-usuario',
@@ -19,92 +20,92 @@ export class CrearUsuarioPage implements OnInit {
   contrasenaInvalid = false;
   confirmaContrasenaInvalid = false;
 
+  mostrarContrasena = false;
+  mostrarConfirmacion = false;
+
   constructor(
-    private alertController: AlertController,
-    private router: Router
+    private toastController: ToastController,
+    private router: Router,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit() {}
 
+  toggleMostrarContrasena() {
+    this.mostrarContrasena = !this.mostrarContrasena;
+  }
+
+  toggleMostrarConfirmacion() {
+    this.mostrarConfirmacion = !this.mostrarConfirmacion;
+  }
+
+  async mostrarToast(mensaje: string, color: string = 'danger') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2500,
+      position: 'top',
+      color: color,
+      icon: color === 'danger' ? 'alert-circle' : 'checkmark-circle',
+    });
+    toast.present();
+  }
+
   async crearCuenta() {
-    // Resetear estilos de error
+    // Resetear errores visuales
     this.nombreInvalid = false;
     this.correoInvalid = false;
     this.contrasenaInvalid = false;
     this.confirmaContrasenaInvalid = false;
 
-    // --- 1. Validar que todos los campos estén completos ---
+    // Validar campos vacíos
     if (!this.nombre.trim() || !this.correo.trim() || !this.contrasena.trim() || !this.confirmaContrasena.trim()) {
       if (!this.nombre.trim()) this.nombreInvalid = true;
       if (!this.correo.trim()) this.correoInvalid = true;
       if (!this.contrasena.trim()) this.contrasenaInvalid = true;
       if (!this.confirmaContrasena.trim()) this.confirmaContrasenaInvalid = true;
 
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Todos los campos son obligatorios.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      await this.mostrarToast('Todos los campos son obligatorios.');
       return;
     }
 
-    // --- 2. Validar formato del correo ---
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.correo)) {
-      this.correoInvalid = true;
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'El correo electrónico no tiene un formato válido.ejemplo : a@a.com',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
-    }
+// Validar correo institucional @duocuc.cl
+const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@duocuc\.cl$/;
+if (!correoInstitucionalRegex.test(this.correo)) {
+  this.correoInvalid = true;
+  await this.mostrarToast('Solo se permiten correos institucionales @duocuc.cl');
+  return;
+}
 
-    // --- 3. Validar contraseña ---
+
+    // Validar longitud de contraseña
     if (this.contrasena.length < 6) {
       this.contrasenaInvalid = true;
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'La contraseña debe tener al menos 6 caracteres.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      await this.mostrarToast('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
+    // Validar coincidencia de contraseñas
     if (this.contrasena !== this.confirmaContrasena) {
       this.contrasenaInvalid = true;
       this.confirmaContrasenaInvalid = true;
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Las contraseñas no coinciden.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      await this.mostrarToast('Las contraseñas no coinciden.');
       return;
     }
 
-    // --- Éxito ---
-    console.log('Cuenta creada con éxito');
+    try {
+      await this.usuarioService.crearCuenta(this.nombre.trim(), this.correo.trim(), this.contrasena);
 
-    const alert = await this.alertController.create({
-      header: 'Éxito',
-      message: 'La cuenta ha sido creada correctamente.',
-      buttons: [{
-        text: 'OK',
-        handler: () => {
-          this.router.navigate(['/login']);
-        }
-      }],
-    });
-    await alert.present();
+      await this.mostrarToast('Cuenta creada correctamente.', 'success');
+      this.router.navigate(['/login']);
 
-    // Limpiar campos
-    this.nombre = '';
-    this.correo = '';
-    this.contrasena = '';
-    this.confirmaContrasena = '';
+      // Limpiar campos
+      this.nombre = '';
+      this.correo = '';
+      this.contrasena = '';
+      this.confirmaContrasena = '';
+    } catch (error) {
+      this.correoInvalid = true;
+      await this.mostrarToast('No se pudo crear la cuenta. El correo ya está en uso.');
+    }
   }
 }
