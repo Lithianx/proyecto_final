@@ -4,9 +4,7 @@
 
   <!-- REFRESHER -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content 
-      pullingIcon="game-controller"
-      refreshingIcon="game-controller"> 
+    <ion-refresher-content pullingIcon="game-controller" refreshingIcon="game-controller">
     </ion-refresher-content>
   </ion-refresher>
 
@@ -22,36 +20,49 @@
       <ion-title>Mensajes</ion-title>
     </ion-toolbar>
     <!-- Lista de chat -->
-    <ion-item *ngFor="let chat of chats" class="chat-item" [routerLink]="['/chat-privado', chat.id_conversacion]">
+    <ion-item *ngFor="let conv of conversaciones" class="chat-item"
+      [routerLink]="['/chat-privado', conv.id_conversacion]"
+      (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
       <div class="chat-avatar-icon">
         <ion-avatar slot="start">
-          <img [src]="getUsuario(chat.id_usuario)?.avatar" />
+          <img
+            [src]="getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor : conv.id_usuario_emisor)?.avatar" />
         </ion-avatar>
-        <ion-icon [name]="getUsuario(chat.id_usuario)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
+        <ion-icon
+          [name]="getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor : conv.id_usuario_emisor)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
       <ion-label>
-        <!-- Nombre de usuario y icono si hay mensaje no leído -->
-        <div class="user-info">
-          <h5>{{ getUsuario(chat.id_usuario)?.nombre_usuario }}</h5>
-          <ion-icon [name]="chat.leido ? 'mail-unread' : 'mail-open-outline'"></ion-icon>
+        <!-- Nombre de usuario y estado -->
+        <div class="user-info" style="display: flex; align-items: center;">
+          <h5 style="margin-right: 8px;">
+            {{ getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor :
+            conv.id_usuario_emisor)?.nombre_usuario }}
+          </h5>
+          <!-- Icono de carta si el último mensaje no está visto -->
+          <ion-icon
+            *ngIf="getUltimoMensaje(conv.id_conversacion) && !getUltimoMensaje(conv.id_conversacion)?.estado_visto"
+            name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
+          </ion-icon>
         </div>
         <!-- Último mensaje -->
         <p class="message-text">
-          <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[imagen]'); else checkAudio">
+          <ng-container
+            *ngIf="getUltimoMensaje(conv.id_conversacion)?.contenido?.startsWith('[imagen]'); else checkAudio">
             📷 Imagen recibida
           </ng-container>
           <ng-template #checkAudio>
-            <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[audio]'); else checkVideo">
+            <ng-container
+              *ngIf="getUltimoMensaje(conv.id_conversacion)?.contenido?.startsWith('[audio]'); else checkVideo">
               🎧 Audio recibido
             </ng-container>
           </ng-template>
           <ng-template #checkVideo>
-            <ng-container *ngIf="chat.ultimo_mensaje?.startsWith('[video]'); else texto">
+            <ng-container *ngIf="getUltimoMensaje(conv.id_conversacion)?.contenido?.startsWith('[video]'); else texto">
               🎥 Video recibido
             </ng-container>
           </ng-template>
           <ng-template #texto>
-            {{ chat.ultimo_mensaje }}
+            {{ getUltimoMensaje(conv.id_conversacion)?.contenido }}
           </ng-template>
         </p>
       </ion-label>

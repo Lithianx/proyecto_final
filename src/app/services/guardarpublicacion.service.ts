@@ -17,8 +17,8 @@ export class GuardaPublicacionService {
     return this.guardados;
   }
 
-  // Guardar o quitar guardado de una publicación
-  async toggleGuardado(idUsuario: number, idPublicacion: number): Promise<void> {
+  // Guardar o quitar guardado de una publicación (ahora string)
+  async toggleGuardado(idUsuario: string, idPublicacion: string): Promise<void> {
     const guardado = this.guardados.find(
       g => g.id_usuario === idUsuario && g.id_publicacion === idPublicacion
     );
@@ -36,8 +36,8 @@ export class GuardaPublicacionService {
     await this.localStorage.setItem('publicacionesGuardadas', this.guardados);
   }
 
-  // Saber si el usuario ya guardó una publicación
-  estaGuardada(idUsuario: number, idPublicacion: number): boolean {
+  // Saber si el usuario ya guardó una publicación (ahora string)
+  estaGuardada(idUsuario: string, idPublicacion: string): boolean {
     return !!this.guardados.find(
       g => g.id_usuario === idUsuario &&
         g.id_publicacion === idPublicacion &&
