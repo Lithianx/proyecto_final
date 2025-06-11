@@ -54,7 +54,7 @@ export class SalaEventoPage implements OnInit {
 
       // Simula respuesta
       setTimeout(() => {
-        this.mensajes.push({ usuario: 'Carlos', texto: '¡Entendido!' });
+        this.mensajes.push({ usuario: 'Carlos', texto: 'oki uwu' });
       }, 1000);
 
       this.mensaje = '';
