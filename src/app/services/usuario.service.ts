@@ -38,39 +38,26 @@ export class UsuarioService {
     }
   }
 
-  async obtenerUltimoIdUsuario(): Promise<number> {
-    if (this.usuariosEnMemoria.length === 0) return 0;
-    return Math.max(...this.usuariosEnMemoria.map(u => u.id_usuario));
-  }
 
-  async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
-    try {
-      const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
-      if (signInMethods && signInMethods.length > 0) {
-        throw new Error('El correo ya está en uso');
-      }
 
-      let cred;
+ async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
+  try {
+    const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
+    if (signInMethods && signInMethods.length > 0) {
+      throw new Error('El correo ya está en uso');
+    }
+
+    const cred = await createUserWithEmailAndPassword(this.auth, correo, contrasena);
+
+    if (cred.user) {
       try {
-        cred = await createUserWithEmailAndPassword(this.auth, correo, contrasena);
+        await sendEmailVerification(cred.user);
       } catch (error) {
-        console.error('Error en createUserWithEmailAndPassword:', error);
-        throw new Error('No se pudo crear el usuario en Firebase');
+        console.warn('No se pudo enviar el correo de verificación:', error);
       }
-
-      if (cred.user) {
-        try {
-          await sendEmailVerification(cred.user);
-        } catch (error) {
-          console.warn('No se pudo enviar el correo de verificación:', error);
-        }
-      }
-
-      const ultimoId = await this.obtenerUltimoIdUsuario();
-      const nuevoId = ultimoId + 1;
 
       const nuevoUsuario: Usuario = {
-        id_usuario: nuevoId,
+        id_usuario: cred.user.uid, // Aquí usamos el UID de Firebase
         nombre_usuario: nombre,
         correo_electronico: correo,
         contrasena: contrasena,
@@ -80,19 +67,17 @@ export class UsuarioService {
         avatar: ''
       };
 
-      try {
-        await this.agregarUsuario(nuevoUsuario);
-      } catch (error) {
-        console.error('Error al agregar usuario en Firestore:', error);
-        throw new Error('No se pudo guardar el usuario en Firestore');
-      }
+      await this.agregarUsuario(nuevoUsuario);
 
       return nuevoUsuario;
-    } catch (error: any) {
-      console.error('Error general en crearCuenta:', error.message || error);
-      throw error;
+    } else {
+      throw new Error('No se obtuvo usuario de Firebase');
     }
+  } catch (error: any) {
+    console.error('Error general en crearCuenta:', error.message || error);
+    throw error;
   }
+}
 
   async restablecerContrasena(correo: string): Promise<void> {
     try {
@@ -109,7 +94,7 @@ export class UsuarioService {
     } else {
       this.usuariosEnMemoria = [
         {
-          id_usuario: 1,
+          id_usuario: 'techguru',
           nombre_usuario: 'techguru',
           correo_electronico: 'techguru@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -119,7 +104,7 @@ export class UsuarioService {
           estado_online: true
         },
         {
-          id_usuario: 2,
+          id_usuario: 'techguru',
           nombre_usuario: 'catlover',
           correo_electronico: 'catlover@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -129,7 +114,7 @@ export class UsuarioService {
           estado_online: true
         },
         {
-          id_usuario: 3,
+          id_usuario: 'techguru',
           nombre_usuario: 'pan_con_queso',
           correo_electronico: 'pan_con_queso@correo.com',
           fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
@@ -153,10 +138,9 @@ export class UsuarioService {
     await this.localStorage.setItem('usuarios', usuarios);
   }
 
-  getUsuarioPorId(id_usuario: number): Usuario | undefined {
+  getUsuarioPorId(id_usuario: string): Usuario | undefined {
     return this.usuariosEnMemoria.find(u => u.id_usuario === id_usuario);
   }
-
   async agregarUsuario(usuario: Usuario): Promise<void> {
     this.usuariosEnMemoria.push(usuario);
     const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario.toString());
