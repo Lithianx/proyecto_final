@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { DetallesPublicacionPersonalPageRoutingModule } from './detalles-publicacion-personal-routing.module';
+import { ReportarCuentaPageRoutingModule } from './reportar-cuenta-routing.module';
 
-import { DetallesPublicacionPersonalPage } from './detalles-publicacion-personal.page';
+import { ReportarCuentaPage } from './reportar-cuenta.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 
 @NgModule({
@@ -14,9 +14,9 @@ import { ComponentsModule } from 'src/app/components/components.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    DetallesPublicacionPersonalPageRoutingModule,
+    ReportarCuentaPageRoutingModule,
     ComponentsModule
   ],
-  declarations: [DetallesPublicacionPersonalPage]
+  declarations: [ReportarCuentaPage]
 })
-export class DetallesPublicacionPersonalPageModule {}
+export class ReportarCuentaPageModule {}

@@ -1,5 +1,5 @@
 ion-content.login-content {
-  --background: linear-gradient(to top, #2ecc71, #1a1a1a);
+    --background: linear-gradient(to top, #00ac49, #000000);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -103,16 +103,31 @@ ion-content.login-content {
   }
 }
 
+/* Botón */
 .login-button {
-  --border-radius: 8px;
-  --box-shadow: none;
-  font-weight: bold;
+  --border-radius: 10px;
+  --box-shadow: 0 4px 12px rgba(46, 204, 113, 0.6);
+  font-weight: 700;
   height: 48px;
-  margin-bottom: 1rem;
+  margin-top: 28px;
   --background: #2ecc71;
   --background-hover: #27ae60;
   --background-activated: #27ae60;
-  --color: #ffffff;
+  --color: #fff;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 360px;
+  text-transform: uppercase;
+}
+
+.login-button:hover {
+  --background: #27ae60;
+  --box-shadow: 0 6px 18px rgba(39, 174, 96, 0.8);
+}
+
+.login-button:focus {
+  outline: 2px solid #2ecc71;
+  outline-offset: 3px;
 }
 
 @keyframes fadeIn {
@@ -131,4 +146,34 @@ ion-item.sc-ion-input-ios-h {
   --inner-padding-bottom: 0;
   --inner-padding-top: 0;
   --min-height: 40px;
+}
+
+/* Contenedor ion-item con error */
+ion-item.input-item.error-input {
+  --background: #fce8e6; /* fondo rojo claro */
+  --border-color: var(--ion-color-danger);
+  border: 1.5px solid var(--ion-color-danger);
+  border-radius: 8px;
+  color: var(--ion-color-danger);
+}
+
+/* Icono dentro del ion-item con error */
+ion-item.input-item.error-input ion-icon {
+  color: var(--ion-color-danger) !important;
+}
+
+/* ion-input dentro con error */
+ion-item.input-item.error-input ion-input {
+  --color: var(--ion-color-danger);
+}
+
+/* Cambiar color de texto dentro del input */
+/* Para forzar estilo sobre el input nativo dentro de ion-input (Shadow DOM workaround) */
+ion-item.input-item.error-input ion-input input {
+  color: var(--ion-color-danger);
+}
+
+/* Cambiar placeholder también */
+ion-item.input-item.error-input ion-input input::placeholder {
+  color: var(--ion-color-danger);
 }

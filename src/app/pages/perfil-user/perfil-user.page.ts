@@ -54,6 +54,7 @@ export class PerfilUserPage implements OnInit {
       console.log('ID de usuario:', id);
 
       if (id) {
+        this.idUsuario = id; // ✅ Asignación del ID para navegación posterior
         this.cargarPerfilUsuario(id);
       }
     });
@@ -63,7 +64,6 @@ export class PerfilUserPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    // Aplica la animación al cargar la página con el valor actual
     this.applySliderTransform(this.vistaSeleccionada);
   }
 
@@ -80,11 +80,10 @@ export class PerfilUserPage implements OnInit {
       return;
     }
 
-    // Posiciones en porcentaje para 3 segmentos (0%, 33.33%, 66.66%)
     let position = 0;
 
     switch (value) {
-      case 'publicaciones':
+     case 'publicaciones':
         position = 3;
         break;
       case 'eventos-inscritos':
@@ -93,9 +92,6 @@ export class PerfilUserPage implements OnInit {
       case 'eventos-creados':
         position = (315 / 3) * 2; // ~66.66%
         break;
-    
-
-    const adjustedPosition = position - 1; // ajustar si es necesario
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
@@ -142,43 +138,47 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-async abrirOpciones() {
-  const actionSheet = await this.actionSheetCtrl.create({
-    header: 'Opciones',
-    buttons: [
-      {
-        text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
-        icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
-        handler: () => {
-          this.siguiendo = !this.siguiendo;
-          console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
+  async abrirOpciones() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
+          icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
+          handler: () => {
+            this.siguiendo = !this.siguiendo;
+            console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
+          }
+        },
+        {
+          text: 'Mandar mensaje',
+          icon: 'chatbubble-ellipses-outline',
+          handler: () => {
+            console.log('Mandar mensaje a ID:', this.idUsuario);
+            this.router.navigate(['/chat-privado', this.idUsuario]);
+          }
+        },
+        {
+          text: 'Reportar',
+          role: 'destructive',
+          icon: 'alert-circle-outline',
+          handler: () => {
+            console.log('Reportar usuario');
+            this.router.navigate(['/reportar-cuenta', this.idUsuario]); // ✅ Usa el ID recibido
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
         }
-      },
-      {
-        text: 'Mandar mensaje',
-        icon: 'chatbubble-ellipses-outline',
-        handler: () => {
-          console.log('Mandar mensaje a ID:', this.idUsuario);
-          this.router.navigate(['/chat-privado', this.idUsuario]);
-        }
-      },
-      {
-        text: 'Reportar',
-        role: 'destructive',
-        icon: 'alert-circle-outline',
-        handler: () => {
-          console.log('Reportar usuario');
-        }
-      },
-      {
-        text: 'Cancelar',
-        icon: 'close',
-        role: 'cancel'
-      }
-    ]
-  });
+      ]
+    });
 
-  await actionSheet.present();
-}
+    await actionSheet.present();
+  }
+  comentario(publicacion: any) {
+    this.router.navigate(['/comentario', publicacion.id]);
+  }
 
 }

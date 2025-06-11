@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-
 import { OlvidoContrasenaPage } from './olvido-contrasena.page';
 
 const routes: Routes = [

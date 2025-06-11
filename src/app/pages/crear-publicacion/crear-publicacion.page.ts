@@ -6,6 +6,8 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
 
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+import { PublicacionService } from 'src/app/services/publicacion.service';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -36,11 +38,14 @@ export class CrearPublicacionPage implements OnInit {
 
   publicaciones: Publicacion[] = []; // Lista de publicaciones creadas
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,
+    private localStorage: LocalStorageService,
+      private publicacionService: PublicacionService
+  ) { }
 
-  ngOnInit() {
-
-  }
+async ngOnInit() {
+  this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+}
 
   // Giphy
   giphyResults: any[] = [];
@@ -85,28 +90,29 @@ export class CrearPublicacionPage implements OnInit {
   }
 
   // Función para crear la publicación
-  publicar() {
-    if (!this.contenido.trim() && !this.imagenBase64) return;
-    const nuevaPublicacion: Publicacion = {
-      id_publicacion: this.publicaciones.length + 1,
-      id_usuario: this.usuario.id_usuario, // Relaciona la publicación con el usuario actual
-      contenido: this.contenido || '', // Si no hay contenido, se guarda como cadena vacía
-      imagen: this.imagenBase64 || '', // Si no hay imagen, se guarda como cadena vacía
-      fecha_publicacion: new Date(),
-    };
+async publicar() {
+  if (!this.contenido.trim() && !this.imagenBase64) return;
 
+   const id_publicacion = await this.publicacionService.getNextPersonalId();
+  const nuevaPublicacion: Publicacion = {
+    id_publicacion,
+    id_usuario: this.usuario.id_usuario,
+    contenido: this.contenido || '',
+    imagen: this.imagenBase64 || '',
+    fecha_publicacion: new Date(),
+  };
 
+      await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
+    this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
 
-    this.publicaciones.push(nuevaPublicacion);
+  console.log('Publicación creada:', nuevaPublicacion);
 
-    console.log('Publicación creada:', nuevaPublicacion);
-
-    this.contenido = '';
-    this.imagenBase64 = null;
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
+  this.contenido = '';
+  this.imagenBase64 = null;
+  if (this.fileInput) {
+    this.fileInput.nativeElement.value = '';
   }
+}
 
   // Función para navegar a la pantalla de edición
   modificar(post: Publicacion) {

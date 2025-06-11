@@ -105,10 +105,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/publicaciones-guardadas/publicaciones-guardadas.module').then( m => m.PublicacionesGuardadasPageModule)
   },
   {
-    path: 'detalles-publicacion-personal',
-    loadChildren: () => import('./pages/detalles-publicacion-personal/detalles-publicacion-personal.module').then( m => m.DetallesPublicacionPersonalPageModule)
-  },
-  {
     path: 'notificaciones',
     loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
   },
@@ -119,7 +115,13 @@ const routes: Routes = [
   {
     path: 'event-insc-cread/:id/:titulo',
     loadChildren: () => import('./pages/event-insc-cread/event-insc-cread.module').then(m => m.EventInscCreadPageModule)
-  }
+  },
+{
+  path: 'reportar-cuenta/:id',
+  loadChildren: () => import('./pages/reportar-cuenta/reportar-cuenta.module').then(m => m.ReportarCuentaPageModule)
+}
+
+
 
 
 

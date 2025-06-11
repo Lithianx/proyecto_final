@@ -1,0 +1,38 @@
+<app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true">
+  <div class="header-row">
+    <ion-button class="back-button" (click)="volver()" fill="clear">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <h1 class="app-title">Reportar cuenta</h1>
+  </div>
+
+  <div class="report-container">
+    <h2>Reportar cuenta de <strong>{{ nombreUsuario }}</strong></h2>
+    <p class="descripcion">
+      Si este usuario ha violado las reglas de la comunidad, puedes reportarlo.
+      Revisa nuestra política antes de continuar.
+    </p>
+
+    <ion-item>
+      <ion-label position="stacked">Razón del reporte</ion-label>
+      <ion-select [(ngModel)]="razonReporte" placeholder="Selecciona una razón">
+        <ion-select-option *ngFor="let razon of razones" [value]="razon">
+          {{ razon }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Detalles adicionales</ion-label>
+      <ion-textarea [(ngModel)]="detallesAdicionales" rows="4" placeholder="Escribe detalles si lo deseas..."></ion-textarea>
+    </ion-item>
+
+    <ion-button expand="block" color="danger" (click)="enviarReporte()">
+      Enviar reporte
+    </ion-button>
+  </div>
+</ion-content>
+
+<app-navbar></app-navbar>

@@ -1,7 +1,6 @@
-import { NgModule, Component } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -9,30 +8,28 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { IonicStorageModule } from '@ionic/storage-angular';
 
-// Firebase
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideAuth, getAuth } from '@angular/fire/auth';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+
 import { environment } from '../environments/environment';
 
 @NgModule({
-  declarations: [
-    AppComponent 
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
     IonicStorageModule.forRoot(),
-    FormsModule,
-    ReactiveFormsModule
+
+    // Firebase clásico (compatibilidad)
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireAuthModule,
+    AngularFirestoreModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-    provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore())
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
