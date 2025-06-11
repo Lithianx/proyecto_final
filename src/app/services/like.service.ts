@@ -1,22 +1,44 @@
 import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Like } from '../models/like.model';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({ providedIn: 'root' })
 export class LikeService {
   private likes: Like[] = [];
   private likesComentarios: Like[] = [];
 
-  constructor(private localStorage: LocalStorageService) {}
+  constructor(
+    private localStorage: LocalStorageService,
+    private firebaseService: FirebaseService
+  ) {}
 
   // Cargar likes de publicaciones en memoria
   async cargarLikes(): Promise<void> {
-    this.likes = await this.localStorage.getList<Like>('publicacionLikes') || [];
+    if (navigator.onLine) {
+      try {
+        this.likes = await this.firebaseService.getLikesPublicaciones();
+        await this.localStorage.setItem('publicacionLikes', this.likes);
+      } catch {
+        this.likes = await this.localStorage.getList<Like>('publicacionLikes') || [];
+      }
+    } else {
+      this.likes = await this.localStorage.getList<Like>('publicacionLikes') || [];
+    }
   }
 
   // Cargar likes de comentarios en memoria
   async cargarLikesComentarios(): Promise<void> {
-    this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes') || [];
+    if (navigator.onLine) {
+      try {
+        this.likesComentarios = await this.firebaseService.getLikesComentarios();
+        await this.localStorage.setItem('comentarioLikes', this.likesComentarios);
+      } catch {
+        this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes') || [];
+      }
+    } else {
+      this.likesComentarios = await this.localStorage.getList<Like>('comentarioLikes') || [];
+    }
   }
 
   // Obtener todos los likes de publicaciones en memoria
@@ -35,13 +57,20 @@ export class LikeService {
     if (like) {
       like.estado_like = !like.estado_like;
       like.fecha_like = new Date();
+      if (navigator.onLine) {
+        await this.firebaseService.updateLikePublicacion(like);
+      }
     } else {
-      this.likes.push({
+      const nuevo: Like = {
         id_usuario: idUsuario,
         id_publicacion: idPublicacion,
         fecha_like: new Date(),
         estado_like: true
-      });
+      };
+      this.likes.push(nuevo);
+      if (navigator.onLine) {
+        await this.firebaseService.addLikePublicacion(nuevo);
+      }
     }
     await this.localStorage.setItem('publicacionLikes', this.likes);
   }
@@ -52,13 +81,20 @@ export class LikeService {
     if (like) {
       like.estado_like = !like.estado_like;
       like.fecha_like = new Date();
+      if (navigator.onLine) {
+        await this.firebaseService.updateLikeComentario(like);
+      }
     } else {
-      this.likesComentarios.push({
+      const nuevo: Like = {
         id_usuario: idUsuario,
         id_comentario: idComentario,
         fecha_like: new Date(),
         estado_like: true
-      });
+      };
+      this.likesComentarios.push(nuevo);
+      if (navigator.onLine) {
+        await this.firebaseService.addLikeComentario(nuevo);
+      }
     }
     await this.localStorage.setItem('comentarioLikes', this.likesComentarios);
   }

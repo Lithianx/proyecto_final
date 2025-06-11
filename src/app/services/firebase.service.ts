@@ -6,6 +6,8 @@ import { Seguir } from 'src/app/models/seguir.model';
 import { TipoReporte } from 'src/app/models/tipo-reporte.model';
 import { Reporte } from 'src/app/models/reporte.model';
 import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
+import { Like } from 'src/app/models/like.model';
+import { Comentario } from 'src/app/models/comentario.model';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -35,30 +37,34 @@ export class FirebaseService {
 async getPublicaciones(): Promise<Publicacion[]> {
   const publicacionesRef = collection(this.firestore, 'Publicacion');
   const snapshot = await getDocs(publicacionesRef);
-  return snapshot.docs.map(doc => ({
-    ...doc.data(),
-    id_publicacion: doc.id // <-- Esto es clave
-  } as Publicacion));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      ...data,
+      id_publicacion: doc.id,
+      fecha_publicacion: data["fecha_publicacion"]?.toDate
+        ? data["fecha_publicacion"].toDate()
+        : new Date(data["fecha_publicacion"])
+    } as Publicacion;
+  });
 }
 
 async addPublicacion(publicacion: Publicacion): Promise<string> {
   const publicacionesRef = collection(this.firestore, 'Publicacion');
   const docRef = await addDoc(publicacionesRef, {
     ...publicacion,
-    fecha_publicacion: publicacion.fecha_publicacion instanceof Date
-      ? publicacion.fecha_publicacion.toISOString()
-      : publicacion.fecha_publicacion
+    // No conviertas a string, solo pasa el Date
+    fecha_publicacion: publicacion.fecha_publicacion
   });
-  return docRef.id; // Devuelve el ID generado por Firestore
+  return docRef.id;
 }
 
 async updatePublicacion(publicacion: Publicacion): Promise<void> {
   const docRef = doc(this.firestore, 'Publicacion', publicacion.id_publicacion);
   await updateDoc(docRef, {
     ...publicacion,
-    fecha_publicacion: publicacion.fecha_publicacion instanceof Date
-      ? publicacion.fecha_publicacion.toISOString()
-      : publicacion.fecha_publicacion
+    // No conviertas a string, solo pasa el Date
+    fecha_publicacion: publicacion.fecha_publicacion
   });
 }
 
@@ -161,6 +167,102 @@ async updateGuardado(guardado: GuardaPublicacion): Promise<void> {
   }
 }
 
+/// LIKES PUBLICACIONES Y COMENTARIOS ///
 
+
+// Obtiene todos los likes de publicaciones
+async getLikesPublicaciones(): Promise<Like[]> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => doc.data() as Like);
+}
+
+// Agrega un like a una publicación
+async addLikePublicacion(like: Like): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  await addDoc(ref, { ...like });
+}
+
+// Obtiene todos los likes de comentarios
+async getLikesComentarios(): Promise<Like[]> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => doc.data() as Like);
+}
+
+// Agrega un like a un comentario
+async addLikeComentario(like: Like): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  await addDoc(ref, { ...like });
+}
+
+// Actualiza un like de publicación existente
+async updateLikePublicacion(like: Like): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === like.id_usuario &&
+    doc.data()["id_publicacion"] === like.id_publicacion
+  );
+  if (docSnap) {
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    await updateDoc(docRef, { ...like });
+  }
+}
+
+// Actualiza un like de comentario existente
+async updateLikeComentario(like: Like): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === like.id_usuario &&
+    doc.data()["id_comentario"] === like.id_comentario
+  );
+  if (docSnap) {
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    await updateDoc(docRef, { ...like });
+  }
+}
+
+
+//COMENTARIOS///
+
+// Obtiene todos los comentarios
+async getComentarios(): Promise<Comentario[]> {
+  const ref = collection(this.firestore, 'Comentario');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => {
+  const data = doc.data();
+  return {
+    ...data,
+    id_comentario: doc.id,
+    fecha_comentario: data["fecha_comentario"]?.toDate
+      ? data["fecha_comentario"].toDate()
+      : new Date(data["fecha_comentario"])
+  } as Comentario;
+});
+}
+
+// Agrega un comentario
+async addComentario(comentario: Comentario): Promise<string> {
+  const comentariosRef = collection(this.firestore, 'Comentario');
+  const { id_comentario, ...comentarioSinId } = comentario;
+  const docRef = await addDoc(comentariosRef, comentarioSinId);
+  // Opcional: guardar el id_comentario dentro del documento
+  await updateDoc(docRef, { id_comentario: docRef.id });
+  return docRef.id;
+}
+
+// Actualiza un comentario existente
+async updateComentario(comentario: Comentario): Promise<void> {
+  const docRef = doc(this.firestore, 'Comentario', comentario.id_comentario);
+  await updateDoc(docRef, { ...comentario });
+}
+
+// Elimina un comentario
+async removeComentario(id_comentario: string): Promise<void> {
+  const docRef = doc(this.firestore, 'Comentario', id_comentario);
+  await deleteDoc(docRef);
+}
 
 }
