@@ -24,33 +24,44 @@ export class UsuarioService {
       throw error;
     }
   }
-  // Crear cuenta de usuario en Firebase y guardarlo en memoria/localStorage
 async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
   try {
+    // Verificar si el correo ya está registrado
+    const signInMethods = await this.afAuth.fetchSignInMethodsForEmail(correo);
+    if (signInMethods && signInMethods.length > 0) {
+      throw new Error('El correo ya está en uso');
+    }
+
     // Crear cuenta en Firebase Auth
     const cred = await this.afAuth.createUserWithEmailAndPassword(correo, contrasena);
-    
+
+    // Enviar correo de verificación
+    if (cred.user) {
+      await cred.user.sendEmailVerification(); // 📧
+    }
+
     // Crear objeto Usuario
     const nuevoUsuario: Usuario = {
-      id_usuario: Date.now(), // ID único 
+      id_usuario: Date.now(), // ID único
       nombre_usuario: nombre,
       correo_electronico: correo,
-      contrasena: contrasena, // ⚠️ Puedes enmascarar o encriptar en un entorno real
+      contrasena: contrasena, // ⚠️ No almacenar en texto plano en producción
       fecha_registro: new Date(),
       estado_cuenta: true,
       estado_online: false,
       avatar: null
     };
 
-    // Guardar usuario en memoria y local
+    // Guardar usuario en memoria y localStorage
     await this.agregarUsuario(nuevoUsuario);
 
     return nuevoUsuario;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al crear cuenta:', error);
     throw error;
   }
 }
+
 async restablecerContrasena(correo: string): Promise<void> {
   try {
     await this.afAuth.sendPasswordResetEmail(correo);
