@@ -1,32 +1,73 @@
 <app-encabezado></app-encabezado>
 
 <ion-content>
-<ion-accordion-group>
-  <ion-accordion *ngFor="let reporte of reportes">
-    <ion-item slot="header">
-      <ion-label>
-        <strong>{{ reporte.fecha_reporte | date:'short' }}</strong>
-        <br>
-        <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte) }}</span>
-      </ion-label>
-    </ion-item>
-    <div class="ion-padding" slot="content">
-      <ng-container *ngIf="getPublicacion(reporte) as publicacion">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Publicación reportada</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p>{{ publicacion.contenido }}</p>
-            <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%;">
-          </ion-card-content>
-        </ion-card>
+
+  <!-- REFRESHER -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content pullingIcon="game-controller" refreshingIcon="game-controller">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="header-row">
+    <ion-button fill="buttonclear" class="back-button" [routerLink]="['/home']">
+      <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+    </ion-button>
+    <h1 class="app-title">Reportes</h1>
+  </div>
+
+  <div class="profile-form-box">
+    <div class="content-box" style="padding: 16px;">
+      <ng-container *ngIf="datos$ | async as datos">
+        <ion-accordion-group expand="inset">
+          <ion-accordion *ngFor="let reporte of datos.reportes">
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <strong>{{ getFechaReporte(reporte.fecha_reporte) | date:'short' }}</strong>
+                <br>
+                <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte, datos.tiposReporte) }}</span>
+              </ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ng-container *ngIf="getPublicacion(reporte, datos.publicaciones) as publicacion">
+                <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Publicación reportada</ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <p class="texto-publicacion">{{ publicacion.contenido }}</p>
+                    <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="img-publicacion"
+                      (click)="verImagen(publicacion)">
+                  </ion-card-content>
+                </ion-card>
+              </ng-container>
+              <ion-row>
+                <ion-col size="6">
+                  <ion-button expand="block" class="texto-btn" color="danger"
+                    (click)="aceptarReporte(reporte, datos.publicaciones)">Aceptar reporte</ion-button>
+                </ion-col>
+                <ion-col size="6">
+                  <ion-button expand="block" class="texto-btn"
+                    (click)="rechazarReporte(reporte)">Rechazar reporte</ion-button>
+                </ion-col>
+              </ion-row>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
       </ng-container>
-      <ion-button color="danger" (click)="aceptarReporte(reporte)">Aceptar reporte</ion-button>
-      <ion-button color="medium" (click)="rechazarReporte(reporte)">Rechazar reporte</ion-button>
     </div>
-  </ion-accordion>
-</ion-accordion-group>
+  </div>
+
+  <!-- Modal para ver imagen en grande -->
+  <ion-modal *ngIf="imagenSeleccionada" [isOpen]="!!imagenSeleccionada" (didDismiss)="cerrarVisor()">
+    <ng-template>
+      <div class="modal-imagen">
+        <img [src]="imagenSeleccionada" class="img-modal">
+        <ion-button fill="clear" class="btn-modal" (click)="cerrarVisor()">
+          <ion-icon name="close-circle-outline" class="icono-grande"></ion-icon>
+        </ion-button>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 
 <app-navbar></app-navbar>

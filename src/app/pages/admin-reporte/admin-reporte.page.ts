@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { Reporte } from 'src/app/models/reporte.model';
 import { ReporteService } from 'src/app/services/reporte.service';
-import { PublicacionService } from 'src/app/services/publicacion.service'; 
+import { PublicacionService } from 'src/app/services/publicacion.service';
 import { TipoReporte } from 'src/app/models/tipo-reporte.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { Observable, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-reporte',
@@ -14,65 +16,81 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 })
 export class AdminReportePage implements OnInit {
 
-  publicaciones: Publicacion[] = [];
-  reportes: Reporte[] = [];
-  tiposReporte: TipoReporte[] = [];
+  datos$: Observable<{ reportes: Reporte[], publicaciones: Publicacion[], tiposReporte: TipoReporte[] }>;
+  imagenSeleccionada: string | null = null;
 
   constructor(
     private reporteService: ReporteService,
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService
-  ) { }
-
-  async ngOnInit() {
-    this.reportes = await this.reporteService.obtenerReportesAdmin();
-    this.reportes = this.reportes.map(r => ({
-      ...r,
-      fecha_reporte: r.fecha_reporte instanceof Date
-        ? r.fecha_reporte
-        : (r.fecha_reporte && typeof (r.fecha_reporte as any).toDate === 'function'
-          ? (r.fecha_reporte as any).toDate()
-          : new Date(r.fecha_reporte)
-        )
-    }))
-      .sort((a, b) => a.fecha_reporte.getTime() - b.fecha_reporte.getTime());
-
-    this.publicaciones = await this.publicacionService.getPublicaciones();
-    this.tiposReporte = await this.reporteService.getTiposReporte();
+  ) {
+    this.datos$ = combineLatest([
+      this.reporteService.reportes$,
+      this.publicacionService.publicaciones$,
+      this.reporteService.tiposReporte$
+    ]).pipe(
+      map(([reportes, publicaciones, tiposReporte]) => ({
+        reportes: reportes.slice().sort((a, b) => {
+          const fechaA = this.getFechaReporte(a.fecha_reporte).getTime();
+          const fechaB = this.getFechaReporte(b.fecha_reporte).getTime();
+          return fechaA - fechaB; // Ascendente: más antiguos primero
+        }),
+        publicaciones,
+        tiposReporte
+      }))
+    );
   }
 
-  getDescripcionTipoReporte(id_tipo_reporte: string): string {
-    return this.tiposReporte.find(t => t.id_tipo_reporte === id_tipo_reporte)?.descripcion_tipo_reporte || id_tipo_reporte;
+  ngOnInit() {
+    // Todo es reactivo, no necesitas cargar nada aquí
   }
 
-  // Busca la publicación asociada a un reporte
-  getPublicacion(reporte: Reporte): Publicacion | undefined {
-    return this.publicaciones.find(pub => pub.id_publicacion === reporte.id_publicacion);
+  getDescripcionTipoReporte(id_tipo_reporte: string, tipos: TipoReporte[]): string {
+    return tipos.find(t => t.id_tipo_reporte === id_tipo_reporte)?.descripcion_tipo_reporte || id_tipo_reporte;
   }
 
+  getPublicacion(reporte: Reporte, publicaciones: Publicacion[]): Publicacion | undefined {
+    return publicaciones.find(pub => pub.id_publicacion === reporte.id_publicacion);
+  }
 
-  async aceptarReporte(reporte: Reporte) {
+  async aceptarReporte(reporte: Reporte, publicaciones: Publicacion[]) {
     // Elimina la publicación asociada
-    console.log('Reporte aceptado:', reporte);
     await this.publicacionService.removePublicacion(reporte.id_publicacion);
 
     // Busca el usuario creador de la publicación
-    const publicacion = this.getPublicacion(reporte);
+    const publicacion = this.getPublicacion(reporte, publicaciones);
     if (publicacion) {
       await this.usuarioService.desactivarCuentaUsuario(publicacion.id_usuario);
     }
 
-    // Elimina el reporte
+    // Elimina todos los reportes asociados a la publicación
+    await this.reporteService.eliminarReportesPorPublicacion(reporte.id_publicacion);
+  }
+
+  async rechazarReporte(reporte: Reporte) {
     await this.reporteService.eliminarReporte(reporte.id_reporte);
-    // Actualiza las listas locales
-    this.publicaciones = this.publicaciones.filter(p => p.id_publicacion !== reporte.id_publicacion);
-    this.reportes = this.reportes.filter(r => r.id_reporte !== reporte.id_reporte);
+    // No necesitas actualizar arrays locales, los observables lo hacen solo
   }
 
 
-  async rechazarReporte(reporte: Reporte) {
-    console.log('Reporte rechazado:', reporte);
-    await this.reporteService.eliminarReporte(reporte.id_reporte);
-    this.reportes = this.reportes.filter(r => r.id_reporte !== reporte.id_reporte);
+  getFechaReporte(fecha: any): Date {
+    if (!fecha) return new Date();
+    if (fecha instanceof Date) return fecha;
+    if (fecha.toDate) return fecha.toDate();
+    return new Date(fecha);
+  }
+
+  async doRefresh(event: any) {
+    setTimeout(() => {
+      event.target.complete();
+    }, 500);
+  }
+
+  verImagen(publicacion: Publicacion) {
+    this.imagenSeleccionada = publicacion.imagen ?? null;
+  }
+
+  cerrarVisor() {
+    this.imagenSeleccionada = null;
   }
 }
