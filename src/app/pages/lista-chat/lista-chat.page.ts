@@ -130,6 +130,15 @@ export class ListaChatPage implements OnInit {
     }
   }
 
+esPublicacion(mensaje: Mensaje): boolean {
+  try {
+    const obj = JSON.parse(mensaje.contenido);
+    return obj && obj.id_publicacion && obj.contenido;
+  } catch {
+    return false;
+  }
+}
+
   volver() {
     this.navCtrl.back();
   }

@@ -20,7 +20,7 @@ import { LikeService } from 'src/app/services/like.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComentarioService } from 'src/app/services/comentario.service';
-
+import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
 
 
@@ -86,7 +86,8 @@ export class ComentarioPage implements OnInit {
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
     private UtilsService: UtilsService,
-    private comentarioService: ComentarioService
+    private comentarioService: ComentarioService,
+    private comunicacionService: ComunicacionService,
   ) { }
 
   toggleDescripcion(id: string) {
@@ -250,10 +251,18 @@ export class ComentarioPage implements OnInit {
     this.isModalOpen = false;
   }
 
-  sendPostToUser(usuario: Usuario) {
+  async sendPostToUser(usuario: Usuario) {
     if (this.selectedPost) {
-      const publicacion = this.selectedPost;
-      // Aquí puedes implementar la lógica de envío real
+      // Debes obtener o crear la conversación privada entre los dos usuarios
+      const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+        this.usuarioActual.id_usuario,
+        usuario.id_usuario
+      );
+      await this.comunicacionService.enviarPublicacion(
+        this.selectedPost,
+        id_conversacion,
+        this.usuarioActual.id_usuario
+      );
     }
     this.closeModal();
   }

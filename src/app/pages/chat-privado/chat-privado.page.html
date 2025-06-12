@@ -21,10 +21,29 @@
   <div class="spacer-header"></div>
 
 
-  <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes" 
-      [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
-      <div class="bubble">
+<div class="chat-container">
+  <div *ngFor="let mensaje of mensajes" 
+    [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
+    <div class="bubble">
+
+      <!-- PUBLICACIÓN COMPARTIDA -->
+      <ng-container *ngIf="esPublicacion(mensaje); else otrosTipos">
+        <ion-card>
+          <ion-card-content>
+            <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
+              <p>{{ publicacion.contenido }}</p>
+              <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </ion-card-content>
+        </ion-card>
+        <div class="hora-visto">
+          <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+          <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
+        </div>
+      </ng-container>
+
+      <!-- OTROS TIPOS DE MENSAJE -->
+      <ng-template #otrosTipos>
         <!-- Gif -->
         <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
           <img [src]="mensaje.contenido" class="gif-chat" (load)="onImageLoad()"/>
@@ -49,17 +68,16 @@
                 && !(mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/'))">
           {{ mensaje.contenido }}
         </p>
-
-        <!-- Hora y visto -->
         <div class="hora-visto">
           <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
           <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
         </div>
+      </ng-template>
 
-      </div>
     </div>
-    <div #endOfMessages></div>
   </div>
+  <div #endOfMessages></div>
+</div>
 
 </ion-content>
 

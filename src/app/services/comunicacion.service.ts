@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { Mensaje } from '../models/mensaje.model';
 import { Usuario } from '../models/usuario.model';
 import { Conversacion } from '../models/conversacion.model';
+import { Publicacion } from '../models/publicacion.model';
 import { LocalStorageService } from './local-storage-social.service';
 import { FirebaseService } from './firebase.service';
 
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, query, where, getDocs, addDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -113,4 +114,53 @@ async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _i
     };
     await this.enviarMensaje(respuesta);
   }
+
+
+
+async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): Promise<string> {
+  const conversacionesRef = collection(this.firestore, 'Conversacion');
+  // Busca conversación donde los usuarios sean emisor/receptor en cualquier orden
+  const q = query(
+    conversacionesRef,
+    where('id_usuario_emisor', 'in', [idUsuario1, idUsuario2]),
+    where('id_usuario_receptor', 'in', [idUsuario1, idUsuario2])
+  );
+  const snapshot = await getDocs(q);
+
+  // Filtra en memoria para asegurar que los dos usuarios son los únicos participantes
+  const conversacionExistente = snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() as any }))
+    .find(conv =>
+      (conv.id_usuario_emisor === idUsuario1 && conv.id_usuario_receptor === idUsuario2) ||
+      (conv.id_usuario_emisor === idUsuario2 && conv.id_usuario_receptor === idUsuario1)
+    );
+
+  if (conversacionExistente) {
+    return conversacionExistente.id;
+  } else {
+    // No existe, crea una nueva
+    const nuevaConversacion = {
+      id_usuario_emisor: idUsuario1,
+      id_usuario_receptor: idUsuario2,
+      fecha_envio: new Date()
+    };
+    const docRef = await addDoc(conversacionesRef, nuevaConversacion);
+    return docRef.id;
+  }
+}
+
+
+
+async enviarPublicacion(publicacion: Publicacion, id_conversacion: string, id_usuario_emisor: string) {
+  const mensaje: Mensaje = {
+    id_mensaje: '', // Se generará en Firestore
+    id_conversacion: id_conversacion,
+    id_usuario_emisor: id_usuario_emisor,
+    contenido: JSON.stringify(publicacion), // Puedes guardar el objeto como string o solo el id
+    fecha_envio: new Date(),
+    estado_visto: false
+  };
+  await this.enviarMensaje(mensaje);
+}
+
 }

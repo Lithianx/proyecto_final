@@ -18,6 +18,7 @@ import { GuardaPublicacionService } from 'src/app/services/guardarpublicacion.se
 import { LikeService } from 'src/app/services/like.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { ComunicacionService } from 'src/app/services/comunicacion.service';
 
 @Component({
   selector: 'app-home',
@@ -49,7 +50,7 @@ export class HomePage implements OnInit {
   publicacionesGuardadas: GuardaPublicacion[] = [];
 
   isModalOpen: boolean = false;
-  selectedPublicacion: Publicacion | undefined;
+  selectedPost: Publicacion | undefined;
 
   modalCompartirAbierto: boolean = false;
   publicacionCompartir: Publicacion | null = null;
@@ -71,7 +72,8 @@ export class HomePage implements OnInit {
     private guardaPublicacionService: GuardaPublicacionService,
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
-    private UtilsService: UtilsService
+    private UtilsService: UtilsService,
+    private comunicacionService: ComunicacionService,
   ) { }
 
   toggleDescripcion(id: string) {
@@ -209,22 +211,25 @@ sigueAlAutor(publicacion: Publicacion): boolean {
   // Modal de compartir
   enviar(publicacion: Publicacion) {
     this.isModalOpen = true;
-    this.selectedPublicacion = publicacion;
+    this.selectedPost = publicacion;
   }
 
   closeModal() {
     this.isModalOpen = false;
   }
 
-  sendPostToUser(usuario: Usuario) {
-    if (this.selectedPublicacion) {
-      const publicacion = this.selectedPublicacion;
-      console.log(`Enviando publicación con id ${publicacion.id_publicacion} a ${usuario.nombre_usuario}`);
-      console.log(`Contenido: ${publicacion.contenido}`);
-      console.log(`Imagen: ${publicacion.imagen}`);
-      console.log(`Fecha: ${publicacion.fecha_publicacion}`);
-    } else {
-      console.log('No hay una publicación seleccionada');
+  async sendPostToUser(usuario: Usuario) {
+    if (this.selectedPost) {
+      // Debes obtener o crear la conversación privada entre los dos usuarios
+      const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+        this.usuarioActual.id_usuario,
+        usuario.id_usuario
+      );
+      await this.comunicacionService.enviarPublicacion(
+        this.selectedPost,
+        id_conversacion,
+        this.usuarioActual.id_usuario
+      );
     }
     this.closeModal();
   }

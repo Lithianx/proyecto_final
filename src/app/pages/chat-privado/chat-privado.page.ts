@@ -135,31 +135,31 @@ export class ChatPrivadoPage implements OnInit {
     }
   }
 
-async cargarMasMensajes() {
-  if (this.cargandoMas) return;
-  this.cargandoMas = true;
+  async cargarMasMensajes() {
+    if (this.cargandoMas) return;
+    this.cargandoMas = true;
 
-  const chatContainer = document.querySelector('.chat-container') as HTMLElement;
-  const prevScrollHeight = chatContainer?.scrollHeight || 0;
+    const chatContainer = document.querySelector('.chat-container') as HTMLElement;
+    const prevScrollHeight = chatContainer?.scrollHeight || 0;
 
-  this.mensajesMostrados = Math.min(
-    this.mensajesMostrados + this.incrementoMensajes,
-    this.todosLosMensajes.length
-  );
+    this.mensajesMostrados = Math.min(
+      this.mensajesMostrados + this.incrementoMensajes,
+      this.todosLosMensajes.length
+    );
 
-  this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
+    this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
 
-  // Esperar al render de Angular (usando requestAnimationFrame + timeout mínimo)
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      const newScrollHeight = chatContainer.scrollHeight;
-      const scrollDiff = newScrollHeight - prevScrollHeight;
+    // Esperar al render de Angular (usando requestAnimationFrame + timeout mínimo)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const newScrollHeight = chatContainer.scrollHeight;
+        const scrollDiff = newScrollHeight - prevScrollHeight;
 
-      this.ionContent.scrollByPoint(0, scrollDiff, 0); // sin animación
-      this.cargandoMas = false;
-    }, 50);
-  });
-}
+        this.ionContent.scrollByPoint(0, scrollDiff, 0); // sin animación
+        this.cargandoMas = false;
+      }, 50);
+    });
+  }
 
   async marcarMensajesRecibidosComoVistos() {
     const mensajesNoVistos = this.mensajes.filter(
@@ -200,18 +200,18 @@ async cargarMasMensajes() {
     }, 100);
   }
 
-  
-onImageLoad() {
-  if (!this.cargandoMas) {
-    this.scrollToBottom();
-  }
-}
 
-onMediaLoad() {
-  if (!this.cargandoMas) {
-    this.scrollToBottom();
+  onImageLoad() {
+    if (!this.cargandoMas) {
+      this.scrollToBottom();
+    }
   }
-}
+
+  onMediaLoad() {
+    if (!this.cargandoMas) {
+      this.scrollToBottom();
+    }
+  }
 
   imagenBase64: string | null = null;
   mostrarModalArchivos = false;
@@ -396,6 +396,24 @@ onMediaLoad() {
     this.nuevoMensaje = '';
     this.scrollToBottom();
   }
+
+  esPublicacion(mensaje: Mensaje): boolean {
+    try {
+      const obj = JSON.parse(mensaje.contenido);
+      return obj && obj.id_publicacion && obj.contenido;
+    } catch {
+      return false;
+    }
+  }
+
+  obtenerPublicacion(mensaje: Mensaje): any | null {
+    try {
+      return JSON.parse(mensaje.contenido);
+    } catch {
+      return null;
+    }
+  }
+
 
   ionViewWillLeave() {
     Keyboard.hide();
