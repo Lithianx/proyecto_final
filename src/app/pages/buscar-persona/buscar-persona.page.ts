@@ -22,7 +22,16 @@ export class BuscarPersonaPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.todosusuarios = await this.usuarioService.getUsuarios();
+    this.usuarioService.usuarios$.subscribe(usuarios => {
+      this.todosusuarios = usuarios;
+      // Si hay una búsqueda activa, actualiza el filtro
+      if (this.busquedaActiva && this.usuarios.length > 0) {
+        const query = this.usuarios[0]?.nombre_usuario?.toLowerCase() || '';
+        this.usuarios = this.todosusuarios.filter(usuario =>
+          usuario.nombre_usuario.toLowerCase().includes(query)
+        );
+      }
+    });
   }
 
 

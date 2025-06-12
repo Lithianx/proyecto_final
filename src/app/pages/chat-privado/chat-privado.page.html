@@ -1,7 +1,6 @@
 <app-encabezado></app-encabezado>
 
-<ion-content>
-
+<ion-content scrollEvents="true" (ionScroll)="onScroll($event)">
   <!-- header local con nombre chat y boton de colcer atras -->
   <ion-toolbar class="chat-header">
     <ion-buttons slot="start">
@@ -21,13 +20,14 @@
   <!-- Espacio debajo del header -->
   <div class="spacer-header"></div>
 
+
   <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes"
+    <div *ngFor="let mensaje of mensajes" 
       [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
       <div class="bubble">
         <!-- Gif -->
         <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
-          <img [src]="mensaje.contenido" class="gif-chat" />
+          <img [src]="mensaje.contenido" class="gif-chat" (load)="onImageLoad()"/>
         </ng-container>
 
         <!-- Imagen -->

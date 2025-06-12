@@ -229,6 +229,52 @@ async updateLikeComentario(like: Like): Promise<void> {
   }
 }
 
+// Dar o quitar like a un comentario
+async toggleLikeComentario(idUsuario: string, idComentario: string): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === idUsuario &&
+    doc.data()["id_comentario"] === idComentario
+  );
+  if (docSnap) {
+    // Si ya existe, alterna el estado
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    const estadoActual = docSnap.data()["estado_like"];
+    await updateDoc(docRef, { estado_like: !estadoActual });
+  } else {
+    // Si no existe, crea el like
+    await addDoc(ref, {
+      id_usuario: idUsuario,
+      id_comentario: idComentario,
+      estado_like: true
+    });
+  }
+}
+
+// Dar o quitar like a una publicación
+async toggleLikePublicacion(idUsuario: string, idPublicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === idUsuario &&
+    doc.data()["id_publicacion"] === idPublicacion
+  );
+  if (docSnap) {
+    // Si ya existe, alterna el estado
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    const estadoActual = docSnap.data()["estado_like"];
+    await updateDoc(docRef, { estado_like: !estadoActual });
+  } else {
+    // Si no existe, crea el like
+    await addDoc(ref, {
+      id_usuario: idUsuario,
+      id_publicacion: idPublicacion,
+      estado_like: true
+    });
+  }
+}
+
 
 //COMENTARIOS///
 

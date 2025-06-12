@@ -2,15 +2,21 @@ import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Comentario } from 'src/app/models/comentario.model';
 import { FirebaseService } from './firebase.service';
+import { Observable } from 'rxjs';
+import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class ComentarioService {
   private comentariosEnMemoria: Comentario[] = [];
-
+  comentarios$: Observable<Comentario[]>;
   constructor(
     private localStorage: LocalStorageService,
-    private firebaseService: FirebaseService
-  ) {}
+    private firebaseService: FirebaseService,
+    private firestore: Firestore
+  ) {
+    const comentariosRef = collection(this.firestore, 'Comentario');
+    this.comentarios$ = collectionData(comentariosRef, { idField: 'id_comentario' }) as Observable<Comentario[]>;
+  }
 
   // Cargar comentarios en memoria (llamar en ngOnInit)
   async cargarComentarios(): Promise<void> {

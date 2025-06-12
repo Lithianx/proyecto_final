@@ -21,6 +21,7 @@ export class ListaChatPage implements OnInit {
   usuarioActual!: Usuario;
   usuarios: Usuario[] = [];
   conversaciones: Conversacion[] = [];
+  conversacionesOriginal: Conversacion[] = [];
   mensajes: Mensaje[] = [];
 
   constructor(
@@ -44,26 +45,23 @@ export class ListaChatPage implements OnInit {
     // Carga usuarios reales desde el servicio
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
-    
 
-    // Suscribirse a los mensajes y conversaciones del service
+
+    // Suscribirse a los mensajes y conversaciones en tiempo real
     this.comunicacionService.mensajes$.subscribe(mensajes => {
       this.mensajes = mensajes;
     });
     this.comunicacionService.conversaciones$.subscribe(convs => {
       this.conversaciones = convs;
+      this.conversacionesOriginal = convs; // Guarda la copia original
     });
-
-    // Si necesitas cargar datos iniciales, puedes hacerlo desde el service
-    await this.comunicacionService.cargarMensajes();
-    await this.comunicacionService.cargarConversaciones();
   }
 
   doRefresh(event: any) {
     setTimeout(async () => {
-      // Aquí podrías recargar datos desde Firebase si lo necesitas
-      await this.comunicacionService.cargarMensajes();
-      await this.comunicacionService.cargarConversaciones();
+      // Solo recarga usuarios (no observable)
+      await this.usuarioService.cargarUsuarios();
+      this.usuarios = this.usuarioService.getUsuarios();
       event.target.complete();
     }, 1500);
   }
@@ -71,19 +69,24 @@ export class ListaChatPage implements OnInit {
   // Filtrado de la lista de conversaciones por el nombre del participante
   handleInput(event: any): void {
     const query = event.target.value?.toLowerCase() || '';
-    this.conversaciones = this.comunicacionService.filtrarConversacionesPorNombre(
-      this.comunicacionService.getConversaciones(),
-      this.usuarios,
-      query
-    );
+    if (!query) {
+      // Si el input está vacío, restaura la lista original
+      this.conversaciones = this.conversacionesOriginal;
+    } else {
+      this.conversaciones = this.comunicacionService.filtrarConversacionesPorNombre(
+        this.conversacionesOriginal,
+        this.usuarios,
+        query
+      );
+    }
   }
 
   getUsuario(id_usuario: string) { // string
     return this.usuarios.find(u => u.id_usuario === id_usuario);
   }
 
-  getUltimoMensaje(id_conversacion: string): Mensaje | undefined { // string
-    return this.comunicacionService.getUltimoMensajeDeConversacion(id_conversacion);
+  getUltimoMensaje(id_conversacion: string): Mensaje | undefined {
+    return this.comunicacionService.getUltimoMensajeDeConversacion(this.mensajes, id_conversacion);
   }
 
   async marcarUltimoMensajeComoVisto(id_conversacion: string): Promise<void> { // string
@@ -93,39 +96,39 @@ export class ListaChatPage implements OnInit {
       !ultimoMensaje.estado_visto &&
       ultimoMensaje.id_usuario_emisor !== this.usuarioActual.id_usuario
     ) {
-      await this.comunicacionService.marcarMensajesComoVistos(id_conversacion, this.usuarioActual.id_usuario);
+      await this.comunicacionService.marcarMensajesComoVistos(this.mensajes, id_conversacion, this.usuarioActual.id_usuario);
     }
   }
 
 
 
-getUsuariosConConversacion(): Usuario[] {
-  if (!this.usuarioActual) return [];
-  const miId = String(this.usuarioActual.id_usuario);
+  getUsuariosConConversacion(): Usuario[] {
+    if (!this.usuarioActual) return [];
+    const miId = String(this.usuarioActual.id_usuario);
 
-  // Obtén los IDs únicos de los otros usuarios en las conversaciones
-  const otrosIds = new Set<string>();
-  this.conversaciones.forEach(conv => {
+    // Obtén los IDs únicos de los otros usuarios en las conversaciones
+    const otrosIds = new Set<string>();
+    this.conversaciones.forEach(conv => {
+      if (String(conv.id_usuario_emisor) === miId) {
+        otrosIds.add(String(conv.id_usuario_receptor));
+      } else if (String(conv.id_usuario_receptor) === miId) {
+        otrosIds.add(String(conv.id_usuario_emisor));
+      }
+    });
+
+    // Devuelve solo los usuarios que están en esos IDs
+    return this.usuarios.filter(u => otrosIds.has(String(u.id_usuario)));
+  }
+
+  getUsuarioReceptor(conv: Conversacion): Usuario | undefined {
+    if (!this.usuarioActual) return undefined;
+    const miId = String(this.usuarioActual.id_usuario);
     if (String(conv.id_usuario_emisor) === miId) {
-      otrosIds.add(String(conv.id_usuario_receptor));
-    } else if (String(conv.id_usuario_receptor) === miId) {
-      otrosIds.add(String(conv.id_usuario_emisor));
+      return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_receptor));
+    } else {
+      return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_emisor));
     }
-  });
-
-  // Devuelve solo los usuarios que están en esos IDs
-  return this.usuarios.filter(u => otrosIds.has(String(u.id_usuario)));
-}
-
-getUsuarioReceptor(conv: Conversacion): Usuario | undefined {
-  if (!this.usuarioActual) return undefined;
-  const miId = String(this.usuarioActual.id_usuario);
-  if (String(conv.id_usuario_emisor) === miId) {
-    return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_receptor));
-  } else {
-    return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_emisor));
   }
-}
 
   volver() {
     this.navCtrl.back();

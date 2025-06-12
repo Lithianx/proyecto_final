@@ -104,18 +104,6 @@ export class ComentarioPage implements OnInit {
 
     this.usuarioPost = this.usuarioService.getUsuarioPorId(this.publicacion.id_usuario);
 
-    // Cargar comentarios en memoria
-    await this.comentarioService.cargarComentarios();
-    this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
-
-    // Likes de comentarios
-    await this.likeService.cargarLikesComentarios();
-    this.likesComentarios = this.likeService.getLikesComentarios();
-
-    // Likes de publicaciones
-    await this.likeService.cargarLikes();
-    this.publicacionesLikes = this.likeService.getLikes();
-
     // Guardados
     await this.guardaPublicacionService.cargarGuardados();
     this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
@@ -136,6 +124,7 @@ export class ComentarioPage implements OnInit {
   }
 
   async ngOnInit() {
+
     // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
@@ -145,7 +134,32 @@ export class ComentarioPage implements OnInit {
       // Si no hay usuario, podrías redirigir al login
       return;
     }
+
     await this.cargarDatos();
+
+    this.likeService.likesPublicaciones$.subscribe(likes => {
+      this.publicacionesLikes = likes;
+    });
+
+    // Suscripción en tiempo real a likes de comentarios
+    this.likeService.likesComentarios$.subscribe(likes => {
+      this.likesComentarios = likes;
+    });
+    // Suscripción en tiempo real a comentarios de la publicación actual
+    this.comentarioService.comentarios$.subscribe(comentarios => {
+      this.comentarios = comentarios
+        .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
+        .map(c => ({
+          ...c,
+          fecha_comentario: c.fecha_comentario instanceof Date
+            ? c.fecha_comentario
+            : (c.fecha_comentario && typeof (c.fecha_comentario as any).toDate === 'function'
+              ? (c.fecha_comentario as any).toDate()
+              : new Date(c.fecha_comentario))
+        }))
+        .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+    });
+
   }
 
   // Método para refrescar la lista de comentarios
@@ -187,9 +201,8 @@ export class ComentarioPage implements OnInit {
         fecha_comentario: new Date(),
       };
       await this.comentarioService.agregarComentario(nuevo);
-      this.comentarios = this.comentarioService.getComentariosPorPublicacion(this.publicacion.id_publicacion);
-      this.comentarios = this.comentarioService.getComentariosOrdenadosPorFecha(this.publicacion.id_publicacion);
       this.nuevoComentario = '';
+      // No actualices this.comentarios manualmente
     }
   }
 
@@ -205,26 +218,27 @@ export class ComentarioPage implements OnInit {
 
   // Dar o quitar like a un comentario
   async comentariolikes(comentario: Comentario) {
+    console.log('Like pulsado', comentario);
     await this.likeService.toggleLikeComentario(this.usuarioActual.id_usuario, comentario.id_comentario);
-    // Recarga los likes en memoria para actualizar la vista
-    await this.likeService.cargarLikesComentarios();
-    this.likesComentarios = this.likeService.getLikesComentarios();
   }
 
   // Dar o quitar like a una publicación
   async likePublicacion(publicacion: Publicacion) {
     await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-    // Vuelve a cargar los likes en memoria para actualizar la vista
-    this.publicacionesLikes = await this.likeService.getLikes();
+    // No recargues likes manualmente, el observable lo hace
   }
 
-  // Métodos síncronos para la vista
-  getLikesPublicacion(publicacion: Publicacion): number {
-    return this.likeService.getLikesCount(publicacion.id_publicacion);
+  // Likes de publicaciones en tiempo real
+  getLikesPublicacion(id_publicacion: string): number {
+    return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
   }
 
-  usuarioLikeoPublicacion(publicacion: Publicacion): boolean {
-    return this.likeService.usuarioLikeo(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+  usuarioLikeoPublicacion(id_publicacion: string): boolean {
+    return !!this.publicacionesLikes.find(
+      l => l.id_publicacion === id_publicacion &&
+        l.id_usuario === this.usuarioActual.id_usuario &&
+        l.estado_like
+    );
   }
 
   enviar(publicacion: Publicacion) {
@@ -277,51 +291,51 @@ export class ComentarioPage implements OnInit {
     const esPropietario = publicacion.id_usuario === idUsuarioActual;
     const botones = esPropietario
       ? [
-          {
-            text: 'Editar',
-            icon: 'pencil-outline',
-            handler: () => {
-              this.modificar(publicacion);
-            },
+        {
+          text: 'Editar',
+          icon: 'pencil-outline',
+          handler: () => {
+            this.modificar(publicacion);
           },
-          {
-            text: 'Eliminar publicacion',
-            icon: 'alert-circle-outline',
-            role: 'destructive',
-            handler: () => {
-              this.confirmarEliminacion(publicacion);
-            },
+        },
+        {
+          text: 'Eliminar publicacion',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            this.confirmarEliminacion(publicacion);
           },
-          {
-            text: 'Cancelar',
-            icon: 'close-outline',
-            role: 'cancel',
-            handler: () => {}
-          }
-        ]
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+          handler: () => { }
+        }
+      ]
       : [
-          {
-            text: 'Compartir',
-            icon: 'share-outline',
-            handler: () => {
-              this.compartir(publicacion);
-            },
+        {
+          text: 'Compartir',
+          icon: 'share-outline',
+          handler: () => {
+            this.compartir(publicacion);
           },
-          {
-            text: 'Reportar',
-            icon: 'alert-circle-outline',
-            role: 'destructive',
-            handler: () => {
-              this.irAReportar(publicacion);
-            },
+        },
+        {
+          text: 'Reportar',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            this.irAReportar(publicacion);
           },
-          {
-            text: 'Cancelar',
-            icon: 'close-outline',
-            role: 'cancel',
-            handler: () => {}
-          }
-        ];
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+          handler: () => { }
+        }
+      ];
 
     this.actionSheetCtrl.create({
       header: 'Opciones',
@@ -357,7 +371,7 @@ export class ComentarioPage implements OnInit {
           text: 'Cancelar',
           role: 'cancel',
           cssClass: 'alert-button-cancel',
-          handler: () => {}
+          handler: () => { }
         },
         {
           text: 'Eliminar',

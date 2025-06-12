@@ -93,12 +93,25 @@ export class HomePage implements OnInit {
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
 
-    // Publicaciones
-    this.publicaciones = await this.publicacionService.getPublicaciones();
+  // Publicaciones en tiempo real
+this.publicacionService.publicaciones$.subscribe(publicaciones => {
+  this.publicaciones = publicaciones.map(pub => ({
+    ...pub,
+    fecha_publicacion: pub.fecha_publicacion instanceof Date
+      ? pub.fecha_publicacion
+      : (pub.fecha_publicacion && typeof (pub.fecha_publicacion as any).toDate === 'function'
+          ? (pub.fecha_publicacion as any).toDate()
+          : new Date(pub.fecha_publicacion))
+  }));
+  // Ordenar publicaciones por fecha descendente
+  this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
+  this.publicacionesAmigos = [...this.publicaciones];
+});
 
-    // Likes de publicaciones
-    await this.likeService.cargarLikes();
-    this.publicacionesLikes = this.likeService.getLikes();
+  // Likes de publicaciones en tiempo real
+  this.likeService.likesPublicaciones$.subscribe(likes => {
+    this.publicacionesLikes = likes;
+  });
 
     // Guardados
     await this.guardaPublicacionService.cargarGuardados();
@@ -115,29 +128,40 @@ export class HomePage implements OnInit {
   }
 
   // Método para refrescar la lista de publicaciones
-  doRefresh(event: any) {
-    console.log('Recargando publicaciones...');
-    setTimeout(async () => {
-      this.publicaciones = await this.publicacionService.getPublicaciones();
-      event.target.complete();
-      console.log('Recarga completada');
-    }, 1500);
-  }
+async doRefresh(event: any) {
+  // Refresca solo datos NO observables
+  await this.usuarioService.cargarUsuarios();
+  this.usuarios = this.usuarioService.getUsuarios();
+
+  await this.guardaPublicacionService.cargarGuardados();
+  this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+
+  await this.seguirService.cargarSeguimientos();
+  this.seguimientos = this.seguirService.getSeguimientos();
+  this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+
+  setTimeout(() => {
+    event.target.complete();
+  }, 1000);
+}
 
   // Dar o quitar like
-  async likePublicacion(publicacion: Publicacion) {
-    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-    this.publicacionesLikes = await this.likeService.getLikes();
-  }
+async likePublicacion(publicacion: Publicacion) {
+  await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+}
 
   // Métodos síncronos para la vista
-  getLikesPublicacion(publicacion: Publicacion): number {
-    return this.likeService.getLikesCount(publicacion.id_publicacion);
-  }
+getLikesPublicacion(id_publicacion: string): number {
+  return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
+}
 
-  usuarioLikeoPublicacion(publicacion: Publicacion): boolean {
-    return this.likeService.usuarioLikeo(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-  }
+usuarioLikeoPublicacion(id_publicacion: string): boolean {
+  return !!this.publicacionesLikes.find(
+    l => l.id_publicacion === id_publicacion &&
+         l.id_usuario === this.usuarioActual.id_usuario &&
+         l.estado_like
+  );
+}
 
   // Guardar publicación
   async guardar(publicacion: Publicacion) {

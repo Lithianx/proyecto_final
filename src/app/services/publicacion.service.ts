@@ -3,12 +3,19 @@ import { LocalStorageService } from './local-storage-social.service';
 import { Publicacion } from '../models/publicacion.model';
 import { Seguir } from '../models/seguir.model';
 import { FirebaseService } from './firebase.service';
+import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PublicacionService {
+    publicaciones$: Observable<Publicacion[]>;
   constructor(private localStorage: LocalStorageService,
-    private firebaseService: FirebaseService
-  ) { }
+    private firebaseService: FirebaseService,
+    private firestore: Firestore
+  ) {
+    const publicacionesRef = collection(this.firestore, 'Publicacion');
+    this.publicaciones$ = collectionData(publicacionesRef, { idField: 'id_publicacion' }) as Observable<Publicacion[]>;
+  }
 
   // Obtiene publicaciones según conexión (y con precarga si no hay)
   async getPublicaciones(): Promise<Publicacion[]> {

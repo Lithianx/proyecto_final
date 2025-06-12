@@ -12,6 +12,8 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
+import { Subscription } from 'rxjs';
+import { IonContent } from '@ionic/angular';
 
 @Component({
   selector: 'app-chat-privado',
@@ -20,12 +22,14 @@ import { environment } from 'src/environments/environment';
   standalone: false,
 })
 export class ChatPrivadoPage implements OnInit {
+  private mensajesSub?: Subscription;
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild('audioInput', { static: false }) audioInput!: ElementRef;
   @ViewChild('videoInput') videoInput!: ElementRef<HTMLInputElement>;
   @ViewChild('endOfMessages') endOfMessages!: ElementRef;
   @ViewChild('mensajeInput') mensajeInput!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild(IonContent, { static: false }) ionContent!: IonContent;
 
   chatId: string | null = '';
   chatInfo!: Usuario;
@@ -40,6 +44,12 @@ export class ChatPrivadoPage implements OnInit {
   usuarioActual!: Usuario;
   usuarios: Usuario[] = [];
   mensajes: Mensaje[] = [];
+
+  // Scroll infinito
+  todosLosMensajes: Mensaje[] = [];
+  mensajesMostrados = 10;
+  incrementoMensajes = 5;
+  cargandoMas = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -67,11 +77,35 @@ export class ChatPrivadoPage implements OnInit {
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
 
     // Suscríbete a los mensajes del service
-    this.comunicacionService.mensajes$.subscribe(mensajes => {
-      this.mensajes = mensajes
+    this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
+      this.todosLosMensajes = mensajes
         .filter(m => m.id_conversacion === this.idConversacionActual)
-        .sort((a, b) => new Date(a.fecha_envio).getTime() - new Date(b.fecha_envio).getTime());
+        .map(m => ({
+          ...m,
+          fecha_envio: m.fecha_envio instanceof Date
+            ? m.fecha_envio
+            : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
+              ? (m.fecha_envio as any).toDate()
+              : new Date(m.fecha_envio))
+        }))
+        .sort((a, b) => a.fecha_envio.getTime() - b.fecha_envio.getTime());
+
+      // Ajusta mensajesMostrados si hay menos mensajes
+      if (this.todosLosMensajes.length < this.mensajesMostrados) {
+        this.mensajesMostrados = this.todosLosMensajes.length;
+      }
+
+      this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
+
+      if (!this.cargandoMas) {
+        this.scrollToBottom(true);
+      } else {
+        this.cargandoMas = false;
+      }
+
+      await this.marcarMensajesRecibidosComoVistos();
     });
+
     // Busca la conversación actual y el usuario receptor real
     this.comunicacionService.conversaciones$.subscribe(conversaciones => {
       const conversacion = conversaciones.find(
@@ -87,13 +121,59 @@ export class ChatPrivadoPage implements OnInit {
       // Buscar el usuario contraparte en la lista real
       this.chatInfo = this.usuarios.find(u => String(u.id_usuario) === String(idUsuarioContraparte))!;
     });
-
-    // Marcar como vistos los mensajes recibidos
-    await this.marcarMensajesRecibidosComoVistos();
   }
 
+  ngOnDestroy() {
+    this.mensajesSub?.unsubscribe();
+  }
+
+  // Scroll infinito: cargar más mensajes al hacer scroll arriba
+  onScroll(event: any) {
+    const scrollTop = event.detail.scrollTop;
+    if (scrollTop === 0 && this.mensajes.length < this.todosLosMensajes.length) {
+      this.cargarMasMensajes();
+    }
+  }
+
+async cargarMasMensajes() {
+  if (this.cargandoMas) return;
+  this.cargandoMas = true;
+
+  const chatContainer = document.querySelector('.chat-container') as HTMLElement;
+  const prevScrollHeight = chatContainer?.scrollHeight || 0;
+
+  this.mensajesMostrados = Math.min(
+    this.mensajesMostrados + this.incrementoMensajes,
+    this.todosLosMensajes.length
+  );
+
+  this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
+
+  // Esperar al render de Angular (usando requestAnimationFrame + timeout mínimo)
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const newScrollHeight = chatContainer.scrollHeight;
+      const scrollDiff = newScrollHeight - prevScrollHeight;
+
+      this.ionContent.scrollByPoint(0, scrollDiff, 0); // sin animación
+      this.cargandoMas = false;
+    }, 50);
+  });
+}
+
   async marcarMensajesRecibidosComoVistos() {
-    await this.comunicacionService.marcarMensajesComoVistos(this.idConversacionActual, this.usuarioActual.id_usuario);
+    const mensajesNoVistos = this.mensajes.filter(
+      m =>
+        m.id_usuario_emisor !== this.usuarioActual.id_usuario &&
+        !m.estado_visto
+    );
+    if (mensajesNoVistos.length > 0) {
+      await this.comunicacionService.marcarMensajesComoVistos(
+        mensajesNoVistos,
+        this.idConversacionActual,
+        this.usuarioActual.id_usuario
+      );
+    }
   }
 
   autoResize(event: Event): void {
@@ -109,22 +189,29 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    //   this.scrollToBottom();
   }
 
-  scrollToBottom() {
-    try {
-      this.endOfMessages.nativeElement.scrollIntoView({ behavior: 'smooth' });
-    } catch (err) { }
+  scrollToBottom(instant: boolean = false) {
+    setTimeout(() => {
+      try {
+        this.endOfMessages?.nativeElement.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
+      } catch (e) { }
+    }, 100);
   }
 
-  onImageLoad() {
+  
+onImageLoad() {
+  if (!this.cargandoMas) {
     this.scrollToBottom();
   }
+}
 
-  onMediaLoad() {
+onMediaLoad() {
+  if (!this.cargandoMas) {
     this.scrollToBottom();
   }
+}
 
   imagenBase64: string | null = null;
   mostrarModalArchivos = false;

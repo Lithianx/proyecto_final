@@ -15,21 +15,27 @@ import {
   Firestore,
   doc,
   setDoc,
-  updateDoc
+  updateDoc,
+  collectionData,
+  collection
 } from '@angular/fire/firestore';
-
+import { Observable } from 'rxjs';
 import { FirebaseService } from './firebase.service';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private usuariosEnMemoria: Usuario[] = [];
+  usuarios$: Observable<Usuario[]>;
 
   constructor(
     private localStorage: LocalStorageService,
     private firestore: Firestore,
     private auth: Auth,
     private firebaseService: FirebaseService
-  ) { }
+  ) {
+  const usuariosRef = collection(this.firestore, 'Usuario');
+  this.usuarios$ = collectionData(usuariosRef, { idField: 'id_usuario' }) as Observable<Usuario[]>;
+}
 
 
   // Login híbrido: online (Firebase Auth) y offline (localStorage)
@@ -146,10 +152,10 @@ export class UsuarioService {
   }
 
 
-async setUsuarioOnline(id_usuario: string, online: boolean) {
-  const userRef = doc(this.firestore, 'Usuario', id_usuario);
-  await updateDoc(userRef, { estado_online: online });
-}
+  async setUsuarioOnline(id_usuario: string, online: boolean) {
+    const userRef = doc(this.firestore, 'Usuario', id_usuario);
+    await updateDoc(userRef, { estado_online: online });
+  }
 
 
   async cargarUsuarios(): Promise<void> {
@@ -213,13 +219,13 @@ async setUsuarioOnline(id_usuario: string, online: boolean) {
   }
 
   // Cerrar sesión y limpiar usuario actual local
-async logout(): Promise<void> {
-  const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
-  if (usuarioActual && navigator.onLine) {
-    await this.setUsuarioOnline(usuarioActual.id_usuario, false);
-    await this.auth.signOut();
+  async logout(): Promise<void> {
+    const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
+    if (usuarioActual && navigator.onLine) {
+      await this.setUsuarioOnline(usuarioActual.id_usuario, false);
+      await this.auth.signOut();
+    }
+    await this.localStorage.removeItem('usuarioActual');
   }
-  await this.localStorage.removeItem('usuarioActual');
-}
 
 }

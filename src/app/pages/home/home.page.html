@@ -52,14 +52,14 @@
       <ng-template #soloDescripcion>
         <ion-card-content>
           <p class="descripcion-sola">{{ publicacion.contenido }}</p>
-          <p><strong>{{ getLikesPublicacion(publicacion) }} likes</strong></p>
+          <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
         </ion-card-content>
       </ng-template>
 
       <!-- Siempre muestra acciones y descripción si hay imagen -->
       <ng-container *ngIf="publicacion.imagen">
         <ion-card-content>
-          <p><strong>{{ getLikesPublicacion(publicacion) }} likes</strong></p>
+          <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
           <p>
             {{ descripcionExpandida[publicacion.id_publicacion]
             ? publicacion.contenido
@@ -78,7 +78,7 @@
         <!-- Botón de me gusta -->
         <ion-col size="auto">
           <ion-button fill="clear" size="small" (click)="likePublicacion(publicacion)">
-            <ion-icon [name]="usuarioLikeoPublicacion(publicacion)? 'sparkles' : 'sparkles-outline'"
+            <ion-icon [name]="usuarioLikeoPublicacion(publicacion.id_publicacion)? 'sparkles' : 'sparkles-outline'"
               size="large"></ion-icon>
           </ion-button>
         </ion-col>
