@@ -8,6 +8,7 @@ import { Mensaje } from 'src/app/models/mensaje.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
@@ -36,55 +37,42 @@ export class ChatPrivadoPage implements OnInit {
   audioChunks: any[] = [];
   audioBlob: Blob | null = null;
 
-  // id_usuario ahora es string
-  usuarioActual: Usuario = {
-    id_usuario: '999',
-    nombre_usuario: 'Usuario no Demo',
-    correo_electronico: 'demo@correo.com',
-    fecha_registro: new Date(),
-    contrasena: '',
-    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-    estado_cuenta: true,
-    estado_online: true
-  };
-
-  usuariosMock: Usuario[] = [
-    {
-      id_usuario: '900',
-      nombre_usuario: 'Bot',
-      correo_electronico: 'bot@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    }
-  ];
-
+  usuarioActual!: Usuario;
+  usuarios: Usuario[] = [];
   mensajes: Mensaje[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
-    private comunicacionService: ComunicacionService
+    private comunicacionService: ComunicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
+    // Cargar usuario actual
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      // Si no hay usuario, podrías redirigir al login
+      return;
     }
+
+    // Cargar usuarios reales
+    await this.usuarioService.cargarUsuarios();
+    this.usuarios = this.usuarioService.getUsuarios();
 
     // idConversacionActual ahora es string
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
 
     // Suscríbete a los mensajes del service
     this.comunicacionService.mensajes$.subscribe(mensajes => {
-      this.mensajes = mensajes.filter(m => m.id_conversacion === this.idConversacionActual);
+      this.mensajes = mensajes
+        .filter(m => m.id_conversacion === this.idConversacionActual)
+        .sort((a, b) => new Date(a.fecha_envio).getTime() - new Date(b.fecha_envio).getTime());
     });
-
-    // Busca la conversación actual
+    // Busca la conversación actual y el usuario receptor real
     this.comunicacionService.conversaciones$.subscribe(conversaciones => {
       const conversacion = conversaciones.find(
         c => String(c.id_conversacion) === this.idConversacionActual
@@ -96,9 +84,10 @@ export class ChatPrivadoPage implements OnInit {
         idUsuarioContraparte = conversacion?.id_usuario_receptor;
       }
 
-      // Buscar el usuario contraparte en el mock (o en tu base real)
-      this.chatInfo = this.usuariosMock.find(u => u.id_usuario === idUsuarioContraparte)!;
+      // Buscar el usuario contraparte en la lista real
+      this.chatInfo = this.usuarios.find(u => String(u.id_usuario) === String(idUsuarioContraparte))!;
     });
+
     // Marcar como vistos los mensajes recibidos
     await this.marcarMensajesRecibidosComoVistos();
   }
@@ -178,15 +167,6 @@ export class ChatPrivadoPage implements OnInit {
     await this.comunicacionService.enviarMensaje(mensaje);
     this.mostrarBuscadorGiphy = false;
     this.scrollToBottom();
-
-    // Simula respuesta
-    setTimeout(async () => {
-      await this.comunicacionService.enviarRespuestaAutomatica(
-        this.idConversacionActual,
-        this.chatInfo.id_usuario
-      );
-      await this.marcarMensajesRecibidosComoVistos();
-    }, 1000);
   }
 
   abrirSelectorArchivos() {
@@ -211,14 +191,6 @@ export class ChatPrivadoPage implements OnInit {
           this.usuarioActual.id_usuario,
         );
         this.scrollToBottom();
-
-        setTimeout(async () => {
-          await this.comunicacionService.enviarRespuestaAutomatica(
-            this.idConversacionActual,
-            this.chatInfo.id_usuario
-          );
-          await this.marcarMensajesRecibidosComoVistos();
-        }, 1000);
       }
     } catch (error: any) {
       if (error.message?.toLowerCase().includes('permission')) {
@@ -279,14 +251,6 @@ export class ChatPrivadoPage implements OnInit {
         }
         this.scrollToBottom();
 
-        setTimeout(async () => {
-          await this.comunicacionService.enviarRespuestaAutomatica(
-            this.idConversacionActual,
-            this.chatInfo.id_usuario
-          );
-          await this.marcarMensajesRecibidosComoVistos();
-        }, 1000);
-
         event.target.value = '';
       };
 
@@ -320,14 +284,6 @@ export class ChatPrivadoPage implements OnInit {
       this.usuarioActual.id_usuario,
     );
     this.scrollToBottom();
-
-    setTimeout(async () => {
-      await this.comunicacionService.enviarRespuestaAutomatica(
-        this.idConversacionActual,
-        this.chatInfo.id_usuario
-      );
-      await this.marcarMensajesRecibidosComoVistos();
-    }, 1000);
   }
 
   async enviarMensaje() {
@@ -335,7 +291,7 @@ export class ChatPrivadoPage implements OnInit {
 
     const horaActual = new Date();
     const mensaje: Mensaje = {
-      id_mensaje: new Date().getTime().toString(),
+      id_mensaje: '', // Temporal
       id_conversacion: this.idConversacionActual,
       id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: this.nuevoMensaje,
@@ -352,14 +308,6 @@ export class ChatPrivadoPage implements OnInit {
 
     this.nuevoMensaje = '';
     this.scrollToBottom();
-
-    setTimeout(async () => {
-      await this.comunicacionService.enviarRespuestaAutomatica(
-        this.idConversacionActual,
-        this.chatInfo.id_usuario
-      );
-      await this.marcarMensajesRecibidosComoVistos();
-    }, 1000);
   }
 
   ionViewWillLeave() {

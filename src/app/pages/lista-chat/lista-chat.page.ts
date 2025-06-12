@@ -7,6 +7,7 @@ import { Conversacion } from 'src/app/models/conversacion.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 
 @Component({
@@ -17,31 +18,8 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';
 })
 export class ListaChatPage implements OnInit {
 
-  // Simulación del usuario actual (en producción esto viene de un servicio de autenticación)
-  usuarioActual: Usuario = {
-    id_usuario: '999', // string
-    nombre_usuario: 'Usuario no Demo',
-    correo_electronico: 'demo@correo.com',
-    fecha_registro: new Date(),
-    contrasena: '',
-    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-    estado_cuenta: true,
-    estado_online: true
-  };
-
-  usuarios: Usuario[] = [
-    {
-      id_usuario: '900', // string
-      nombre_usuario: 'Bot',
-      correo_electronico: 'bot@correo.com',
-      fecha_registro: new Date(),
-      contrasena: '',
-      avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-      estado_cuenta: true,
-      estado_online: true
-    }
-  ];
-
+  usuarioActual!: Usuario;
+  usuarios: Usuario[] = [];
   conversaciones: Conversacion[] = [];
   mensajes: Mensaje[] = [];
 
@@ -49,14 +27,24 @@ export class ListaChatPage implements OnInit {
     private navCtrl: NavController,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
+    // Cargar usuario actual
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      // Si no hay usuario, podrías redirigir al login
+      return;
     }
+
+    // Carga usuarios reales desde el servicio
+    await this.usuarioService.cargarUsuarios();
+    this.usuarios = this.usuarioService.getUsuarios();
+    
 
     // Suscribirse a los mensajes y conversaciones del service
     this.comunicacionService.mensajes$.subscribe(mensajes => {
@@ -73,25 +61,9 @@ export class ListaChatPage implements OnInit {
 
   doRefresh(event: any) {
     setTimeout(async () => {
-      // Simula agregar una nueva conversación y mensaje
-      const nuevaConversacion: Conversacion = {
-        id_conversacion: (this.conversaciones.length + 1).toString(), // string
-        fecha_envio: new Date(),
-        id_usuario_emisor: '900', // string
-        id_usuario_receptor: this.usuarioActual.id_usuario,
-      };
-      await this.comunicacionService.agregarConversacion(nuevaConversacion);
-
-      const nuevoMensaje: Mensaje = {
-        id_mensaje: (this.mensajes.length + 1).toString(), // string
-        id_conversacion: nuevaConversacion.id_conversacion,
-        id_usuario_emisor: '900', // string
-        contenido: '¡Hola! ganaste un Iphone 15 😁👇 haz click aqui',
-        fecha_envio: new Date(),
-        estado_visto: false
-      };
-      await this.comunicacionService.enviarMensaje(nuevoMensaje);
-
+      // Aquí podrías recargar datos desde Firebase si lo necesitas
+      await this.comunicacionService.cargarMensajes();
+      await this.comunicacionService.cargarConversaciones();
       event.target.complete();
     }, 1500);
   }
@@ -124,6 +96,36 @@ export class ListaChatPage implements OnInit {
       await this.comunicacionService.marcarMensajesComoVistos(id_conversacion, this.usuarioActual.id_usuario);
     }
   }
+
+
+
+getUsuariosConConversacion(): Usuario[] {
+  if (!this.usuarioActual) return [];
+  const miId = String(this.usuarioActual.id_usuario);
+
+  // Obtén los IDs únicos de los otros usuarios en las conversaciones
+  const otrosIds = new Set<string>();
+  this.conversaciones.forEach(conv => {
+    if (String(conv.id_usuario_emisor) === miId) {
+      otrosIds.add(String(conv.id_usuario_receptor));
+    } else if (String(conv.id_usuario_receptor) === miId) {
+      otrosIds.add(String(conv.id_usuario_emisor));
+    }
+  });
+
+  // Devuelve solo los usuarios que están en esos IDs
+  return this.usuarios.filter(u => otrosIds.has(String(u.id_usuario)));
+}
+
+getUsuarioReceptor(conv: Conversacion): Usuario | undefined {
+  if (!this.usuarioActual) return undefined;
+  const miId = String(this.usuarioActual.id_usuario);
+  if (String(conv.id_usuario_emisor) === miId) {
+    return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_receptor));
+  } else {
+    return this.usuarios.find(u => String(u.id_usuario) === String(conv.id_usuario_emisor));
+  }
+}
 
   volver() {
     this.navCtrl.back();

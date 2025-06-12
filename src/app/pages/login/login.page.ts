@@ -35,39 +35,33 @@ async iniciarSesion() {
     this.errorAutenticacion = false;
     console.log('Iniciando proceso de inicio de sesión...');
 
-    const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
-    console.log('Credenciales obtenidas:', credenciales);
+    // Usa el método híbrido (online/offline)
+    const usuario = await this.usuarioService.login(this.correo, this.contrasena);
 
-    if (credenciales.user && !credenciales.user.emailVerified) {
-      console.warn('Correo no verificado');
-      await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
-      await credenciales.user.sendEmailVerification(); // Opcional: reenviar verificación
+    if (!usuario) {
+      this.errorAutenticacion = true;
+      await this.mostrarToast('Contraseña o correo incorrecto');
       return;
     }
 
-    const uid = credenciales.user.uid;
-    console.log('UID del usuario:', uid);
-
-    const datosUsuario = await this.usuarioService.obtenerUsuarioDesdeFirestore(uid);
-    console.log('Datos obtenidos de Firestore:', datosUsuario);
-
-    if (datosUsuario) {
-      await this.usuarioService.setUsuarios([datosUsuario]); // guarda en memoria y localStorage
-      console.log('Usuario cargado en memoria y localStorage');
-    } else {
-      console.warn('No se encontraron datos del usuario en Firestore');
-      await this.mostrarToast('No se encontraron datos del usuario');
-      return;
+    // Si estás online, verifica el correo (opcional)
+    if (navigator.onLine && usuario && usuario.estado_cuenta === true) {
+      const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
+      if (credenciales.user && !credenciales.user.emailVerified) {
+        await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
+        await credenciales.user.sendEmailVerification();
+        return;
+      }
     }
 
-    console.log('Navegando a la página de inicio...');
+    console.log('Usuario autenticado:', usuario.correo_electronico);
     this.router.navigate(['/home']);
     
   } catch (error: any) {
     this.errorAutenticacion = true;
-    console.error('Error en inicio de sesión:', error);
-    this.mostrarToast('Contraseña o correo incorrecto');
+    await this.mostrarToast('Contraseña o correo incorrecto');
   }
+  this.errorAutenticacion = false;
 }
 
 

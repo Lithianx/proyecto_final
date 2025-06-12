@@ -8,8 +8,10 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   fetchSignInMethodsForEmail,
-  sendPasswordResetEmail,
-  updatePassword
+   sendPasswordResetEmail,
+  User,
+  onAuthStateChanged,
+   updatePassword
 } from '@angular/fire/auth';
 
 import {
@@ -31,7 +33,36 @@ export class UsuarioService {
     private firestore: Firestore,
     private auth: Auth,
     private firebaseService: FirebaseService
-  ) {}
+  ) { }
+
+
+  // Login híbrido: online (Firebase Auth) y offline (localStorage)
+  async login(correo: string, contrasena: string): Promise<Usuario | null> {
+    if (navigator.onLine) {
+      try {
+        const credenciales = await signInWithEmailAndPassword(this.auth, correo, contrasena);
+        await this.cargarUsuarios();
+        const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
+        if (usuario) {
+          await this.localStorage.setItem('usuarioActual', usuario);
+        }
+        return usuario ?? null;
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      // Login offline: busca en localStorage
+      await this.cargarUsuarios();
+      const usuario = this.getUsuarios().find(
+        u => u.correo_electronico === correo && u.contrasena === contrasena
+      );
+      if (usuario) {
+        await this.localStorage.setItem('usuarioActual', usuario);
+      }
+      return usuario ?? null;
+    }
+  }
+
 
   async loginConFirebase(correo: string, contrasena: string): Promise<any> {
     try {
@@ -41,10 +72,12 @@ export class UsuarioService {
     }
   }
 
+
+
   async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
     try {
       const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
-      if (signInMethods.length > 0) {
+      if (signInMethods && signInMethods.length > 0) {
         throw new Error('El correo ya está en uso');
       }
 
@@ -58,17 +91,18 @@ export class UsuarioService {
         }
 
         const nuevoUsuario: Usuario = {
-          id_usuario: cred.user.uid,
+          id_usuario: cred.user.uid, // Aquí usamos el UID de Firebase
           nombre_usuario: nombre,
           correo_electronico: correo,
           contrasena: contrasena,
           fecha_registro: new Date(),
           estado_cuenta: true,
           estado_online: false,
-          avatar:'https://ionicframework.com/docs/img/demos/avatar.svg'
+          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
         };
 
         await this.agregarUsuario(nuevoUsuario);
+
         return nuevoUsuario;
       } else {
         throw new Error('No se obtuvo usuario de Firebase');
@@ -87,19 +121,45 @@ export class UsuarioService {
     }
   }
 
+
+
+  // Obtener usuario actual conectado (online/offline)
+  async getUsuarioActualConectado(): Promise<Usuario | null> {
+    if (navigator.onLine) {
+      return new Promise((resolve) => {
+        onAuthStateChanged(this.auth, async (user: User | null) => {
+          if (user && user.email) {
+            await this.cargarUsuarios();
+            const usuarios = this.getUsuarios();
+            const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
+            if (usuarioEncontrado) {
+              await this.localStorage.setItem('usuarioActual', usuarioEncontrado);
+            }
+            resolve(usuarioEncontrado ?? null);
+          } else {
+            resolve(null);
+          }
+        });
+      });
+    } else {
+      // Offline: busca el último usuario logueado en localStorage
+      const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
+      return usuarioActual ?? null;
+    }
+  }
+
+
+
+
+
   async cargarUsuarios(): Promise<void> {
     try {
       const usuarios = await this.firebaseService.getUsuarios();
-      this.usuariosEnMemoria = usuarios.map(u => ({
-        ...u,
-        id_usuario: String(u.id_usuario),
-        fecha_registro: this.obtenerFechaValida(u.fecha_registro)
-      }));
-      await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+      this.usuariosEnMemoria = usuarios;
+      await this.localStorage.setItem('usuarios', usuarios);
     } catch (error) {
-      console.warn('Error cargando usuarios de Firebase:', error);
+      console.error('Error al cargar usuarios desde Firebase:', error);
     }
-
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
@@ -108,39 +168,8 @@ export class UsuarioService {
         fecha_registro: this.obtenerFechaValida(u.fecha_registro)
       }));
     } else {
-      this.usuariosEnMemoria = [
-        {
-          id_usuario: 'techguru',
-          nombre_usuario: 'techguru',
-          correo_electronico: 'techguru@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        },
-        {
-          id_usuario: 'catlover',
-          nombre_usuario: 'catlover',
-          correo_electronico: 'catlover@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        },
-        {
-          id_usuario: 'pan_con_queso',
-          nombre_usuario: 'pan_con_queso',
-          correo_electronico: 'pan_con_queso@correo.com',
-          fecha_registro: new Date('2024-01-01T00:00:00.000Z'),
-          contrasena: '',
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-          estado_cuenta: true,
-          estado_online: true
-        }
-      ];
-      await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+      this.usuariosEnMemoria = [];
+      await this.localStorage.setItem('usuarios', []);
     }
   }
 
@@ -163,13 +192,14 @@ export class UsuarioService {
 
   async agregarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
-    usuario.fecha_registro = this.obtenerFechaValida(usuario.fecha_registro);
 
     this.usuariosEnMemoria.push(usuario);
     const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
     await setDoc(userRef, usuario);
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
+
+
 
   async actualizarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
@@ -187,6 +217,15 @@ export class UsuarioService {
       });
     }
   }
+
+  // Cerrar sesión y limpiar usuario actual local
+  async logout(): Promise<void> {
+    if (navigator.onLine) {
+      await this.auth.signOut();
+    }
+    await this.localStorage.removeItem('usuarioActual');
+  }
+
 
   async obtenerUsuarioDesdeFirestore(uid: string): Promise<Usuario | null> {
     try {

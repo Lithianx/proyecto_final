@@ -69,7 +69,7 @@ export class PerfilPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
     private usuarioService: UsuarioService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
@@ -129,6 +129,9 @@ export class PerfilPage implements OnInit {
       case 'eventos-creados':
         position = (315 / 3) * 2; // ~66.66%
         break;
+
+
+        const adjustedPosition = position - 1; // ajustar si es necesario
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
@@ -181,8 +184,9 @@ export class PerfilPage implements OnInit {
           icon: 'log-out-outline',
           role: 'destructive',
           cssClass: 'cerrar-sesion-btn',
-          handler: () => {
-            localStorage.removeItem('id_usuario');
+          handler: async () => {
+            console.log('Cerrar sesión');
+            await this.usuarioService.logout(); // <-- Cierra sesión en Firebase y limpia localStorage
             this.router.navigate(['/login']);
           }
         }
@@ -191,7 +195,6 @@ export class PerfilPage implements OnInit {
 
     await actionSheet.present();
   }
-
   comentario(publicacion: any) {
     this.router.navigate(['/comentario', publicacion.id]);
   }

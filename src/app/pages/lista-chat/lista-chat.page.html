@@ -25,24 +25,26 @@
       (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
       <div class="chat-avatar-icon">
         <ion-avatar slot="start">
-          <img
-            [src]="getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor : conv.id_usuario_emisor)?.avatar" />
+          <img [src]="getUsuarioReceptor(conv)?.avatar" />
         </ion-avatar>
         <ion-icon
-          [name]="getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor : conv.id_usuario_emisor)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
+          [name]="getUsuarioReceptor(conv)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
       <ion-label>
         <!-- Nombre de usuario y estado -->
         <div class="user-info" style="display: flex; align-items: center;">
           <h5 style="margin-right: 8px;">
-            {{ getUsuario(conv.id_usuario_emisor === usuarioActual?.id_usuario ? conv.id_usuario_receptor :
-            conv.id_usuario_emisor)?.nombre_usuario }}
+            {{ getUsuarioReceptor(conv)?.nombre_usuario || 'Usuario desconocido' }}
           </h5>
           <!-- Icono de carta si el último mensaje no está visto -->
-          <ion-icon
-            *ngIf="getUltimoMensaje(conv.id_conversacion) && !getUltimoMensaje(conv.id_conversacion)?.estado_visto"
-            name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
-          </ion-icon>
+<ion-icon
+  *ngIf="
+    getUltimoMensaje(conv.id_conversacion)
+    && !getUltimoMensaje(conv.id_conversacion)?.estado_visto
+    && getUltimoMensaje(conv.id_conversacion)?.id_usuario_emisor !== usuarioActual.id_usuario
+  "
+  name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
+</ion-icon>
         </div>
         <!-- Último mensaje -->
         <p class="message-text">

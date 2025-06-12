@@ -6,6 +6,7 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -39,21 +40,30 @@ export class EditarPublicacionPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
-    private publicacionService: PublicacionService
+    private publicacionService: PublicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
+    // Cargar usuario actual
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      // Si no hay usuario, podrías redirigir al login
+      return;
     }
 
     this.route.params.subscribe(async params => {
       this.postId = params['id'];
 
-      // Cargar todas las publicaciones desde el local storage
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      // Cargar publicaciones según conexión
+      if (navigator.onLine) {
+        this.publicaciones = await this.publicacionService.getPublicaciones();
+      } else {
+        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      }
 
       // Buscar la publicación por ID (id_publicacion ahora es string)
       const publicacionEncontrada = this.publicaciones.find(p => p.id_publicacion === this.postId);
@@ -118,9 +128,14 @@ export class EditarPublicacionPage implements OnInit {
       this.publicacion.contenido = this.contenido;
       this.publicacion.imagen = this.imagenBase64 || '';
 
-      await this.publicacionService.updatePublicacionPersonal(this.publicacion);
+      await this.publicacionService.updatePublicacion(this.publicacion);
 
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      // Si quieres mostrar todas las publicaciones (online/offline)
+      if (navigator.onLine) {
+        this.publicaciones = await this.publicacionService.getPublicaciones();
+      } else {
+        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      }
 
       console.log('Cambios guardados:', this.publicaciones);
       this.vistaPreviaVisible = true;

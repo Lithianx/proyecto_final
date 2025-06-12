@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -40,14 +41,19 @@ export class CrearPublicacionPage implements OnInit {
   constructor(
     private router: Router,
     private localStorage: LocalStorageService,
-    private publicacionService: PublicacionService
+    private publicacionService: PublicacionService,
+    private usuarioService: UsuarioService
   ) { }
 
   async ngOnInit() {
-    // Cargar usuario actual desde Ionic Storage
-    const usuarioGuardado = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioGuardado) {
-      this.usuarioActual = usuarioGuardado;
+    // Cargar usuario actual
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      // Si no hay usuario, podrías redirigir al login
+      return;
     }
 
     console.log(this.usuarioActual.avatar);
@@ -101,17 +107,26 @@ export class CrearPublicacionPage implements OnInit {
   async publicar() {
     if (!this.contenido.trim() && !this.imagenBase64) return;
 
-    const id_publicacion = (await this.publicacionService.getNextPersonalId()).toString();
     const nuevaPublicacion: Publicacion = {
-      id_publicacion,
+      id_publicacion: '', // Temporal
       id_usuario: this.usuarioActual.id_usuario,
       contenido: this.contenido || '',
       imagen: this.imagenBase64 || '',
       fecha_publicacion: new Date(),
     };
 
-    await this.publicacionService.addPublicacionPersonal(nuevaPublicacion);
-    this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+    // Guardar en Firebase y obtener el ID generado
+    const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
+    console.log('ID de publicación generado:', id_publicacion);
+    nuevaPublicacion.id_publicacion = id_publicacion;
+    console.log('Publicación con ID:', nuevaPublicacion);
+    // Cargar publicaciones según conexión
+    if (navigator.onLine) {
+      this.publicaciones = await this.publicacionService.getPublicaciones();
+      console.log('Publicaciones obtenidas desde Firebase:', this.publicaciones);
+    } else {
+      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+    }
 
     console.log('Publicación creada:', nuevaPublicacion);
 
@@ -124,6 +139,7 @@ export class CrearPublicacionPage implements OnInit {
 
   // Función para navegar a la pantalla de edición
   modificar(post: Publicacion) {
+    console.log('Modificar publicación:', post);
     this.router.navigate(['/editar-publicacion', post.id_publicacion]);
   }
 }

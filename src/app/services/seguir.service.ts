@@ -2,29 +2,27 @@ import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage-social.service';
 import { Seguir } from 'src/app/models/seguir.model';
 import { Usuario } from 'src/app/models/usuario.model';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({ providedIn: 'root' })
 export class SeguirService {
   private seguimientosEnMemoria: Seguir[] = [];
 
-  constructor(private localStorage: LocalStorageService) {}
+  constructor(private localStorage: LocalStorageService,
+    private firebaseService: FirebaseService
+  ) {}
 
-  // Cargar seguimientos en memoria (llamar en ngOnInit del componente)
+  // Cargar seguimientos en memoria desde Firebase o localStorage
   async cargarSeguimientos(): Promise<void> {
-    const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
-    if (seguimientos && seguimientos.length > 0) {
+    try {
+      const seguimientos = await this.firebaseService.getSeguimientos();
       this.seguimientosEnMemoria = seguimientos;
-    } else {
-      this.seguimientosEnMemoria = this.getSeguimientosPorDefecto();
-      await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
+      await this.localStorage.setItem('seguimientos', seguimientos);
+    } catch (error) {
+      // Si falla Firebase, usa localStorage
+      const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
+      this.seguimientosEnMemoria = seguimientos;
     }
-  }
-
-  private getSeguimientosPorDefecto(): Seguir[] {
-    return [
-      { id_usuario_seguidor: '0', id_usuario_seguido: '2', estado_seguimiento: true },
-      { id_usuario_seguidor: '0', id_usuario_seguido: '1', estado_seguimiento: false }
-    ];
   }
 
   // Obtener todos los seguimientos en memoria
@@ -33,21 +31,28 @@ export class SeguirService {
   }
 
   // Seguir o dejar de seguir a un usuario (ahora string)
-  async toggleSeguir(idSeguidor: string, idSeguido: string): Promise<void> {
-    const seguimiento = this.seguimientosEnMemoria.find(
-      s => s.id_usuario_seguidor === idSeguidor && s.id_usuario_seguido === idSeguido
-    );
-    if (seguimiento) {
-      seguimiento.estado_seguimiento = !seguimiento.estado_seguimiento;
-    } else {
-      this.seguimientosEnMemoria.push({
-        id_usuario_seguidor: idSeguidor,
-        id_usuario_seguido: idSeguido,
-        estado_seguimiento: true
-      });
+async toggleSeguir(idSeguidor: string, idSeguido: string): Promise<void> {
+  const seguimiento = this.seguimientosEnMemoria.find(
+    s => s.id_usuario_seguidor === idSeguidor && s.id_usuario_seguido === idSeguido
+  );
+  if (seguimiento) {
+    seguimiento.estado_seguimiento = !seguimiento.estado_seguimiento;
+    if (navigator.onLine) {
+      await this.firebaseService.updateSeguimiento(seguimiento);
     }
-    await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
+  } else {
+    const nuevo = {
+      id_usuario_seguidor: idSeguidor,
+      id_usuario_seguido: idSeguido,
+      estado_seguimiento: true
+    };
+    this.seguimientosEnMemoria.push(nuevo);
+    if (navigator.onLine) {
+      await this.firebaseService.addSeguimiento(nuevo);
+    }
   }
+  await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
+}
 
   // Saber si el usuario ya sigue a otro usuario (ahora string)
   sigue(idSeguidor: string, idSeguido: string): boolean {
