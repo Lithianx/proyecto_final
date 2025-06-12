@@ -6,7 +6,7 @@ import { Publicacion } from '../models/publicacion.model';
 import { LocalStorageService } from './local-storage-social.service';
 import { FirebaseService } from './firebase.service';
 
-import { Firestore, collection, collectionData, query, where, getDocs, addDoc } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -67,9 +67,14 @@ export class ComunicacionService {
   }
 
   // Enviar mensaje (agrega a Firestore)
-  async enviarMensaje(mensaje: Mensaje) {
-    await this.firebaseService.addMensaje({ ...mensaje, id_mensaje: '' });
-  }
+async enviarMensaje(mensaje: Mensaje) {
+  // Agrega el mensaje sin id_mensaje (Firestore genera el ID)
+  const mensajesRef = collection(this.firestore, 'Mensaje');
+  const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
+
+  // Actualiza el campo id_mensaje con el ID generado por Firestore
+  await updateDoc(docRef, { id_mensaje: docRef.id });
+}
 
   // Marcar mensajes como vistos (actualiza en Firestore)
 async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _idUsuarioActual: string) {
@@ -79,11 +84,16 @@ async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _i
   }
 }
 
-  // Agregar conversación (agrega a Firestore)
-  async agregarConversacion(conversacion: Conversacion) {
-    await this.firebaseService.addConversacion(conversacion);
-  }
 
+  // Agregar conversación (agrega a Firestore)
+async agregarConversacion(conversacion: Conversacion) {
+  // Agrega la conversación sin id_conversacion (Firestore genera el ID)
+  const conversacionesRef = collection(this.firestore, 'Conversacion');
+  const docRef = await addDoc(conversacionesRef, { ...conversacion, id_conversacion: '' });
+
+  // Actualiza el campo id_conversacion con el ID generado por Firestore
+  await updateDoc(docRef, { id_conversacion: docRef.id });
+}
   // Enviar mensaje multimedia
   async enviarMensajeMultimedia(
     tipo: 'imagen' | 'video' | 'audio',
@@ -145,6 +155,10 @@ async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): 
       fecha_envio: new Date()
     };
     const docRef = await addDoc(conversacionesRef, nuevaConversacion);
+
+        // Actualiza el campo id_conversacion con el ID generado por Firestore
+    await updateDoc(docRef, { id_conversacion: docRef.id });
+    
     return docRef.id;
   }
 }
