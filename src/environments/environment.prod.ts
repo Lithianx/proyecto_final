@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-
+  giphyApiKey: 'JY1WOhcF9c6Vj8FSsht1WmSXgOhp9fpn',
   firebaseConfig : {
   apiKey: "AIzaSyCZT-KIRYdhH0zHtL0_3ZYmPDW9kUgFNwI",
   authDomain: "app-eventos-7f5a8.firebaseapp.com",

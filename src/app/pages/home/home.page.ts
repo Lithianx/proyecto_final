@@ -80,7 +80,14 @@ export class HomePage implements OnInit {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
   }
 
+async verificarConexion() {
+  const online = await this.UtilsService.checkInternetConnection();
+  console.log('¿Estoy online?', online);
+}
+
   async ngOnInit() {
+
+    await this.verificarConexion();
     // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
