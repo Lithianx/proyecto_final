@@ -54,6 +54,9 @@ async iniciarSesion() {
     }
 
     console.log('Usuario autenticado:', usuario.correo_electronico);
+    // Marca el usuario como online
+await this.usuarioService.setUsuarioOnline(usuario.id_usuario, true);
+
     this.router.navigate(['/home']);
   } catch (error: any) {
     this.errorAutenticacion = true;

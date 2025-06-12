@@ -146,7 +146,10 @@ export class UsuarioService {
   }
 
 
-
+async setUsuarioOnline(id_usuario: string, online: boolean) {
+  const userRef = doc(this.firestore, 'Usuario', id_usuario);
+  await updateDoc(userRef, { estado_online: online });
+}
 
 
   async cargarUsuarios(): Promise<void> {
@@ -210,11 +213,13 @@ export class UsuarioService {
   }
 
   // Cerrar sesión y limpiar usuario actual local
-  async logout(): Promise<void> {
-    if (navigator.onLine) {
-      await this.auth.signOut();
-    }
-    await this.localStorage.removeItem('usuarioActual');
+async logout(): Promise<void> {
+  const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
+  if (usuarioActual && navigator.onLine) {
+    await this.setUsuarioOnline(usuarioActual.id_usuario, false);
+    await this.auth.signOut();
   }
+  await this.localStorage.removeItem('usuarioActual');
+}
 
 }
