@@ -78,6 +78,24 @@ async guardarReporte(reporte: Reporte): Promise<string | void> {
     }
   }
 
+
+async eliminarReporte(id_reporte: string): Promise<void> {
+  if (navigator.onLine) {
+    await this.firebaseService.deleteReporte(id_reporte);
+    // Opcional: elimina también del localStorage
+    const reportes = await this.localStorage.getList<Reporte>('reportes') || [];
+    const nuevosReportes = reportes.filter(r => r.id_reporte !== id_reporte);
+    await this.localStorage.setItem('reportes', nuevosReportes);
+  } else {
+    // Solo elimina del localStorage si está offline
+    const reportes = await this.localStorage.getList<Reporte>('reportes') || [];
+    const nuevosReportes = reportes.filter(r => r.id_reporte !== id_reporte);
+    await this.localStorage.setItem('reportes', nuevosReportes);
+  }
+}
+
+
+  
   // Sincroniza Reportes cuando haya internet
   async sincronizarReporte() {
     if (!navigator.onLine) return;

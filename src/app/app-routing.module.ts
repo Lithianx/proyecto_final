@@ -119,7 +119,11 @@ const routes: Routes = [
 {
   path: 'reportar-cuenta/:id',
   loadChildren: () => import('./pages/reportar-cuenta/reportar-cuenta.module').then(m => m.ReportarCuentaPageModule)
-}
+},  {
+    path: 'admin-reporte',
+    loadChildren: () => import('./pages/admin-reporte/admin-reporte.module').then( m => m.AdminReportePageModule)
+  }
+
 
 
 

@@ -9,7 +9,7 @@ export class LocalStorageService {
 
   constructor(private storage: Storage) {
     this.initStorage();
-   }
+  }
 
   private async initStorage() {
     await this.storage.create();
@@ -48,7 +48,11 @@ export class LocalStorageService {
     }
   }
 
-
+  async removeItemsByField<T>(type: string, field: keyof T, value: any): Promise<void> {
+    const list: T[] = (await this.storage.get(type)) || [];
+    const filtrados = list.filter(item => item[field] !== value);
+    await this.storage.set(type, filtrados);
+  }
 
   // Filtrar por propiedad, por ejemplo: id_post en comentarios
   async getListByProp<T>(type: string, prop: keyof T, value: any): Promise<T[]> {

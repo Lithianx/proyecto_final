@@ -33,9 +33,9 @@ export class UsuarioService {
     private auth: Auth,
     private firebaseService: FirebaseService
   ) {
-  const usuariosRef = collection(this.firestore, 'Usuario');
-  this.usuarios$ = collectionData(usuariosRef, { idField: 'id_usuario' }) as Observable<Usuario[]>;
-}
+    const usuariosRef = collection(this.firestore, 'Usuario');
+    this.usuarios$ = collectionData(usuariosRef, { idField: 'id_usuario' }) as Observable<Usuario[]>;
+  }
 
 
   // Login híbrido: online (Firebase Auth) y offline (localStorage)
@@ -226,6 +226,12 @@ export class UsuarioService {
       await this.auth.signOut();
     }
     await this.localStorage.removeItem('usuarioActual');
+  }
+
+
+  async desactivarCuentaUsuario(id_usuario: string): Promise<void> {
+    const docRef = doc(this.firestore, 'Usuario', id_usuario);
+    await updateDoc(docRef, { estado_cuenta: false });
   }
 
 }

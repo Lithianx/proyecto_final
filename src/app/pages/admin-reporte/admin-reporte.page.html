@@ -1,0 +1,32 @@
+<app-encabezado></app-encabezado>
+
+<ion-content>
+<ion-accordion-group>
+  <ion-accordion *ngFor="let reporte of reportes">
+    <ion-item slot="header">
+      <ion-label>
+        <strong>{{ reporte.fecha_reporte | date:'short' }}</strong>
+        <br>
+        <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte) }}</span>
+      </ion-label>
+    </ion-item>
+    <div class="ion-padding" slot="content">
+      <ng-container *ngIf="getPublicacion(reporte) as publicacion">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Publicación reportada</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p>{{ publicacion.contenido }}</p>
+            <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%;">
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+      <ion-button color="danger" (click)="aceptarReporte(reporte)">Aceptar reporte</ion-button>
+      <ion-button color="medium" (click)="rechazarReporte(reporte)">Rechazar reporte</ion-button>
+    </div>
+  </ion-accordion>
+</ion-accordion-group>
+</ion-content>
+
+<app-navbar></app-navbar>

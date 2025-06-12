@@ -10,6 +10,7 @@ import { Like } from 'src/app/models/like.model';
 import { Comentario } from 'src/app/models/comentario.model';
 import { Mensaje } from 'src/app/models/mensaje.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
+import { query, where } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -140,7 +141,11 @@ async addReporte(reporte: Reporte): Promise<string> {
   return docRef.id;
 }
 
-
+  // Elimina un reporte por su ID
+  async deleteReporte(id_reporte: string): Promise<void> {
+    const docRef = doc(this.firestore, 'Reporte', id_reporte);
+    await deleteDoc(docRef);
+  }
 
 
 //GUARDADO DE PUBLICACIONES////
@@ -171,6 +176,18 @@ async updateGuardado(guardado: GuardaPublicacion): Promise<void> {
     await updateDoc(docRef, { ...guardado });
   }
 }
+
+// Elimina todos los guardados relacionados a una publicación
+async removeGuardadosByPublicacion(id_publicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'GuardaPublicacion');
+  const q = query(ref, where('id_publicacion', '==', id_publicacion));
+  const snapshot = await getDocs(q);
+  for (const docSnap of snapshot.docs) {
+    await deleteDoc(doc(this.firestore, 'GuardaPublicacion', docSnap.id));
+  }
+}
+
+
 
 /// LIKES PUBLICACIONES Y COMENTARIOS ///
 
@@ -228,6 +245,37 @@ async updateLikeComentario(like: Like): Promise<void> {
     await updateDoc(docRef, { ...like });
   }
 }
+
+// Elimina todos los likes relacionados a una publicación
+async removeLikesByPublicacion(id_publicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const q = query(ref, where('id_publicacion', '==', id_publicacion));
+  const snapshot = await getDocs(q);
+  for (const docSnap of snapshot.docs) {
+    await deleteDoc(doc(this.firestore, 'Like', docSnap.id));
+  }
+}
+
+
+// Elimina todos los likes de comentarios relacionados a una publicación
+async removeComentarioLikesByPublicacion(id_publicacion: string): Promise<void> {
+  // 1. Obtén todos los comentarios de la publicación
+  const comentariosRef = collection(this.firestore, 'Comentario');
+  const comentariosQuery = query(comentariosRef, where('id_publicacion', '==', id_publicacion));
+  const comentariosSnapshot = await getDocs(comentariosQuery);
+
+  // 2. Para cada comentario, elimina sus likes
+  for (const comentarioDoc of comentariosSnapshot.docs) {
+    const id_comentario = comentarioDoc.id;
+    const likesRef = collection(this.firestore, 'Like');
+    const likesQuery = query(likesRef, where('id_comentario', '==', id_comentario));
+    const likesSnapshot = await getDocs(likesQuery);
+    for (const likeDoc of likesSnapshot.docs) {
+      await deleteDoc(doc(this.firestore, 'Like', likeDoc.id));
+    }
+  }
+}
+
 
 // Dar o quitar like a un comentario
 async toggleLikeComentario(idUsuario: string, idComentario: string): Promise<void> {
@@ -316,6 +364,15 @@ async removeComentario(id_comentario: string): Promise<void> {
   await deleteDoc(docRef);
 }
 
+// Elimina todos los comentarios relacionados a una publicación
+async removeComentariosByPublicacion(id_publicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'Comentario');
+  const q = query(ref, where('id_publicacion', '==', id_publicacion));
+  const snapshot = await getDocs(q);
+  for (const docSnap of snapshot.docs) {
+    await deleteDoc(doc(this.firestore, 'Comentario', docSnap.id));
+  }
+}
 
 //MENSAJES Y CONVERESACIONES///
 

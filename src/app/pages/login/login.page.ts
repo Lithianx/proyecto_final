@@ -43,6 +43,13 @@ async iniciarSesion() {
       return;
     }
 
+    // Aquí validas si la cuenta está desactivada
+    if (usuario.estado_cuenta === false) {
+      this.errorAutenticacion = true;
+      await this.mostrarToast('Tu cuenta ha sido desactivada. Contacta al administrador.');
+      return;
+    }
+
     // Si estás online, verifica el correo (opcional)
     if (navigator.onLine && usuario && usuario.estado_cuenta === true) {
       const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
