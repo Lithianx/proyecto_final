@@ -34,21 +34,32 @@ async iniciarSesion() {
   try {
     this.errorAutenticacion = false;
 
-    const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
+    // Usa el método híbrido (online/offline)
+    const usuario = await this.usuarioService.login(this.correo, this.contrasena);
 
-    if (credenciales.user && !credenciales.user.emailVerified) {
-      await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
-      await credenciales.user.sendEmailVerification(); // Opcional: reenviar verificación
-      return; // Detiene el login hasta que se verifique
+    if (!usuario) {
+      this.errorAutenticacion = true;
+      await this.mostrarToast('Contraseña o correo incorrecto');
+      return;
     }
 
-    console.log('Usuario autenticado:', credenciales.user.email);
+    // Si estás online, verifica el correo (opcional)
+    if (navigator.onLine && usuario && usuario.estado_cuenta === true) {
+      const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
+      if (credenciales.user && !credenciales.user.emailVerified) {
+        await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
+        await credenciales.user.sendEmailVerification();
+        return;
+      }
+    }
+
+    console.log('Usuario autenticado:', usuario.correo_electronico);
     this.router.navigate(['/home']);
   } catch (error: any) {
     this.errorAutenticacion = true;
-    this.mostrarToast('Contraseña o correo incorrecto');
+    await this.mostrarToast('Contraseña o correo incorrecto');
   }
-      this.errorAutenticacion = false;
+  this.errorAutenticacion = false;
 }
 
 

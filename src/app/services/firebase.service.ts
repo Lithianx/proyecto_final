@@ -8,6 +8,8 @@ import { Reporte } from 'src/app/models/reporte.model';
 import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Comentario } from 'src/app/models/comentario.model';
+import { Mensaje } from 'src/app/models/mensaje.model';
+import { Conversacion } from 'src/app/models/conversacion.model';
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -264,5 +266,49 @@ async removeComentario(id_comentario: string): Promise<void> {
   const docRef = doc(this.firestore, 'Comentario', id_comentario);
   await deleteDoc(docRef);
 }
+
+
+//MENSAJES Y CONVERESACIONES///
+
+// Obtiene todos los mensajes
+async getMensajes(): Promise<Mensaje[]> {
+  const ref = collection(this.firestore, 'Mensaje');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => ({
+    ...doc.data(),
+    id_mensaje: doc.id,
+    fecha_envio: doc.data()["fecha_envio"]?.toDate ? doc.data()["fecha_envio"].toDate() : new Date(doc.data()["fecha_envio"])
+  } as Mensaje));
+}
+
+// Agrega un mensaje
+async addMensaje(mensaje: Mensaje) {
+  const mensajesRef = collection(this.firestore, 'Mensaje');
+  return await addDoc(mensajesRef, mensaje); // Retorna DocumentReference
+}
+
+// Actualiza un mensaje
+async updateMensaje(mensaje: Mensaje) {
+  const mensajeRef = doc(this.firestore, 'Mensaje', mensaje.id_mensaje);
+  await updateDoc(mensajeRef, { ...mensaje });
+}
+
+// Obtiene todas las conversaciones
+async getConversaciones(): Promise<Conversacion[]> {
+  const ref = collection(this.firestore, 'Conversacion');
+  const snapshot = await getDocs(ref);
+  return snapshot.docs.map(doc => ({
+    ...doc.data(),
+    id_conversacion: doc.id,
+    fecha_envio: doc.data()["fecha_envio"]?.toDate ? doc.data()["fecha_envio"].toDate() : new Date(doc.data()["fecha_envio"])
+  } as Conversacion));
+}
+
+// Agrega una conversación
+async addConversacion(conversacion: Conversacion): Promise<void> {
+  const ref = collection(this.firestore, 'Conversacion');
+  await addDoc(ref, { ...conversacion });
+}
+
 
 }

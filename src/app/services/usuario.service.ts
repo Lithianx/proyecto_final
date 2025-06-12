@@ -31,6 +31,35 @@ export class UsuarioService {
     private firebaseService: FirebaseService
   ) { }
 
+
+  // Login híbrido: online (Firebase Auth) y offline (localStorage)
+  async login(correo: string, contrasena: string): Promise<Usuario | null> {
+    if (navigator.onLine) {
+      try {
+        const credenciales = await signInWithEmailAndPassword(this.auth, correo, contrasena);
+        await this.cargarUsuarios();
+        const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
+        if (usuario) {
+          await this.localStorage.setItem('usuarioActual', usuario);
+        }
+        return usuario ?? null;
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      // Login offline: busca en localStorage
+      await this.cargarUsuarios();
+      const usuario = this.getUsuarios().find(
+        u => u.correo_electronico === correo && u.contrasena === contrasena
+      );
+      if (usuario) {
+        await this.localStorage.setItem('usuarioActual', usuario);
+      }
+      return usuario ?? null;
+    }
+  }
+
+
   async loginConFirebase(correo: string, contrasena: string): Promise<any> {
     try {
       const credenciales = await signInWithEmailAndPassword(this.auth, correo, contrasena);
@@ -91,19 +120,29 @@ export class UsuarioService {
 
 
 
+  // Obtener usuario actual conectado (online/offline)
   async getUsuarioActualConectado(): Promise<Usuario | null> {
-    return new Promise((resolve) => {
-      onAuthStateChanged(this.auth, async (user: User | null) => {
-        if (user && user.email) {
-          await this.cargarUsuarios();
-          const usuarios = this.getUsuarios();
-          const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
-          resolve(usuarioEncontrado ?? null);
-        } else {
-          resolve(null);
-        }
+    if (navigator.onLine) {
+      return new Promise((resolve) => {
+        onAuthStateChanged(this.auth, async (user: User | null) => {
+          if (user && user.email) {
+            await this.cargarUsuarios();
+            const usuarios = this.getUsuarios();
+            const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
+            if (usuarioEncontrado) {
+              await this.localStorage.setItem('usuarioActual', usuarioEncontrado);
+            }
+            resolve(usuarioEncontrado ?? null);
+          } else {
+            resolve(null);
+          }
+        });
       });
-    });
+    } else {
+      // Offline: busca el último usuario logueado en localStorage
+      const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
+      return usuarioActual ?? null;
+    }
   }
 
 
@@ -156,6 +195,8 @@ export class UsuarioService {
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
+
+
   async actualizarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
     const idx = this.usuariosEnMemoria.findIndex(u => u.id_usuario === usuario.id_usuario);
@@ -167,4 +208,13 @@ export class UsuarioService {
       await updateDoc(userRef, { ...usuario });
     }
   }
+
+  // Cerrar sesión y limpiar usuario actual local
+  async logout(): Promise<void> {
+    if (navigator.onLine) {
+      await this.auth.signOut();
+    }
+    await this.localStorage.removeItem('usuarioActual');
+  }
+
 }

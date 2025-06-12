@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-perfil',
@@ -65,8 +66,9 @@ export class PerfilPage implements OnInit {
 
   constructor(
     private actionSheetCtrl: ActionSheetController,
-    private router: Router
-  ) {}
+    private router: Router,
+    private usuarioService: UsuarioService
+  ) { }
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
@@ -101,9 +103,9 @@ export class PerfilPage implements OnInit {
       case 'eventos-creados':
         position = (315 / 3) * 2; // ~66.66%
         break;
-    
 
-    const adjustedPosition = position - 1; // ajustar si es necesario
+
+        const adjustedPosition = position - 1; // ajustar si es necesario
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
@@ -160,8 +162,9 @@ export class PerfilPage implements OnInit {
           icon: 'log-out-outline',
           role: 'destructive',
           cssClass: 'cerrar-sesion-btn',
-          handler: () => {
+          handler: async () => {
             console.log('Cerrar sesión');
+            await this.usuarioService.logout(); // <-- Cierra sesión en Firebase y limpia localStorage
             this.router.navigate(['/login']);
           }
         }
@@ -170,7 +173,7 @@ export class PerfilPage implements OnInit {
 
     await actionSheet.present();
   }
-    comentario(publicacion: any) {
+  comentario(publicacion: any) {
     this.router.navigate(['/comentario', publicacion.id]);
   }
 }
