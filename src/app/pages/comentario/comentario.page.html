@@ -19,10 +19,12 @@
         <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
       </ion-label>
       <!-- Botón de seguir -->
-      <ion-chip *ngIf="usuarioPost" [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
-        (click)="seguir(usuarioPost)" [outline]="!sigueAlAutor(publicacion)">
-        {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
-      </ion-chip>
+<ion-chip *ngIf="usuarioPost && publicacion.id_usuario !== usuarioActual.id_usuario"
+          [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
+          (click)="seguir(usuarioPost)"
+          [outline]="!sigueAlAutor(publicacion)">
+  {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
+</ion-chip>
 
       <!-- Botón de opciones -->
       <ion-button fill="clear" size="small" (click)="opcion(publicacion)">

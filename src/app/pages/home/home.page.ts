@@ -180,9 +180,13 @@ usuarioLikeoPublicacion(id_publicacion: string): boolean {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
-  sigueAlAutor(publicacion: Publicacion): boolean {
-    return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
+sigueAlAutor(publicacion: Publicacion): boolean {
+  // Si el autor es el usuario actual, no mostrar opción de seguir
+  if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
+    return false;
   }
+  return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
+}
 
   // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
