@@ -159,6 +159,7 @@ export class UsuarioService {
 
 
   async cargarUsuarios(): Promise<void> {
+  if (navigator.onLine) {
     try {
       const usuarios = await this.firebaseService.getUsuarios();
       this.usuariosEnMemoria = usuarios;
@@ -166,6 +167,7 @@ export class UsuarioService {
     } catch (error) {
       console.error('Error al cargar usuarios desde Firebase:', error);
     }
+  }
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
@@ -196,6 +198,7 @@ export class UsuarioService {
   getUsuarioPorId(id_usuario: string): Usuario | undefined {
     return this.usuariosEnMemoria.find(u => u.id_usuario === id_usuario);
   }
+
   async agregarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
     this.usuariosEnMemoria.push(usuario);
@@ -230,8 +233,22 @@ export class UsuarioService {
 
 
   async desactivarCuentaUsuario(id_usuario: string): Promise<void> {
+  if (navigator.onLine) {
     const docRef = doc(this.firestore, 'Usuario', id_usuario);
     await updateDoc(docRef, { estado_cuenta: false });
+  }
+  await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: false });
+}
+
+  // Actualiza solo campos específicos en localStorage
+  private async actualizarUsuarioLocal(id_usuario: string, cambios: Partial<Usuario>) {
+    const usuarios = await this.localStorage.getList<Usuario>('usuarios') || [];
+    const idx = usuarios.findIndex(u => u.id_usuario === id_usuario);
+    if (idx !== -1) {
+      usuarios[idx] = { ...usuarios[idx], ...cambios };
+      await this.localStorage.setItem('usuarios', usuarios);
+      this.usuariosEnMemoria = usuarios;
+    }
   }
 
 }
