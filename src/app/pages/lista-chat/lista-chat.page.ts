@@ -31,13 +31,15 @@ export class ListaChatPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-  const usuario = await this.usuarioService.getUsuarioActualConectado();
-  if (usuario) {
-    this.usuarioActual = usuario;
-    await this.localStorage.setItem('usuarioActual', usuario);
-  } else {
-    await this.localStorage.setItem('usuarioActual', this.usuarioActual);
-  }
+    // Cargar usuario actual
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      // Si no hay usuario, podrías redirigir al login
+      return;
+    }
 
     // Carga usuarios reales desde el servicio
     await this.usuarioService.cargarUsuarios();

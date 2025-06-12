@@ -46,12 +46,14 @@ export class CrearPublicacionPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
       this.usuarioActual = usuario;
       await this.localStorage.setItem('usuarioActual', usuario);
     } else {
-      await this.localStorage.setItem('usuarioActual', this.usuarioActual);
+      // Si no hay usuario, podrías redirigir al login
+      return;
     }
 
     console.log(this.usuarioActual.avatar);
