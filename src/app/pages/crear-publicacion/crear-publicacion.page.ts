@@ -115,8 +115,9 @@ export class CrearPublicacionPage implements OnInit {
 
     // Guardar en Firebase y obtener el ID generado
     const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
+    console.log('ID de publicación generado:', id_publicacion);
     nuevaPublicacion.id_publicacion = id_publicacion;
-
+    console.log('Publicación con ID:', nuevaPublicacion);
     // Cargar publicaciones según conexión
     if (navigator.onLine) {
       this.publicaciones = await this.publicacionService.getPublicaciones();

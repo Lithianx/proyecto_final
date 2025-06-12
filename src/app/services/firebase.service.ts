@@ -53,11 +53,14 @@ async getPublicaciones(): Promise<Publicacion[]> {
 
 async addPublicacion(publicacion: Publicacion): Promise<string> {
   const publicacionesRef = collection(this.firestore, 'Publicacion');
+  // 1. Agrega la publicación sin el id real
   const docRef = await addDoc(publicacionesRef, {
     ...publicacion,
-    // No conviertas a string, solo pasa el Date
+    id_publicacion: '', // Temporal o vacío
     fecha_publicacion: publicacion.fecha_publicacion
   });
+  // 2. Actualiza el documento con el id generado por Firestore
+  await updateDoc(docRef, { id_publicacion: docRef.id });
   return docRef.id;
 }
 
