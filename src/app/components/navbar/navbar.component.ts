@@ -61,15 +61,13 @@ async mostrarMenu() {
         this.router.navigate(['/crear-evento-flash']);
       }
     },
-
-
-//            {
-  //        text: 'Ver Reportes',
-    //      icon: 'code-slash-outline',
-      //    handler: () => {
-        //    this.router.navigate(['/admin-reporte']);
-  //        }
-   //     },
+            {
+          text: 'Ver Reportes',
+          icon: 'code-slash-outline',
+          handler: () => {
+          this.router.navigate(['/admin-reporte']);
+          }
+       },
     {
       text: 'Cancelar',
       icon: 'close',
