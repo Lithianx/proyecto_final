@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, AlertController, NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
@@ -13,7 +13,7 @@ import { LocalStorageService } from '../../services/local-storage-social.service
   selector: 'app-perfil',
   templateUrl: './perfil.page.html',
   styleUrls: ['./perfil.page.scss'],
-  standalone: false,
+    standalone: false,
 })
 export class PerfilPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
@@ -37,8 +37,8 @@ export class PerfilPage implements OnInit {
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
-  descripcionBio: string = `No hay descripcion`;
-  subname: string = ``;
+  descripcionBio: string = 'No hay descripcion';
+  subname: string = '';
 
   estadisticas = {
     publicaciones: 0,
@@ -72,7 +72,9 @@ export class PerfilPage implements OnInit {
   constructor(
     private localStorageService: LocalStorageService,
     private actionSheetCtrl: ActionSheetController,
+    private alertCtrl: AlertController,
     private router: Router,
+    private navCtrl: NavController,
     private usuarioService: UsuarioService,
     private publicacionService: PublicacionService,
     private likeService: LikeService,
@@ -81,7 +83,7 @@ export class PerfilPage implements OnInit {
 
   async ionViewWillEnter() {
     await this.cargarDatosUsuario();
-    await this.cargarUsuarios(); // Primero cargamos todos los usuarios
+    await this.cargarUsuarios();
     await this.cargarCantidadSeguidosYSeguidores();
     await this.cargarPublicaciones();
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
@@ -91,7 +93,6 @@ export class PerfilPage implements OnInit {
 
   private async cargarDatosUsuario() {
     const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
-
     if (!id_usuario) {
       console.warn('No hay id_usuario en localStorage');
       return;
@@ -120,16 +121,16 @@ export class PerfilPage implements OnInit {
   }
 
   private async cargarCantidadSeguidosYSeguidores() {
-    if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
+    const id = this.usuarioActual.id_usuario;
+    if (!id) {
       this.estadisticas.seguidos = 0;
       this.estadisticas.seguidores = 0;
       return;
     }
 
     try {
-      const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-      const seguidores = this.seguirService.getSeguidores(this.usuarios, this.usuarioActual.id_usuario);
-
+      const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, id);
+      const seguidores = this.seguirService.getSeguidores(this.usuarios, id);
       this.estadisticas.seguidos = seguidos.length;
       this.estadisticas.seguidores = seguidores.length;
     } catch (error) {
@@ -138,13 +139,12 @@ export class PerfilPage implements OnInit {
   }
 
   private async cargarPublicaciones() {
-    if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
-      return;
-    }
+    const id = this.usuarioActual.id_usuario;
+    if (!id) return;
 
     try {
       const todasPublicaciones = await this.publicacionService.getPublicaciones();
-      this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === this.usuarioActual.id_usuario);
+      this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === id);
       this.publicacionesFiltradas = [...this.publicaciones];
       this.estadisticas.publicaciones = this.publicaciones.length;
     } catch (error) {
@@ -161,27 +161,59 @@ export class PerfilPage implements OnInit {
       header: 'Opciones de publicación',
       buttons: [
         {
-          text: 'Ver publicación',
-          icon: 'eye-outline',
-          handler: () => this.comentario(publicacion)
+          text: 'Editar',
+          cssClass: 'icono-verde',
+          icon: 'pencil-outline',
+          handler: () => this.modificar(publicacion)
         },
         {
-          text: 'Eliminar',
-          icon: 'trash-outline',
+          text: 'Eliminar publicación',
+          icon: 'alert-circle-outline',
+          cssClass: 'icono-verde',
           role: 'destructive',
-          handler: async () => {
-            await this.cargarPublicaciones();
-          }
+          handler: () => this.confirmarEliminacion(publicacion)
         },
         {
           text: 'Cancelar',
           icon: 'close-outline',
+          cssClass: 'icono-verde',
           role: 'cancel'
         }
       ]
     });
-
     await actionSheet.present();
+  }
+
+  async confirmarEliminacion(publicacion: Publicacion) {
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar publicación?',
+      message: '¿Estás seguro de que deseas eliminar esta publicación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          cssClass: 'alert-button-delete',
+          handler: async () => {
+            await this.publicacionService.removePublicacion(publicacion.id_publicacion);
+            await this.cargarPublicaciones();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  volver() {
+    this.navCtrl.back();
+  }
+
+  modificar(publicacion: Publicacion) {
+    this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
   }
 
   comentario(publicacion: Publicacion) {
@@ -207,7 +239,6 @@ export class PerfilPage implements OnInit {
     if (!segmentElement) return;
 
     let position = 0;
-
     switch (value) {
       case 'publicaciones':
         position = 3;
@@ -230,21 +261,25 @@ export class PerfilPage implements OnInit {
         {
           text: 'Editar perfil',
           icon: 'person-outline',
+          cssClass: 'icono-verde',
           handler: () => this.router.navigate(['/editar-perfil'])
         },
         {
           text: 'Historial de eventos',
           icon: 'time-outline',
+          cssClass: 'icono-verde',
           handler: () => this.router.navigate(['/historial-eventos'])
         },
         {
           text: 'Guardados',
           icon: 'bookmark',
+          cssClass: 'icono-verde',
           handler: () => this.router.navigate(['/publicaciones-guardadas'])
         },
         {
           text: 'Términos y condiciones',
           icon: 'school-outline',
+          cssClass: 'icono-verde',
           handler: () => this.router.navigate(['/info-cuenta-institucional'])
         },
         {
@@ -259,7 +294,6 @@ export class PerfilPage implements OnInit {
         }
       ]
     });
-
     await actionSheet.present();
   }
 }

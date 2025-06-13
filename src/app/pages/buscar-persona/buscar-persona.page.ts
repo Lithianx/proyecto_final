@@ -22,9 +22,14 @@ export class BuscarPersonaPage implements OnInit {
   ) { }
 
 async ngOnInit() {
-  this.todosusuarios = await this.usuarioService.obtenerUsuarios();
-  this.usuarios = this.todosusuarios;  // Mostrar todos inicialmente
+  const idUsuarioLogueado = await this.localStorage.getItem('id_usuario');
+
+  this.todosusuarios = (await this.usuarioService.obtenerUsuarios())
+    .filter(usuario => usuario.id_usuario !== idUsuarioLogueado);
+
+  this.usuarios = this.todosusuarios;  // Mostrar todos excepto el logueado
 }
+
 
 
   // Filtrado de la lista de usuarios por nombre_usuario
