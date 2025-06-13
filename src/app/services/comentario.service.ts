@@ -4,6 +4,8 @@ import { Comentario } from 'src/app/models/comentario.model';
 import { FirebaseService } from './firebase.service';
 import { Observable } from 'rxjs';
 import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { UtilsService } from './utils.service';
+import { PublicacionService } from './publicacion.service';
 
 @Injectable({ providedIn: 'root' })
 export class ComentarioService {
@@ -12,7 +14,9 @@ export class ComentarioService {
   constructor(
     private localStorage: LocalStorageService,
     private firebaseService: FirebaseService,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private utilsService: UtilsService,
+    private publicacionService: PublicacionService
   ) {
     const comentariosRef = collection(this.firestore, 'Comentario');
     this.comentarios$ = collectionData(comentariosRef, { idField: 'id_comentario' }) as Observable<Comentario[]>;
@@ -20,7 +24,8 @@ export class ComentarioService {
 
   // Cargar comentarios en memoria (llamar en ngOnInit)
   async cargarComentarios(): Promise<void> {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       try {
         this.comentariosEnMemoria = await this.firebaseService.getComentarios();
         await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
@@ -46,7 +51,8 @@ export class ComentarioService {
 
   // Agregar un comentario
   async agregarComentario(comentario: Comentario): Promise<void> {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       const id = await this.firebaseService.addComentario(comentario);
       const comentarioConId = { ...comentario, id_comentario: id };
       this.comentariosEnMemoria.push(comentarioConId);
@@ -74,7 +80,8 @@ export class ComentarioService {
   // Eliminar un comentario (id_comentario ahora string)
   async eliminarComentario(id_comentario: string): Promise<void> {
     this.comentariosEnMemoria = this.comentariosEnMemoria.filter(c => c.id_comentario !== id_comentario);
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       await this.firebaseService.removeComentario(id_comentario);
     }
     await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
@@ -84,4 +91,43 @@ export class ComentarioService {
     return this.getComentariosPorPublicacion(id_publicacion)
       .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
   }
+
+
+
+// Sincronizar comentarios locales pendientes con Firebase
+async sincronizarComentariosLocales(): Promise<void> {
+  const online = await this.utilsService.checkInternetConnection();
+  if (!online) return;
+
+  // Obtén todos los comentarios locales
+  const comentariosLocales = await this.localStorage.getList<Comentario>('comentarios') || [];
+  const sincronizados: Comentario[] = [];
+  const noSincronizados: Comentario[] = [];
+
+  for (const comentario of comentariosLocales) {
+    // Si el id_comentario es numérico (creado offline), intenta sincronizar
+    if (!comentario.id_comentario || !isNaN(Number(comentario.id_comentario))) {
+      try {
+        // Verifica si la publicación existe antes de sincronizar
+        const publicacion = await this.publicacionService.getPublicacionById(comentario.id_publicacion);
+        if (!publicacion) {
+          console.error(`No se pudo sincronizar el comentario porque la publicación con id ${comentario.id_publicacion} no existe.`);
+          noSincronizados.push(comentario);
+          continue;
+        }
+        const id = await this.firebaseService.addComentario(comentario);
+        comentario.id_comentario = id;
+        sincronizados.push(comentario);
+      } catch (error) {
+        noSincronizados.push(comentario);
+      }
+    } else {
+      // Ya sincronizado previamente
+      sincronizados.push(comentario);
+    }
+  }
+
+  // Guarda solo los no sincronizados para el próximo intento
+  await this.localStorage.setItem('comentarios', [...noSincronizados, ...sincronizados]);
+}
 }
