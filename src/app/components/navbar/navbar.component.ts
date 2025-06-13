@@ -52,6 +52,13 @@ export class NavbarComponent  implements OnInit {
           }
         },
         {
+          text: 'Ver Reportes',
+          icon: 'flash-outline',
+          handler: () => {
+            this.router.navigate(['/admin-reporte']);
+          }
+        },
+        {
           text: 'Cancelar',
           icon: 'close',
           role: 'cancel'

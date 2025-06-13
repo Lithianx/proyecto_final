@@ -154,7 +154,7 @@ const routes: Routes = [
   },
   {
     path: 'admin-reporte',
-    canActivate: [AuthGuard, AdminGuard],
+    canActivate: [AuthGuard],
     loadChildren: () => import('./pages/admin-reporte/admin-reporte.module').then(m => m.AdminReportePageModule)
   }
 
