@@ -1,6 +1,5 @@
 export const environment = {
   production: true,
-
   firebaseConfig : {
   apiKey: "AIzaSyCZT-KIRYdhH0zHtL0_3ZYmPDW9kUgFNwI",
   authDomain: "app-eventos-7f5a8.firebaseapp.com",

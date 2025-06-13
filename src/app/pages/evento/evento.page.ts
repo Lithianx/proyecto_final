@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
-
+import { Evento } from 'src/app/models/evento.model';
+import { EventoService } from 'src/app/services/evento.service';
 
 @Component({
   selector: 'app-evento',
@@ -11,63 +12,53 @@ import { NavController } from '@ionic/angular';
 })
 export class EventoPage implements OnInit {
 
-  eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX', cupos: '9'},
-    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' ,cupos: ' 2'},
-    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' ,cupos: ' 2'},
-    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666',cupos: '8' },
-    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00',usuario: 'KANGURUU',cupos: '1' },
-    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' ,cupos: '3'},
-  ];
+  eventos: Evento[] = [];
+  eventosFiltrados: Evento[] = [];
 
-  eventosFiltrados = [...this.eventos];
-  
-
-  constructor(public router: Router,private navCtrl: NavController) { }
+  constructor(
+    private router: Router,
+    private navCtrl: NavController,
+    private eventoService: EventoService
+  ) { }
 
   ngOnInit() {
+    this.cargarEventos();
   }
 
-  unirse(evento: any) {
-    console.log('Te uniste al evento:', evento.nombre);
-    // Aquí puedes agregar lógica real más adelante
+  cargarEventos() {
+    this.eventoService.obtenerEventos().subscribe((eventos) => {
+      this.eventos = eventos;
+      this.eventosFiltrados = [...this.eventos];
+    });
   }
-  
-  verDetalles(evento: any) {
-    console.log('Detalles del evento:', evento);
-    // Puedes abrir un modal o ir a otra página
-  }
-doRefresh(event: any) {
-    console.log('Recargando publicaciones...');
+
+  doRefresh(event: any) {
+    this.cargarEventos();
     setTimeout(() => {
-      // Aquí podrías actualizar los datos, por ejemplo, desde Firebase
-      this.ngOnInit(); // Recarga los posts como ejemplo
-      event.target.complete(); // Detiene el refresher
-      console.log('Recarga completada');
-    }, 1500); // Simula un tiempo de espera
+      event.target.complete();
+    }, 1000);
   }
+
   volverAtras() {
     this.navCtrl.back();
   }
-  filtrarEventos(event: any) {
-  const texto = event.target.value?.toLowerCase().trim(); // Captura el texto de búsqueda
 
-  if (!texto) {
-    this.eventosFiltrados = [...this.eventos]; // Si no hay búsqueda, muestra todo
-    return;
+  filtrarEventos(event: any) {
+    const texto = event.target.value?.toLowerCase().trim();
+
+    if (!texto) {
+      this.eventosFiltrados = [...this.eventos];
+      return;
+    }
+
+    this.eventosFiltrados = this.eventos.filter(evento =>
+      evento.nombre_evento.toLowerCase().includes(texto) ||
+      evento.lugar.toLowerCase().includes(texto) ||
+      evento.tipo_evento.toLowerCase().includes(texto)
+    );
   }
 
-  this.eventosFiltrados = this.eventos.filter(evento =>
-    evento.nombre.toLowerCase().includes(texto) ||
-    evento.lugar.toLowerCase().includes(texto)
-  );
-}
-
-
-irADetalleEvento(evento: any) {
-  this.router.navigate(['/detalle-evento', evento.id]);
-}
-
-
-
+  irADetalleEvento(evento: Evento) {
+    this.router.navigate(['/detalle-evento', evento.id]);
+  }
 }

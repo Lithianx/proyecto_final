@@ -9,6 +9,66 @@
   <div class="contenedor-evento">
     <ion-card class="card-monster" *ngIf="evento">
       <ion-card-header>
+        <ion-card-title class="titulo-monster">🎮 {{ evento.nombre_evento }}</ion-card-title>
+        <ion-card-subtitle class="subtitulo-monster">[ {{ evento.creado_por }} ]</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content class="contenido-scroll">
+        <div class="contenido-evento">
+          <div class="campo-evento">
+            <label>Descripción:</label>
+            <p>{{ evento.descripcion }}</p>
+          </div>
+
+          <div class="fila-lugar-hora">
+            <div class="campo-evento">
+              <label>Lugar:</label>
+              <p>{{ evento.lugar }}</p>
+            </div>
+
+            <div class="campo-evento">
+              <label>Inicio:</label>
+              <p>{{ evento.fechaInicio | date: 'short' }}</p>
+            </div>
+          </div>
+
+          <div class="campo-evento" *ngIf="evento.cupos">
+            <label>Cupos máximos:</label>
+            <p>{{ evento.cupos }}</p>
+          </div>
+        </div>
+
+        <!-- Botón deslizable al final -->
+        <div class="swipe-button-container" #swipeArea>
+          <div class="swipe-track">
+            <div class="swipe-fill" #swipeFill></div>
+            <div class="swipe-thumb" #swipeThumb>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+            <span class="swipe-text" #swipeText>Desliza para tomar evento</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+</ion-content>
+
+<app-navbar></app-navbar>
+
+
+
+<!-- <app-encabezado></app-encabezado>
+
+<ion-content [fullscreen]="true" scroll-y="false" class="fondo-negro">
+
+  <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
+    <ion-icon name="arrow-back"></ion-icon>
+  </ion-button>
+
+  <div class="contenedor-evento">
+    <ion-card class="card-monster" *ngIf="evento">
+      <ion-card-header>
         <ion-card-title class="titulo-monster">🎮 {{ evento.nombre }}</ion-card-title>
         <ion-card-subtitle class="subtitulo-monster">[ {{ evento.usuario }} ]</ion-card-subtitle>
         
@@ -42,7 +102,7 @@
           </div>
         </div>
 
-        <!-- Botón deslizable al final -->
+        
         <div class="swipe-button-container" #swipeArea>
           <div class="swipe-track">
             <div class="swipe-fill" #swipeFill></div>
@@ -61,4 +121,4 @@
 
 </ion-content>
 
-<app-navbar></app-navbar>
+<app-navbar></app-navbar> -->

@@ -1,22 +1,17 @@
 <app-encabezado></app-encabezado>
 
-
 <ion-content class="fondo-negro ion-padding">
-
-
   <div class="header-contenedor">
     <h1 class="titulo">SALA EVENTO</h1>
   </div>
-  <!-- <ion-button fill="clear" slot="end" class="boton-invitar" (click)="abrirModalInvitacion()">
-  <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
-</ion-button> -->
-
 
   <div class="espera-contenedor">
     <ion-card class="espera-card">
       <ion-card-header>
         <ion-card-title class="text-center">{{ evento?.nombre }}</ion-card-title>
-        <ion-card-subtitle class="text-center">Organizado por: <span style="color: rgb(15, 209, 167);">[  {{ evento?.usuario}}  ]</span></ion-card-subtitle>
+        <ion-card-subtitle class="text-center">
+          Organizado por: <span style="color: rgb(15, 209, 167);">[ {{ evento?.usuario }} ]</span>
+        </ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
@@ -41,12 +36,12 @@
         <ion-list>
           <ion-item *ngFor="let jugador of jugadores">
             <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-            <ion-label>{{ jugador }}</ion-label>
+            <ion-label>{{ jugador.nombre }}</ion-label>
           </ion-item>
         </ion-list>
 
         <div class="acciones">
-          <ion-button expand="block" color="success" (click)="iniciarEvento()" [disabled]="cargandoEvento">
+          <ion-button *ngIf="usuarioActual === evento?.usuario" expand="block" color="success" (click)="iniciarEvento()" [disabled]="cargandoEvento">
             <ion-spinner *ngIf="cargandoEvento" name="dots" slot="start"></ion-spinner>
             <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">
               Iniciar Evento
@@ -70,13 +65,10 @@
     </ion-card>
   </div>
 
-
-  <!-- Botón flotante para abrir chat -->
   <div class="chat-fab" (click)="toggleChat()" *ngIf="!chatAbierto">
     <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
   </div>
 
-  <!-- Ventana de chat flotante -->
   <div class="chat-flotante" *ngIf="chatAbierto">
     <div class="chat-header">
       <span>Chat de la Sala</span>
