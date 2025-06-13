@@ -1,10 +1,16 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavController, AlertController, ToastController } from '@ionic/angular';
 import { ChangeDetectorRef } from '@angular/core';
 import { EventoService } from 'src/app/services/evento.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import { doc, updateDoc, arrayUnion } from '@angular/fire/firestore';
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+  deleteDoc,
+  onSnapshot
+} from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
 
 @Component({
@@ -13,7 +19,7 @@ import { Firestore } from '@angular/fire/firestore';
   styleUrls: ['./sala-evento.page.scss'],
   standalone: false,
 })
-export class SalaEventoPage implements OnInit {
+export class SalaEventoPage implements OnInit, OnDestroy {
   evento: any;
   jugadores: any[] = [];
   eventoId: string = '';
@@ -28,6 +34,7 @@ export class SalaEventoPage implements OnInit {
   private intervalId: any;
 
   usuarioActual: string = '';
+  private unsubscribeSnapshot: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,31 +50,41 @@ export class SalaEventoPage implements OnInit {
 
   async ngOnInit() {
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
-
-    // ✅ Cargar evento con fechas correctamente parseadas
-    this.evento = await this.eventoService.obtenerEventoPorId(this.eventoId);
-
-    // ✅ Obtener usuario actual
     const currentUser = await this.usuarioService.getUsuarioActualConectado();
     this.usuarioActual = currentUser?.nombre_usuario ?? '';
 
-    // ✅ Asegurar que el arreglo de jugadores existe
-    if (!this.evento.jugadores) {
-      this.evento.jugadores = [];
-    }
+    const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
 
-    // ✅ Si el usuario no está, lo agrega y actualiza en Firestore
-    const yaRegistrado = this.evento.jugadores.includes(this.usuarioActual);
-    if (!yaRegistrado) {
-      const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
-      this.evento.jugadores.push(this.usuarioActual);
-      await updateDoc(eventoRef, {
-        jugadores: arrayUnion(this.usuarioActual),
-      });
-    }
+    // 📡 Escuchar cambios en tiempo real
+    this.unsubscribeSnapshot = onSnapshot(eventoRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const eventoData = snapshot.data();
 
-    // ✅ Mostrar jugadores
-    this.jugadores = this.evento.jugadores.map((nombre: string) => ({ nombre }));
+        // ✅ Convertir fechas a tipo Date para el date pipe
+        eventoData["fechaInicio"] = eventoData["fechaInicio"]?.toDate?.() ?? null;
+        eventoData["fechaFin"] = eventoData["fechaFin"]?.toDate?.() ?? null;
+
+        this.evento = eventoData;
+
+        // ✅ Actualizar lista de jugadores
+        this.jugadores = (eventoData["jugadores"] || []).map((nombre: string) => ({ nombre }));
+
+        // ✅ Agregar usuario si no está registrado aún
+        const yaRegistrado = eventoData["jugadores"]?.includes(this.usuarioActual);
+        if (!yaRegistrado) {
+          await updateDoc(eventoRef, {
+            jugadores: arrayUnion(this.usuarioActual),
+          });
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.intervalId);
+    if (this.unsubscribeSnapshot) {
+      this.unsubscribeSnapshot();
+    }
   }
 
   toggleChat() {
@@ -76,10 +93,7 @@ export class SalaEventoPage implements OnInit {
 
   enviarMensaje() {
     if (this.mensaje.trim()) {
-      this.mensajes.push({ usuario: 'Tú', texto: this.mensaje });
-      setTimeout(() => {
-        this.mensajes.push({ usuario: 'Carlos', texto: 'Entendido!' });
-      }, 1000);
+      this.mensajes.push({ usuario: this.usuarioActual, texto: this.mensaje });
       this.mensaje = '';
     }
   }
@@ -103,11 +117,11 @@ export class SalaEventoPage implements OnInit {
             text: 'Finalizar',
             handler: async () => {
               this.cargandoEvento = true;
-              this.finalizarEvento();
+              await this.finalizarEvento();
               const toast = await this.toastCtrl.create({
-                message: '✅ Evento finalizado',
+                message: '✅ Evento finalizado y eliminado',
                 duration: 2000,
-                position: 'bottom',
+                position: 'top',
                 color: 'success',
               });
               await toast.present();
@@ -136,10 +150,20 @@ export class SalaEventoPage implements OnInit {
     }, 1000);
   }
 
-  finalizarEvento() {
+  async finalizarEvento() {
     this.eventoEnCurso = false;
     clearInterval(this.intervalId);
     this.tiempoTranscurrido = '00:00:00';
+
+    if (this.usuarioActual === this.evento.creado_por) {
+      try {
+        const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
+        await deleteDoc(eventoRef);
+        console.log('✅ Evento eliminado correctamente');
+      } catch (error) {
+        console.error('❌ Error al eliminar el evento:', error);
+      }
+    }
   }
 
   pad(num: number): string {
@@ -151,10 +175,7 @@ export class SalaEventoPage implements OnInit {
       header: 'Confirmar salida',
       message: '¿Estás seguro que quieres salir del evento?',
       buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
+        { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Sí, salir',
           handler: async () => {
@@ -174,17 +195,17 @@ export class SalaEventoPage implements OnInit {
                 message: 'Has salido del evento 👋',
                 duration: 2000,
                 color: 'warning',
-                position: 'bottom',
+                position: 'top',
               });
               await toast.present();
 
-              this.router.navigate(['/home']);
+              this.router.navigate(['/evento']);
             } catch (error) {
               const toast = await this.toastCtrl.create({
                 message: 'Error al salir del evento',
                 duration: 2000,
                 color: 'danger',
-                position: 'bottom',
+                position: 'top',
               });
               await toast.present();
             }
@@ -196,15 +217,11 @@ export class SalaEventoPage implements OnInit {
     await alert.present();
   }
 
-  volverAtras() {
-    this.router.navigate(['/home']);
-  }
-
   doRefresh(event: any) {
     this.ngOnInit().then(() => event.target.complete());
   }
 
   filtrarEventos(event: any) {
-    // lógica de filtrado futura
+    // lógica futura
   }
 }
