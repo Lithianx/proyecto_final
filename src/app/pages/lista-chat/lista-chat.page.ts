@@ -8,6 +8,7 @@ import { Conversacion } from 'src/app/models/conversacion.model';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { UtilsService } from 'src/app/services/utils.service'; // Asegúrate de importar UtilsService si lo necesitas
 
 
 @Component({
@@ -28,7 +29,8 @@ export class ListaChatPage implements OnInit {
     private navCtrl: NavController,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private utilsService: UtilsService 
   ) { }
 
   async ngOnInit() {
@@ -46,14 +48,26 @@ export class ListaChatPage implements OnInit {
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
 
+  // --- NUEVO: Verifica conexión y carga local si no hay internet ---
+  const online = await this.utilsService.checkInternetConnection();
+  if (!online) {
+    // Carga conversaciones y mensajes desde localStorage
+    this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
+    this.conversacionesOriginal = this.conversaciones;
+    this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
+    return;
+  }
+  // --- FIN NUEVO ---
+
 
     // Suscribirse a los mensajes y conversaciones en tiempo real
     this.comunicacionService.mensajes$.subscribe(mensajes => {
       this.mensajes = mensajes;
     });
-    this.comunicacionService.conversaciones$.subscribe(convs => {
+    this.comunicacionService.conversaciones$.subscribe(async convs => {
       this.conversaciones = convs;
       this.conversacionesOriginal = convs; // Guarda la copia original
+      await this.localStorage.setItem('conversaciones', convs);
     });
   }
 

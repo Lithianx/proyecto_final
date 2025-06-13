@@ -5,9 +5,10 @@ import { StatusBar } from '@capacitor/status-bar';
 // para futura implementación de la barra de navegación inferior
 import { ReporteService } from './services/reporte.service';
 import { SeguirService } from './services/seguir.service';
-import { PublicacionService } from './services/publicacion.service'; 
+import { PublicacionService } from './services/publicacion.service';
 import { ComentarioService } from './services/comentario.service';
-import { GuardaPublicacionService } from './services/guardarpublicacion.service'; 
+import { GuardaPublicacionService } from './services/guardarpublicacion.service';
+import { ComunicacionService } from './services/comunicacion.service';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ export class AppComponent {
     private seguirService: SeguirService,
     private publicacionService: PublicacionService,
     private comentarioService: ComentarioService,
-    private guardarPublicacionService: GuardaPublicacionService 
+    private guardarPublicacionService: GuardaPublicacionService,
+    private comunicacionService: ComunicacionService
   ) {
     this.initializeApp();
   }
@@ -38,6 +40,8 @@ export class AppComponent {
       this.publicacionService.sincronizarPublicacionesPersonales();
       this.comentarioService.sincronizarComentariosLocales();
       this.guardarPublicacionService.sincronizarGuardadosLocales();
+      this.comunicacionService.sincronizarMensajesLocales();
+      this.comunicacionService.sincronizarConversacionesLocales();
     });
   }
 
