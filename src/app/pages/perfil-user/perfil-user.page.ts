@@ -184,16 +184,15 @@ private actualizarEstadisticasSeguir(id_usuario: string) {
     }
 
     let position = 0;
-
     switch (value) {
       case 'publicaciones':
-        position = 0;
+        position = 3;
         break;
       case 'eventos-inscritos':
-        position = 33.33;
+        position = 320 / 3;
         break;
       case 'eventos-creados':
-        position = 66.66;
+        position = (315 / 3) * 2;
         break;
     }
 
