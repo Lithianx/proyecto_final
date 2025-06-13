@@ -25,17 +25,16 @@
         <ion-avatar slot="start">
           <img [src]="getUsuarioPublicacion(publicacion.id_usuario)?.avatar" />
         </ion-avatar>
-        <ion-label class="etiqueta-usuario">
+        <ion-label class="etiqueta-usuario" (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
           <h2>{{ getUsuarioPublicacion(publicacion.id_usuario)?.nombre_usuario }}</h2>
           <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
         </ion-label>
         <!-- Botón de seguir -->
-<ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"
+        <ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"
           [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
-          (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario))"
-          [outline]="!sigueAlAutor(publicacion)">
-  {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
-</ion-chip>
+          (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario))" [outline]="!sigueAlAutor(publicacion)">
+          {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
+        </ion-chip>
 
         <!-- Botón de opciones -->
         <ion-button fill="clear" size="small" (click)="opcion(publicacion)">

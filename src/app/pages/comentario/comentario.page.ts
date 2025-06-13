@@ -52,7 +52,7 @@ export class ComentarioPage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion:''
+    descripcion: ''
   };
 
   seguimientos: Seguir[] = [];
@@ -287,13 +287,13 @@ export class ComentarioPage implements OnInit {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
-sigueAlAutor(publicacion: Publicacion): boolean {
-  // Si el autor es el usuario actual, no mostrar opción de seguir
-  if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
-    return false;
+  sigueAlAutor(publicacion: Publicacion): boolean {
+    // Si el autor es el usuario actual, no mostrar opción de seguir
+    if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
+      return false;
+    }
+    return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
   }
-  return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
-}
 
   // Utilidad para obtener el usuario de una publicación
   getUsuarioPublicacion(id_usuario: string): Usuario | undefined {
@@ -361,6 +361,13 @@ sigueAlAutor(publicacion: Publicacion): boolean {
     });
   }
 
+
+  verPerfil(usuario: Usuario | undefined) {
+    if (usuario) {
+      this.router.navigate(['/perfil-user', usuario.id_usuario]);
+    }
+  }
+
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);
   }
@@ -393,8 +400,8 @@ sigueAlAutor(publicacion: Publicacion): boolean {
           role: 'destructive',
           cssClass: 'alert-button-delete',
           handler: async () => {
-          await this.publicacionService.removePublicacion(publicacion.id_publicacion);
-          this.volver();
+            await this.publicacionService.removePublicacion(publicacion.id_publicacion);
+            this.volver();
           }
         }
       ]
