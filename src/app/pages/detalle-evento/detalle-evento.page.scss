@@ -1,10 +1,4 @@
-.boton-volver{
-  --color: rgb(41, 197, 41);
-  margin-top: 10px;
-  margin-bottom: 10px;
-
-}
-
+// Fondo general
 .fondo-negro {
   --background: #000;
   height: 100%;
@@ -12,18 +6,26 @@
   flex-direction: column;
 }
 
+// Botón volver
+.boton-volver {
+  --color: rgb(41, 197, 41);
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
+// Contenedor general
 .contenedor-evento {
   flex: 1;
   width: 100%;
-  height: 90%;
   display: flex;
   justify-content: center;
   align-items: start;
   padding: 16px;
   box-sizing: border-box;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
+
+// Tarjeta del evento
 .card-monster {
   width: 100%;
   max-width: 500px;
@@ -34,25 +36,54 @@
   color: #2ec015;
   display: flex;
   flex-direction: column;
-  height: 100%; // fuerza altura completa
 }
 
+// Título y subtítulo
 .titulo-monster {
   font-size: 1.4rem;
   font-weight: bold;
   text-align: center;
   color: #2ec015;
 }
-.subtitulo-monster{
-  font-size: 1.2rem;
+
+.subtitulo-monster {
+  font-size: 1.1rem;
   font-weight: bold;
   text-align: center;
-  color: rgb(15, 209, 167);;
+  color: rgb(15, 209, 167);
 }
 
-.campo-evento {
-  margin-bottom: 20px;
+// Scroll del contenido
+.contenido-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+  overflow-y: auto;
+}
 
+// Contenedor interno del contenido
+.contenido-evento {
+  display: flex;
+  height: 82%;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 16px;
+}
+
+// Fila de dos columnas
+.fila-doble {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .campo-evento {
+    flex: 1 1 48%;
+  }
+}
+
+// Campo genérico
+.campo-evento {
   label {
     display: block;
     font-weight: bold;
@@ -68,51 +99,17 @@
   }
 }
 
-.boton-monster {
-  --background: #2ec015;
-  --color: #000;
-  font-weight: bold;
-  margin-top: 350px;
-  border-radius: 8px;
+// Descripción especial
+.campo-descripcion p {
+  font-style: italic;
+  color: #ccc;
 }
 
-.contenido-evento {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.fila-lugar-hora {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-
-  .campo-evento {
-    flex: 1 1 45%;
-    margin-bottom: 0; // evita separación extra si ya usas gap
-  }
-}
-
-.contenido-scroll {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-bottom: 16px;
-  overflow-y: auto;
-}
-
-
-
-
-
-
-
-
+// Swipe personalizado
 .swipe-button-container {
-  margin-top: 16px;
-  padding: 10px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
 }
 
 .swipe-track {
@@ -122,6 +119,8 @@
   height: 50px;
   overflow: hidden;
   box-shadow: 0 0 10px #21a10a;
+  width: 100%;
+  max-width: 400px;
 }
 
 .swipe-fill {
