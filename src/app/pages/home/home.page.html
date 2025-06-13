@@ -20,6 +20,9 @@
   <ion-list lines="none">
     <!-- Mensaje si no hay publicaciones -->
     <div *ngIf="publicacionesFiltradas.length === 0" class="sin-publicaciones">
+      <span class="lupa-spinner">
+        <ion-icon name="folder-open-outline"></ion-icon>
+      </span>
       <ion-text color="medium">
         <h3>No hay publicaciones para mostrar.</h3>
       </ion-text>
