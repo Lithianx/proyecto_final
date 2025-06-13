@@ -8,4 +8,5 @@ export interface Evento {
   fechaFin: Date;
   cupos: number;
   creado_por: string;
+  jugadores?: string[];
 }

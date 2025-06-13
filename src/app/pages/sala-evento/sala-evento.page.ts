@@ -27,7 +27,7 @@ export class SalaEventoPage implements OnInit {
   private tiempoInicial = 0;
   private intervalId: any;
 
-  usuarioActual: string = ''; // <- importante para validar quién puede iniciar
+  usuarioActual: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -50,29 +50,26 @@ export class SalaEventoPage implements OnInit {
       this.evento = docSnap.data();
       this.evento.id = this.eventoId;
 
-      // Cargar lista de jugadores si existe
-      this.jugadores = this.evento.jugadores || [];
-
+      // Obtener usuario actual
       const currentUser = await this.usuarioService.getUsuarioActualConectado();
+      this.usuarioActual = currentUser?.nombre_usuario ?? '';
 
-      if (currentUser && currentUser.nombre_usuario) {
-        this.usuarioActual = currentUser.nombre_usuario;
-
-        // Si no es el creador, lo agregamos como jugador
-        if (this.usuarioActual !== this.evento.usuario) {
-          if (!this.jugadores.includes(this.usuarioActual)) {
-            this.jugadores.push(this.usuarioActual);
-            await updateDoc(docRef, {
-              jugadores: arrayUnion(this.usuarioActual),
-            });
-          }
-        } else {
-          // Si es el creador y no está en la lista, lo añadimos
-          if (!this.jugadores.includes(this.usuarioActual)) {
-            this.jugadores.push(this.usuarioActual);
-          }
-        }
+      // Verificamos si hay arreglo jugadores, si no lo creamos vacío
+      if (!this.evento.jugadores) {
+        this.evento.jugadores = [];
       }
+
+      // Si el usuario actual no está en la lista, lo agregamos
+      const yaRegistrado = this.evento.jugadores.includes(this.usuarioActual);
+      if (!yaRegistrado) {
+        this.evento.jugadores.push(this.usuarioActual);
+        await updateDoc(docRef, {
+          jugadores: arrayUnion(this.usuarioActual)
+        });
+      }
+
+      // Mostrar en la lista
+      this.jugadores = this.evento.jugadores.map((nombre: string) => ({ nombre }));
     }
   }
 
@@ -83,11 +80,9 @@ export class SalaEventoPage implements OnInit {
   enviarMensaje() {
     if (this.mensaje.trim()) {
       this.mensajes.push({ usuario: 'Tú', texto: this.mensaje });
-
       setTimeout(() => {
         this.mensajes.push({ usuario: 'Carlos', texto: 'Entendido!' });
       }, 1000);
-
       this.mensaje = '';
     }
   }
@@ -95,7 +90,6 @@ export class SalaEventoPage implements OnInit {
   async iniciarEvento() {
     if (!this.eventoEnCurso) {
       this.cargandoEvento = true;
-
       setTimeout(() => {
         this.cargandoEvento = false;
         this.eventoEnCurso = true;
@@ -137,11 +131,9 @@ export class SalaEventoPage implements OnInit {
     this.intervalId = setInterval(() => {
       const ahora = Date.now();
       const diff = ahora - this.tiempoInicial;
-
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-
       this.tiempoTranscurrido = `${this.pad(h)}:${this.pad(m)}:${this.pad(s)}`;
       this.cdr.detectChanges();
     }, 1000);
@@ -175,5 +167,17 @@ export class SalaEventoPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  volverAtras() {
+    this.router.navigate(['/home']);
+  }
+
+  doRefresh(event: any) {
+    this.ngOnInit().then(() => event.target.complete());
+  }
+
+  filtrarEventos(event: any) {
+    // lógica de filtrado futura
   }
 }

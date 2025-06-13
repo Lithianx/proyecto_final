@@ -1,6 +1,6 @@
 <app-encabezado></app-encabezado>
 
-<ion-content [fullscreen]="true" scroll-y="false" class="fondo-negro">
+<ion-content [fullscreen]="true" scroll-y="true" class="fondo-negro">
 
   <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
     <ion-icon name="arrow-back"></ion-icon>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Botón deslizable al final -->
-        <div class="swipe-button-container" #swipeArea>
+        <div class="swipe-button-container" *ngIf="!gestureEjecutado" #swipeArea>
           <div class="swipe-track">
             <div class="swipe-fill" #swipeFill></div>
             <div class="swipe-thumb" #swipeThumb>

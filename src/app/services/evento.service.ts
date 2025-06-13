@@ -28,7 +28,7 @@ export class EventoService {
   crearEvento(evento: Evento): Promise<any> {
     return addDoc(this.eventosRef, evento);
   }
-
+  //vista eventos
   obtenerEventos(): Observable<(Evento & { id: string })[]> {
     return collectionData(this.eventosRef, { idField: 'id' }).pipe(
       map((eventos) =>
@@ -81,4 +81,6 @@ export class EventoService {
     // Si más adelante se decide, este método puede migrarse a UsuarioService
     return user?.displayName ?? user?.email ?? 'Anónimo';
   }
+
+  
 }

@@ -1,9 +1,10 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController, GestureController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { EventoService } from 'src/app/services/evento.service';
 import { Evento } from 'src/app/models/evento.model';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -11,13 +12,17 @@ import { Evento } from 'src/app/models/evento.model';
   styleUrls: ['./detalle-evento.page.scss'],
   standalone: false,
 })
-export class DetalleEventoPage implements OnInit, AfterViewInit {
+export class DetalleEventoPage implements OnInit, AfterViewChecked {
   @ViewChild('swipeArea', { read: ElementRef }) swipeArea!: ElementRef;
   @ViewChild('swipeThumb', { read: ElementRef }) swipeThumb!: ElementRef;
   @ViewChild('swipeFill', { read: ElementRef }) swipeFill!: ElementRef;
   @ViewChild('swipeText', { read: ElementRef }) swipeText!: ElementRef;
 
   evento!: Evento & { id: string };
+  usuarioEmailActual: string = '';
+  public gestureEjecutado = false;
+  private swipeInicializado = false;
+   
 
   constructor(
     private route: ActivatedRoute,
@@ -25,7 +30,8 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
     private gestureCtrl: GestureController,
     private router: Router,
     private eventoService: EventoService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private usuarioService: UsuarioService
   ) {}
 
   async ngOnInit() {
@@ -34,6 +40,22 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
       try {
         const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
         this.evento = eventoObtenido as Evento & { id: string };
+
+        const usuario = await this.usuarioService.getUsuarioActualConectado();
+        this.usuarioEmailActual = usuario?.correo_electronico ?? '';
+
+        if (this.evento.jugadores?.includes(this.usuarioEmailActual)) {
+          this.gestureEjecutado = true; // Desactiva swipe
+          this.mostrarToast('Ya estás inscrito en este evento 👍', 'warning');
+          return;
+        }
+
+        if (this.evento.cupos <= 0) {
+          this.gestureEjecutado = true;
+          this.mostrarToast('No hay cupos disponibles ❌', 'danger');
+          return;
+        }
+
       } catch (error) {
         console.error('❌ Error al cargar evento:', error);
         const toast = await this.toastCtrl.create({
@@ -48,35 +70,53 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
     }
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      const thumb = this.swipeThumb?.nativeElement;
-      const track = this.swipeArea?.nativeElement;
-      const fill = this.swipeFill?.nativeElement;
-      const text = this.swipeText?.nativeElement;
+  ngAfterViewChecked() {
+    if (
+      this.evento &&
+      !this.swipeInicializado &&
+      this.swipeThumb &&
+      this.swipeThumb.nativeElement
+    ) {
+      this.swipeInicializado = true;
+      setTimeout(() => this.inicializarSwipe(), 50);
+    }
+  }
 
-      if (!thumb || !track || !fill || !text) return;
+  inicializarSwipe() {
+    const thumb = this.swipeThumb?.nativeElement;
+    const track = this.swipeArea?.nativeElement;
+    const fill = this.swipeFill?.nativeElement;
+    const text = this.swipeText?.nativeElement;
 
-      const maxX = track.offsetWidth - thumb.offsetWidth;
+    console.log('✅ Verificando elementos swipe:', { thumb, track, fill, text });
 
-      const gesture = this.gestureCtrl.create({
-        el: thumb,
-        threshold: 0,
-        gestureName: 'slide-button',
-        onMove: (ev) => {
-          const delta = Math.max(0, Math.min(ev.deltaX, maxX));
-          const progress = (delta / maxX) * 100;
+    if (!thumb || !track || !fill || !text) {
+      console.warn('⚠️ Elementos de swipe no encontrados');
+      return;
+    }
 
-          thumb.style.transform = `translateX(${delta}px)`;
-          fill.style.width = `${progress}%`;
-          text.textContent = progress > 90 ? '¡Listo!' : 'Desliza para tomar evento';
+    const maxX = track.offsetWidth - thumb.offsetWidth;
 
-          if (delta >= maxX) {
-            this.unirseAlEvento();
-            gesture.destroy(); // evita múltiples ejecuciones
-          }
-        },
-        onEnd: () => {
+    const gesture = this.gestureCtrl.create({
+      el: thumb,
+      gestureName: 'slide-button',
+      threshold: 0,
+      onMove: (ev) => {
+        const delta = Math.max(0, Math.min(ev.deltaX, maxX));
+        const progress = (delta / maxX) * 100;
+
+        thumb.style.transform = `translateX(${delta}px)`;
+        fill.style.width = `${progress}%`;
+        text.textContent = progress > 90 ? '¡Listo!' : 'Desliza para tomar evento';
+
+        if (delta >= maxX && !this.gestureEjecutado) {
+          this.gestureEjecutado = true;
+          gesture.destroy();
+          this.unirseAlEvento();
+        }
+      },
+      onEnd: () => {
+        if (!this.gestureEjecutado) {
           thumb.style.transition = 'transform 0.3s ease-out';
           fill.style.transition = 'width 0.3s ease-out';
           text.textContent = 'Desliza para tomar evento';
@@ -87,14 +127,15 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
             thumb.style.transition = '';
             fill.style.transition = '';
           }, 300);
-        },
-      });
+        }
+      },
+    });
 
-      gesture.enable();
-    }, 0);
+    gesture.enable();
   }
 
   async unirseAlEvento() {
+    console.log('👉 unirseAlEvento() ejecutado');
     try {
       await this.eventoService.tomarEvento(this.evento.id);
       const toast = await this.toastCtrl.create({
@@ -114,6 +155,16 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
       });
       await toast.present();
     }
+  }
+
+  async mostrarToast(mensaje: string, color: 'success' | 'warning' | 'danger') {
+    const toast = await this.toastCtrl.create({
+      message: mensaje,
+      duration: 2500,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 
   volverAtras() {
