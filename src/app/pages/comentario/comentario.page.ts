@@ -392,9 +392,9 @@ sigueAlAutor(publicacion: Publicacion): boolean {
           text: 'Eliminar',
           role: 'destructive',
           cssClass: 'alert-button-delete',
-          handler: () => {
-            this.volver();
-            // Aquí puedes usar tu función de eliminación real
+          handler: async () => {
+          await this.publicacionService.removePublicacion(publicacion.id_publicacion);
+          this.volver();
           }
         }
       ]

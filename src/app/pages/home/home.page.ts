@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, ModalController } from '@ionic/angular';
+import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
@@ -19,6 +19,7 @@ import { LikeService } from 'src/app/services/like.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -68,6 +69,8 @@ export class HomePage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
+    private navCtrl: NavController,
+    private alertCtrl: AlertController,
     private localStorage: LocalStorageService,
     private likeService: LikeService,
     private seguirService: SeguirService,
@@ -246,16 +249,40 @@ sigueAlAutor(publicacion: Publicacion): boolean {
     this.closeModal();
   }
 
-  opcion(publicacion: Publicacion) {
-    this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
+  opcion(publicacion: any) {
+    localStorage.setItem('id_usuario', this.usuarioActual.id_usuario);
+    const idUsuarioActual = localStorage.getItem('id_usuario') ?? '';
+    const esPropietario = publicacion.id_usuario === idUsuarioActual;
+    const botones = esPropietario
+      ? [
+        {
+          text: 'Editar',
+          icon: 'pencil-outline',
+          handler: () => {
+            this.modificar(publicacion);
+          },
+        },
+        {
+          text: 'Eliminar publicacion',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            this.confirmarEliminacion(publicacion);
+          },
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+          handler: () => { }
+        }
+      ]
+      : [
         {
           text: 'Compartir',
           icon: 'share-outline',
           handler: () => {
             this.compartir(publicacion);
-            console.log('Compartir post');
           },
         },
         {
@@ -264,17 +291,57 @@ sigueAlAutor(publicacion: Publicacion): boolean {
           role: 'destructive',
           handler: () => {
             this.irAReportar(publicacion);
-            console.log('Post reportado');
           },
         },
         {
           text: 'Cancelar',
           icon: 'close-outline',
           role: 'cancel',
-        },
-      ],
+          handler: () => { }
+        }
+      ];
+
+    this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: botones,
       cssClass: 'custom-action-sheet'
-    }).then(actionSheet => actionSheet.present());
+    }).then(actionSheet => {
+      actionSheet.present();
+    });
+  }
+
+  modificar(publicacion: Publicacion) {
+    this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
+  }
+
+  volver() {
+    this.navCtrl.back();
+  }
+
+  async confirmarEliminacion(publicacion: any) {
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar publicación?',
+      message: '¿Estás seguro de que deseas eliminar esta publicación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => { }
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          cssClass: 'alert-button-delete',
+          handler: async () => {
+          await this.publicacionService.removePublicacion(publicacion.id_publicacion);
+          this.volver();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async compartir(publicacion: Publicacion) {
