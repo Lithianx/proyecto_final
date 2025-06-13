@@ -64,7 +64,54 @@ ion-list {
   }
 }
 
+  ion-list {
+  background: transparent !important;
+}
 
+.sin-conversaciones {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+  color: #888;
+  font-size: 1.2rem;
+  font-weight: 500;
+  background: transparent;
+
+  .lupa-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 3rem;
+      color: #3fe520;
+      animation: girarLupa 2.5s linear infinite;
+    }
+  }
+
+  ion-text h3 {
+    margin: 0;
+    color: #888;
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes girarLupa {
+  0% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
 
 .custom-modal-enviar {
 
@@ -149,18 +196,13 @@ ion-list {
   
   ::ng-deep .custom-action-sheet .action-sheet-button {
     color: #a6a6a6; // color de texto de los botones
-    justify-content: center;  // centra el texto e ícono
-    text-align: center;
   }
   
   ::ng-deep .custom-action-sheet .action-sheet-icon {
-    margin-left: 25%;
-    margin-right: 10% !important;
     color: #3fe520; // color de texto de los botones
   }
   
   ::ng-deep .custom-action-sheet .action-sheet-title {
-    text-align: center;
     color: #f2f2f2; // color del título
   }
 

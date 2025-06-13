@@ -57,28 +57,28 @@ export class ComunicacionService {
         const fechaA = a.fecha_envio instanceof Date
           ? a.fecha_envio.getTime()
           : (typeof a.fecha_envio === 'object' && a.fecha_envio !== null && 'toDate' in a.fecha_envio
-              ? (a.fecha_envio as { toDate: () => Date }).toDate().getTime()
-              : new Date(a.fecha_envio as string).getTime());
+            ? (a.fecha_envio as { toDate: () => Date }).toDate().getTime()
+            : new Date(a.fecha_envio as string).getTime());
         const fechaB = b.fecha_envio instanceof Date
           ? b.fecha_envio.getTime()
           : (typeof b.fecha_envio === 'object' && b.fecha_envio !== null && 'toDate' in b.fecha_envio
-              ? (b.fecha_envio as { toDate: () => Date }).toDate().getTime()
-              : new Date(b.fecha_envio as string).getTime());
+            ? (b.fecha_envio as { toDate: () => Date }).toDate().getTime()
+            : new Date(b.fecha_envio as string).getTime());
         return fechaB - fechaA;
       })[0];
   }
 
   // Enviar mensaje (guarda offline si no hay internet)
-async enviarMensaje(mensaje: Mensaje) {
-  const online = await this.utilsService.checkInternetConnection();
-  if (online) {
-    const mensajesRef = collection(this.firestore, 'Mensaje');
-    const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
-    await updateDoc(docRef, { id_mensaje: docRef.id });
-  } else {
-    await this.localStorage.addToList<Mensaje>('mensajes_offline', mensaje);
+  async enviarMensaje(mensaje: Mensaje) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
+      const mensajesRef = collection(this.firestore, 'Mensaje');
+      const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
+      await updateDoc(docRef, { id_mensaje: docRef.id });
+    } else {
+      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensaje);
+    }
   }
-}
 
 
   // Obtener mensajes offline (para mostrar en historial)
@@ -93,12 +93,12 @@ async enviarMensaje(mensaje: Mensaje) {
   }
 
   // Marcar mensajes como vistos (actualiza en Firestore)
-async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _idUsuarioActual: string) {
-  // Solo marca como vistos los mensajes recibidos en el array
-  for (const m of mensajes) {
-    await this.firebaseService.updateMensaje({ ...m, estado_visto: true });
+  async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _idUsuarioActual: string) {
+    // Solo marca como vistos los mensajes recibidos en el array
+    for (const m of mensajes) {
+      await this.firebaseService.updateMensaje({ ...m, estado_visto: true });
+    }
   }
-}
 
 
   // Agregar conversación (guarda offline si no hay internet)
@@ -136,97 +136,97 @@ async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _i
       id_conversacion: idConversacion,
       id_usuario_emisor: idUsuario,
       contenido: `[${tipo}] ${base64}`,
-      fecha_envio: new Date(),
+      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
       estado_visto: false,
     };
     await this.enviarMensaje(mensaje);
   }
 
-async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): Promise<string> {
-  const conversacionesRef = collection(this.firestore, 'Conversacion');
-  // Busca conversación donde los usuarios sean emisor/receptor en cualquier orden
-  const q = query(
-    conversacionesRef,
-    where('id_usuario_emisor', 'in', [idUsuario1, idUsuario2]),
-    where('id_usuario_receptor', 'in', [idUsuario1, idUsuario2])
-  );
-  const snapshot = await getDocs(q);
-
-  // Filtra en memoria para asegurar que los dos usuarios son los únicos participantes
-  const conversacionExistente = snapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() as any }))
-    .find(conv =>
-      (conv.id_usuario_emisor === idUsuario1 && conv.id_usuario_receptor === idUsuario2) ||
-      (conv.id_usuario_emisor === idUsuario2 && conv.id_usuario_receptor === idUsuario1)
+  async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): Promise<string> {
+    const conversacionesRef = collection(this.firestore, 'Conversacion');
+    // Busca conversación donde los usuarios sean emisor/receptor en cualquier orden
+    const q = query(
+      conversacionesRef,
+      where('id_usuario_emisor', 'in', [idUsuario1, idUsuario2]),
+      where('id_usuario_receptor', 'in', [idUsuario1, idUsuario2])
     );
+    const snapshot = await getDocs(q);
 
-  if (conversacionExistente) {
-    return conversacionExistente.id;
-  } else {
-    // No existe, crea una nueva
-    const nuevaConversacion = {
-      id_usuario_emisor: idUsuario1,
-      id_usuario_receptor: idUsuario2,
-      fecha_envio: new Date()
-    };
-    const docRef = await addDoc(conversacionesRef, nuevaConversacion);
+    // Filtra en memoria para asegurar que los dos usuarios son los únicos participantes
+    const conversacionExistente = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() as any }))
+      .find(conv =>
+        (conv.id_usuario_emisor === idUsuario1 && conv.id_usuario_receptor === idUsuario2) ||
+        (conv.id_usuario_emisor === idUsuario2 && conv.id_usuario_receptor === idUsuario1)
+      );
 
-        // Actualiza el campo id_conversacion con el ID generado por Firestore
-    await updateDoc(docRef, { id_conversacion: docRef.id });
-    
-    return docRef.id;
-  }
-}
+    if (conversacionExistente) {
+      return conversacionExistente.id;
+    } else {
+      // No existe, crea una nueva
+      const nuevaConversacion = {
+        id_usuario_emisor: idUsuario1,
+        id_usuario_receptor: idUsuario2,
+      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
+      };
+      const docRef = await addDoc(conversacionesRef, nuevaConversacion);
 
+      // Actualiza el campo id_conversacion con el ID generado por Firestore
+      await updateDoc(docRef, { id_conversacion: docRef.id });
 
-
-async enviarPublicacion(publicacion: Publicacion, id_conversacion: string, id_usuario_emisor: string) {
-  const mensaje: Mensaje = {
-    id_mensaje: '', // Se generará en Firestore
-    id_conversacion: id_conversacion,
-    id_usuario_emisor: id_usuario_emisor,
-    contenido: JSON.stringify(publicacion), // Puedes guardar el objeto como string o solo el id
-    fecha_envio: new Date(),
-    estado_visto: false
-  };
-  await this.enviarMensaje(mensaje);
-}
-
-private async existeMensajeEnFirestore(mensaje: Mensaje): Promise<boolean> {
-  const mensajesRef = collection(this.firestore, 'Mensaje');
-  const q = query(
-    mensajesRef,
-    where('id_conversacion', '==', mensaje.id_conversacion),
-    where('id_usuario_emisor', '==', mensaje.id_usuario_emisor),
-    where('contenido', '==', mensaje.contenido),
-    where('fecha_envio', '==', mensaje.fecha_envio)
-  );
-  const snapshot = await getDocs(q);
-  return !snapshot.empty;
-}
-
-async sincronizarMensajesLocales(): Promise<void> {
-  const online = await this.utilsService.checkInternetConnection();
-  if (!online) return;
-
-  let mensajesOffline = await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
-  const noSincronizados: Mensaje[] = [];
-
-  for (const mensaje of mensajesOffline) {
-    try {
-      const existe = await this.existeMensajeEnFirestore(mensaje);
-      if (!existe) {
-        const mensajesRef = collection(this.firestore, 'Mensaje');
-        const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
-        await updateDoc(docRef, { id_mensaje: docRef.id });
-      }
-      // Si ya existe o se subió, no lo agregues a noSincronizados
-    } catch {
-      noSincronizados.push(mensaje);
+      return docRef.id;
     }
   }
-  await this.localStorage.setItem('mensajes_offline', noSincronizados);
-}
+
+
+
+  async enviarPublicacion(publicacion: Publicacion, id_conversacion: string, id_usuario_emisor: string) {
+    const mensaje: Mensaje = {
+      id_mensaje: '', // Se generará en Firestore
+      id_conversacion: id_conversacion,
+      id_usuario_emisor: id_usuario_emisor,
+      contenido: JSON.stringify(publicacion), // Puedes guardar el objeto como string o solo el id
+      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
+      estado_visto: false
+    };
+    await this.enviarMensaje(mensaje);
+  }
+
+  private async existeMensajeEnFirestore(mensaje: Mensaje): Promise<boolean> {
+    const mensajesRef = collection(this.firestore, 'Mensaje');
+    const q = query(
+      mensajesRef,
+      where('id_conversacion', '==', mensaje.id_conversacion),
+      where('id_usuario_emisor', '==', mensaje.id_usuario_emisor),
+      where('contenido', '==', mensaje.contenido),
+      where('fecha_envio', '==', mensaje.fecha_envio)
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  }
+
+  async sincronizarMensajesLocales(): Promise<void> {
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) return;
+
+    let mensajesOffline = await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
+    const noSincronizados: Mensaje[] = [];
+
+    for (const mensaje of mensajesOffline) {
+      try {
+        const existe = await this.existeMensajeEnFirestore(mensaje);
+        if (!existe) {
+          const mensajesRef = collection(this.firestore, 'Mensaje');
+          const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
+          await updateDoc(docRef, { id_mensaje: docRef.id });
+        }
+        // Si ya existe o se subió, no lo agregues a noSincronizados
+      } catch {
+        noSincronizados.push(mensaje);
+      }
+    }
+    await this.localStorage.setItem('mensajes_offline', noSincronizados);
+  }
 
   // Sincronizar solo las conversaciones offline
   async sincronizarConversacionesLocales(): Promise<void> {

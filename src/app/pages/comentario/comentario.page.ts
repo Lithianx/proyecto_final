@@ -419,4 +419,31 @@ export class ComentarioPage implements OnInit, OnDestroy  {
 
     await alert.present();
   }
+
+
+
+  async confirmarDejarDeSeguir(usuario: Usuario) {
+  const alert = await this.alertCtrl.create({
+    header: '¿Dejar de seguir?',
+    message: `¿Estás seguro de que deseas dejar de seguir a ${usuario.nombre_usuario}?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        cssClass: 'alert-button-cancel',
+        handler: () => { }
+      },
+      {
+        text: 'Dejar de seguir',
+        role: 'destructive',
+        cssClass: 'alert-button-delete',
+        handler: async () => {
+          await this.seguir(usuario);
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
 }

@@ -7,7 +7,17 @@
 
   .editar-publicacion-card {
     padding: 10px;
-    h2{
+    width: 80vw;
+    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Asegura al menos 30px de separación con el header */
+    max-height: calc(100vh - 30px - 56px); // 56px es una altura común de header Ionic, ajusta si es necesario
+    margin-top: 30px;
+
+    h2 {
       color: #3fe520;
     }
   }

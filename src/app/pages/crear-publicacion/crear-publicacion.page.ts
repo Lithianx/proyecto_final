@@ -11,6 +11,8 @@ import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { NavController } from '@ionic/angular';
 
+import { ToastController } from '@ionic/angular';
+
 @Component({
   selector: 'app-crear-publicacion',
   templateUrl: './crear-publicacion.page.html',
@@ -32,7 +34,7 @@ export class CrearPublicacionPage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion:''
+    descripcion: ''
   };
 
   contenido: string = '';
@@ -47,6 +49,7 @@ export class CrearPublicacionPage implements OnInit {
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
     private navCtrl: NavController,
+    private toastController: ToastController
   ) { }
 
   async ngOnInit() {
@@ -139,6 +142,18 @@ export class CrearPublicacionPage implements OnInit {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
-    this.navCtrl.back();
+    await this.mostrarToast('¡Publicación creada exitosamente!');
+    this.router.navigate(['/home']);
   }
+
+
+  async mostrarToast(mensaje: string) {
+  const toast = await this.toastController.create({
+    message: mensaje,
+    duration: 2000,
+    color: 'success',
+    position: 'bottom'
+  });
+  toast.present();
+}
 }

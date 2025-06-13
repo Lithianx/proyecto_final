@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
@@ -8,6 +8,7 @@ import { LocalStorageService } from 'src/app/services/local-storage-social.servi
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { NavController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -40,11 +41,13 @@ export class EditarPublicacionPage implements OnInit {
   publicaciones: Publicacion[] = []; // Lista de publicaciones cargadas
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
     private navCtrl: NavController,
+  private toastController: ToastController
   ) { }
 
   async ngOnInit() {
@@ -142,7 +145,19 @@ export class EditarPublicacionPage implements OnInit {
       }
 
       console.log('Cambios guardados:', this.publicaciones);
-      this.navCtrl.back();
+      await this.mostrarToast('¡Publicación modificada exitosamente!');
+      this.router.navigate(['/home']);
     }
   }
+
+
+  async mostrarToast(mensaje: string) {
+  const toast = await this.toastController.create({
+    message: mensaje,
+    duration: 2000,
+    color: 'success',
+    position: 'bottom'
+  });
+  toast.present();
+}
 }

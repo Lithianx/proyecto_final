@@ -24,3 +24,22 @@
     color: #707070; // gris claro
     font-size: 33px;
   }
+
+
+    ::ng-deep .custom-action-sheet .action-sheet-button {
+    color: #a6a6a6; // color de texto de los botones
+  }
+  
+  ::ng-deep .custom-action-sheet .action-sheet-icon {
+    color: #3fe520; // color de texto de los botones
+  }
+  
+  ::ng-deep .custom-action-sheet .action-sheet-title {
+    color: #f2f2f2; // color del título
+  }
+
+  ::ng-deep .custom-action-sheet .action-sheet-cancel {
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
