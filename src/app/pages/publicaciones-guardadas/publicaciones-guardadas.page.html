@@ -1,6 +1,7 @@
 <app-encabezado></app-encabezado>
 
 <ion-content [fullscreen]="true">
+  <!-- Header con botón atrás -->
   <div class="header-row">
     <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
       <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
@@ -10,18 +11,57 @@
 
   <hr class="section-divider" />
 
+  <!-- Contenido -->
   <div class="publicaciones-grid">
-    <div class="post-thumbnail" *ngFor="let post of publicacionesGuardadas; let i = index">
-      <!-- Toda la tarjeta es clickeable -->
-      <div (click)="irADetalles()" class="post-content" tabindex="0" role="button" aria-label="Ver detalles de la publicación">
-        <img [src]="post.img" [alt]="post.alt" />
-      </div>
-
-      <!-- Ícono envuelto en botón accesible -->
-      <button class="bookmark-icon" (click)="confirmarEliminar(i, $event)" aria-label="Eliminar publicación guardada">
-        <ion-icon name="bookmark"></ion-icon>
-      </button>
+    <!-- Si no hay publicaciones -->
+    <div *ngIf="publicacionesFiltradas.length === 0; else listaPublicaciones" class="no-publicaciones-container">
+      <ion-icon name="folder-open-outline" size="large"></ion-icon>
+      <p>Aún no hay publicaciones guardadas.</p>
     </div>
+
+    <!-- Lista de publicaciones -->
+    <ng-template #listaPublicaciones>
+      <ion-list lines="none">
+        <div class="bordes">
+          <ion-card *ngFor="let publicacion of publicacionesFiltradas; let i = index">
+            <!-- Encabezado de publicación -->
+            <ion-item>
+              <ion-avatar slot="start">
+                <img
+                  [src]="getUsuarioDePublicacion(publicacion.id_usuario)?.avatar || 'assets/avatar-default.png'"
+                  [alt]="'Foto de perfil de ' + (getUsuarioDePublicacion(publicacion.id_usuario)?.nombre_usuario || 'Usuario')"
+                />
+              </ion-avatar>
+              <ion-label class="etiqueta-usuario">
+                <h2>{{ getUsuarioDePublicacion(publicacion.id_usuario)?.nombre_usuario || 'Usuario' }}</h2>
+                <p>{{ publicacion.fecha_publicacion | date: 'short' }}</p>
+              </ion-label>
+
+              <!-- Botón de quitar guardado -->
+              <ion-button fill="clear" slot="end" class="bookmark-icon" (click)="confirmarEliminar(i, $event)" aria-label="Eliminar publicación guardada">
+                <ion-icon name="bookmark" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+
+            <!-- Contenido de la publicación -->
+            <div
+              class="contenido-publicacion"
+              style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;"
+            >
+              <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
+                <img [src]="publicacion.imagen" class="post-image" (click)="comentario(publicacion)" />
+              </ng-container>
+
+              <ng-template #soloDescripcion>
+                <ion-card-content (click)="comentario(publicacion)">
+                  <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+                </ion-card-content>
+              </ng-template>
+            </div>
+          </ion-card>
+        </div>
+      </ion-list>
+    </ng-template>
   </div>
 </ion-content>
 

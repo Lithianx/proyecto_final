@@ -393,7 +393,6 @@ body {
 
 .lista-elementos li {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--ion-color-medium);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -441,4 +440,10 @@ body {
   color: var(--ion-color-primary);
   font-size: 1.2rem;
   text-align: center;
+}
+ion-list {
+  background: transparent !important;
+}
+.descripcion-sola {
+  color:white; /* Gris secundario personalizado */
 }
