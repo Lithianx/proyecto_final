@@ -37,3 +37,54 @@ ion-searchbar{
     align-items: center;
     gap: 8px;
   }
+
+
+
+  ion-list {
+  background: transparent !important;
+}
+
+.sin-conversaciones {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+  color: #888;
+  font-size: 1.2rem;
+  font-weight: 500;
+  background: transparent;
+
+  .lupa-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 3rem;
+      color: #3fe520;
+      animation: girarLupa 2.5s linear infinite;
+    }
+  }
+
+  ion-text h3 {
+    margin: 0;
+    color: #888;
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes girarLupa {
+  0% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
