@@ -1,6 +1,10 @@
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
+import { SeguirService } from 'src/app/services/seguir.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { Usuario } from 'src/app/models/usuario.model';
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
 @Component({
   selector: 'app-seguidores',
@@ -8,69 +12,61 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./seguidores.page.scss'],
   standalone: false,
 })
-export class SeguidoresPage implements OnInit {
+export class SeguidoresPage {
+  idUsuarioActual: string = '';
+  seguidores: (Usuario & { siguiendo: boolean })[] = [];
+  seguidoresFiltrados: (Usuario & { siguiendo: boolean })[] = [];
 
-  seguidores: { id: number; nombre: string; siguiendo: boolean }[] = [];
-  seguidoresFiltrados: { id: number; nombre: string; siguiendo: boolean }[] = [];
+  constructor(
+    private router: Router,
+    private alertController: AlertController,
+    private seguirService: SeguirService,
+    private usuarioService: UsuarioService,
+    private localStorageService: LocalStorageService
+  ) {}
 
-  constructor(private router: Router, private alertController: AlertController) {}
-
-  ngOnInit() {
-  this.seguidores = [
-    { id: 1, nombre: 'mariana.fit', siguiendo: true },
-    { id: 2, nombre: 'lucas.dev', siguiendo: false },
-    { id: 3, nombre: 'valen_art', siguiendo: true },
-    { id: 4, nombre: 'diegocode', siguiendo: false },
-    { id: 5, nombre: 'camila.music', siguiendo: true },
-    { id: 6, nombre: 'tomas.travel', siguiendo: false },
-    { id: 7, nombre: 'fernanda_chef', siguiendo: true },
-    { id: 8, nombre: 'sebaflow', siguiendo: false },
-    { id: 9, nombre: 'isidora.makeup', siguiendo: true },
-    { id: 10, nombre: 'matias.pro', siguiendo: false },
-    { id: 11, nombre: 'josefa.writer', siguiendo: true },
-    { id: 12, nombre: 'ignacio_plays', siguiendo: false },
-    { id: 13, nombre: 'antonia.photo', siguiendo: true },
-    { id: 14, nombre: 'andres.tech', siguiendo: false },
-    { id: 15, nombre: 'constanza.books', siguiendo: true }
-  ];
-    this.seguidoresFiltrados = [...this.seguidores];
+  async ionViewWillEnter() {
+    await this.cargarDatos();
   }
 
-  // Cambia estado o muestra modal según sea seguir o eliminar
-  async alternarSeguimiento(usuario: any) {
-    if (usuario.siguiendo) {
-      const alert = await this.alertController.create({
-        header: '¿Dejar de seguir?',
-        message: `¿Quieres dejar de seguir a ${usuario.nombre}?`,
-        buttons: [
-          {
-            text: 'Cancelar',
-            role: 'cancel'
-          },
-          {
-            text: 'Eliminar',
-            role: 'destructive',
-            handler: () => {
-              usuario.siguiendo = false; 
-            }
-          }
-        ]
-      });
-      await alert.present();
-    } else {
-      usuario.siguiendo = true;
+  private async cargarDatos() {
+    try {
+      this.idUsuarioActual = await this.localStorageService.getItem('id_usuario');
+      await this.seguirService.cargarSeguimientos();
+      await this.usuarioService.cargarUsuarios();
+
+      const todosUsuarios = this.usuarioService.getUsuarios();
+      const seguidoresPuros = this.seguirService.getSeguidores(todosUsuarios, this.idUsuarioActual);
+
+      this.seguidores = seguidoresPuros.map(user => ({
+        ...user,
+        siguiendo: this.seguirService.sigue(this.idUsuarioActual, user.id_usuario)
+      }));
+
+      this.seguidoresFiltrados = [...this.seguidores];
+    } catch (error) {
+      console.error('❌ Error al cargar seguidores:', error);
     }
   }
 
-  verPerfil(id: number) {
+  buscarUsuarios(event: any) {
+    const texto = event.detail.value.toLowerCase().trim();
+    if (texto === '') {
+      this.seguidoresFiltrados = [...this.seguidores];
+    } else {
+      this.seguidoresFiltrados = this.seguidores.filter(user =>
+        user.nombre_usuario.toLowerCase().includes(texto)
+      );
+    }
+  }
+
+  async seguir(user: Usuario) {
+    await this.seguirService.toggleSeguir(this.idUsuarioActual, user.id_usuario);
+    await this.cargarDatos();
+  }
+
+  verPerfil(id: string) {
     this.router.navigate(['/perfil-user', id]);
   }
-
-  buscarUsuarios(event: any) {
-    const texto = event.detail.value.toLowerCase();
-    this.seguidoresFiltrados = this.seguidores.filter(user =>
-      user.nombre.toLowerCase().includes(texto)
-    );
-  }
+  
 }
-
