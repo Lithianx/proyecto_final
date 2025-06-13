@@ -48,8 +48,8 @@ export class ChatPrivadoPage implements OnInit {
 
   // Scroll infinito
   todosLosMensajes: Mensaje[] = [];
-  mensajesMostrados = 10;
-  incrementoMensajes = 5;
+  mensajesMostrados = 30;
+  incrementoMensajes = 30;
   cargandoMas = false;
 
   constructor(
@@ -244,7 +244,10 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   async enviarGifGiphy(url: string) {
-    const horaActual = new Date();
+    // Obtener la hora actual en la zona horaria de Chile ('America/Santiago')
+    const horaActual = new Date(
+      new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })
+    );
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime().toString(),
       id_conversacion: this.idConversacionActual,
@@ -379,7 +382,10 @@ export class ChatPrivadoPage implements OnInit {
   async enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
 
-    const horaActual = new Date();
+    // Obtener la hora actual en la zona horaria de Chile ('America/Santiago')
+    const horaActual = new Date(
+      new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })
+    );
     const mensaje: Mensaje = {
       id_mensaje: '', // Temporal
       id_conversacion: this.idConversacionActual,

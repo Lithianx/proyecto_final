@@ -35,6 +35,7 @@ export class NavbarComponent  implements OnInit {
   mostrarMenu() {
     this.actionSheetCtrl.create({
       header: 'Opciones',
+      cssClass: 'custom-action-sheet',
       buttons: [
         {
           text: 'Crear Publicación',

@@ -40,8 +40,9 @@
         </ion-label>
         <!-- Botón de seguir -->
         <ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"
-          [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
-          (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario))" [outline]="!sigueAlAutor(publicacion)">
+          [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'" (click)="sigueAlAutor(publicacion) 
+    ? confirmarDejarDeSeguir(getUsuarioPublicacion(publicacion.id_usuario)) 
+    : seguir(getUsuarioPublicacion(publicacion.id_usuario))" [outline]="!sigueAlAutor(publicacion)">
           {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
         </ion-chip>
 
@@ -145,6 +146,18 @@
       <ion-content>
         <ion-searchbar placeholder="Buscar amigos" (ionInput)="handleInput($event)"></ion-searchbar>
         <ion-list class="modal-scrollable-content" scroll-y="true">
+
+          <div *ngIf="followersfriend.length === 0" class="sin-conversaciones">
+            <span class="lupa-spinner">
+              <ion-icon name="chatbubbles-outline"></ion-icon>
+            </span>
+            <ion-text color="medium">
+              <h3>Sigue a mas personas.</h3>
+              <h6>Animate a hablar con ellos</h6>
+            </ion-text>
+          </div>
+
+
           <ion-item *ngFor="let user of followersfriend">
             <ion-avatar slot="start">
               <img [src]="user.avatar" />
