@@ -114,4 +114,13 @@ async sincronizarSeguimientosLocales(): Promise<void> {
       user.nombre_usuario.toLowerCase().includes(searchTerm)
     );
   }
+  // Obtener los usuarios que siguen al usuario actual
+getSeguidores(usuarios: Usuario[], idUsuario: string): Usuario[] {
+  const idsSeguidores = this.seguimientosEnMemoria
+    .filter(s => s.id_usuario_seguido === idUsuario && s.estado_seguimiento)
+    .map(s => s.id_usuario_seguidor);
+
+  return usuarios.filter(u => idsSeguidores.includes(u.id_usuario));
+}
+
 }

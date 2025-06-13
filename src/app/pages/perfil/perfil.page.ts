@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { LikeService } from 'src/app/services/like.service';
-import { SeguirService } from 'src/app/services/seguir.service'; // <-- Importa el servicio seguir
+import { SeguirService } from 'src/app/services/seguir.service';
 import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { LocalStorageService } from '../../services/local-storage-social.service';
@@ -21,7 +21,7 @@ export class PerfilPage implements OnInit {
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
 
-  usuarios: Usuario[] = []; // Considera cargar esta lista si es necesaria
+  usuarios: Usuario[] = [];
   usuarioActual: Usuario = {
     id_usuario: '0',
     nombre_usuario: 'Usuario Demo',
@@ -42,8 +42,8 @@ export class PerfilPage implements OnInit {
 
   estadisticas = {
     publicaciones: 0,
-    seguidores: 300, // Esto podrías actualizar dinámicamente igual si quieres
-    seguidos: 0      // Inicializado en 0, lo cargaremos dinámicamente
+    seguidores: 0,
+    seguidos: 0
   };
 
   eventosinscritos = [
@@ -76,13 +76,13 @@ export class PerfilPage implements OnInit {
     private usuarioService: UsuarioService,
     private publicacionService: PublicacionService,
     private likeService: LikeService,
-    private seguirService: SeguirService // <-- Inyectar servicio seguir
+    private seguirService: SeguirService
   ) {}
 
   async ionViewWillEnter() {
-    console.log('ionViewWillEnter: cargando datos usuario y publicaciones...');
     await this.cargarDatosUsuario();
-    await this.cargarCantidadSeguidos();
+    await this.cargarUsuarios(); // Primero cargamos todos los usuarios
+    await this.cargarCantidadSeguidosYSeguidores();
     await this.cargarPublicaciones();
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
@@ -91,7 +91,6 @@ export class PerfilPage implements OnInit {
 
   private async cargarDatosUsuario() {
     const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
-    console.log('ID usuario obtenido de localStorage:', id_usuario);
 
     if (!id_usuario) {
       console.warn('No hay id_usuario en localStorage');
@@ -100,7 +99,6 @@ export class PerfilPage implements OnInit {
 
     try {
       const usuario = await this.usuarioService.getUsuarioPorId(id_usuario);
-      console.log('Datos usuario cargados:', usuario);
       if (usuario) {
         this.usuarioActual = usuario;
         this.fotoPerfil = usuario.avatar || this.fotoPerfil;
@@ -113,29 +111,34 @@ export class PerfilPage implements OnInit {
     }
   }
 
-  private async cargarCantidadSeguidos() {
+  private async cargarUsuarios() {
+    try {
+      this.usuarios = await this.usuarioService.getUsuarios();
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+    }
+  }
+
+  private async cargarCantidadSeguidosYSeguidores() {
     if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
       this.estadisticas.seguidos = 0;
+      this.estadisticas.seguidores = 0;
       return;
     }
 
     try {
-      // Opcional: cargar usuarios si no están ya cargados
-      if (this.usuarios.length === 0) {
-        this.usuarios = await this.usuarioService.getUsuarios();
-      }
-      // Llamar al servicio seguir para obtener los seguidos del usuario actual
-      const usuariosSeguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-      this.estadisticas.seguidos = usuariosSeguidos.length;
+      const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+      const seguidores = this.seguirService.getSeguidores(this.usuarios, this.usuarioActual.id_usuario);
+
+      this.estadisticas.seguidos = seguidos.length;
+      this.estadisticas.seguidores = seguidores.length;
     } catch (error) {
-      console.error('Error al cargar seguidos:', error);
-      this.estadisticas.seguidos = 0;
+      console.error('Error al obtener seguidos/seguidores:', error);
     }
   }
 
   private async cargarPublicaciones() {
     if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
-      console.warn('Usuario actual no definido para cargar publicaciones');
       return;
     }
 
@@ -167,8 +170,6 @@ export class PerfilPage implements OnInit {
           icon: 'trash-outline',
           role: 'destructive',
           handler: async () => {
-            console.log('Eliminar publicación con id:', publicacion.id_publicacion);
-            // await this.publicacionService.eliminarPublicacion(publicacion.id_publicacion);
             await this.cargarPublicaciones();
           }
         },
@@ -184,12 +185,10 @@ export class PerfilPage implements OnInit {
   }
 
   comentario(publicacion: Publicacion) {
-    console.log('Navegando a comentarios de publicación:', publicacion.id_publicacion);
     this.router.navigate(['/comentario', publicacion.id_publicacion]);
   }
 
   verImagen(publicacion: Publicacion) {
-    console.log('Navegando a imagen de publicación:', publicacion.id_publicacion);
     this.router.navigate(['/comentario', publicacion.id_publicacion]);
   }
 
@@ -199,17 +198,13 @@ export class PerfilPage implements OnInit {
 
   segmentChanged(event: any) {
     const value = event.detail.value;
-    console.log('Segment changed a:', value);
     this.vistaSeleccionada = value;
     this.applySliderTransform(value);
   }
 
   applySliderTransform(value: string) {
     const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
-    if (!segmentElement) {
-      console.warn('Elemento publicacionesNav no encontrado');
-      return;
-    }
+    if (!segmentElement) return;
 
     let position = 0;
 
@@ -218,10 +213,10 @@ export class PerfilPage implements OnInit {
         position = 3;
         break;
       case 'eventos-inscritos':
-        position = 320 / 3; // ~33.33%
+        position = 320 / 3;
         break;
       case 'eventos-creados':
-        position = (315 / 3) * 2; // ~66.66%
+        position = (315 / 3) * 2;
         break;
     }
 
@@ -258,7 +253,6 @@ export class PerfilPage implements OnInit {
           role: 'destructive',
           cssClass: 'cerrar-sesion-btn',
           handler: async () => {
-            console.log('Cerrando sesión...');
             await this.usuarioService.logout();
             this.router.navigate(['/login']);
           }
