@@ -48,8 +48,6 @@ export class UsuarioService {
         if (usuario) {
             await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
             await this.localStorage.setItem('id_usuario', usuario.id_usuario);
-            console.log('Usuario logueado:', usuario); // <--- aquí
-            console.log('Usuario logueado:', usuario.id_usuario); // <--- aquí
         }
         return usuario ?? null;
       } catch (error) {
@@ -64,8 +62,6 @@ export class UsuarioService {
       if (usuario) {
         await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
         await this.localStorage.setItem('id_usuario', usuario.id_usuario);
-        console.log('Usuario logueado:', usuario); // <--- aquí
-        console.log('Usuario logueado:', usuario.id_usuario); // <--- aquí
       }
       return usuario ?? null;
     }
@@ -96,7 +92,7 @@ export class UsuarioService {
 
       if (cred.user) {
         try {
-          await sendEmailVerification(cred.user); // Envío de verificación
+          await sendEmailVerification(cred.user); 
         } catch (error) {
           console.warn('No se pudo enviar el correo de verificación:', error);
         }
