@@ -1,7 +1,10 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NavController, GestureController } from '@ionic/angular';
+import { NavController, GestureController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { EventoService } from 'src/app/services/evento.service';
+import { Evento } from 'src/app/models/evento.model';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -9,50 +12,95 @@ import { Router } from '@angular/router';
   styleUrls: ['./detalle-evento.page.scss'],
   standalone: false,
 })
-export class DetalleEventoPage implements OnInit, AfterViewInit {
+export class DetalleEventoPage implements OnInit, AfterViewChecked {
   @ViewChild('swipeArea', { read: ElementRef }) swipeArea!: ElementRef;
   @ViewChild('swipeThumb', { read: ElementRef }) swipeThumb!: ElementRef;
   @ViewChild('swipeFill', { read: ElementRef }) swipeFill!: ElementRef;
   @ViewChild('swipeText', { read: ElementRef }) swipeText!: ElementRef;
 
-  evento: any;
-
-  eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX', cupos: '9', descripcion: 'Torneo de League of Legends con premios para los ganadores.' },
-    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00',usuario: 'CARLOS' ,cupos: ' 2'},
-    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30',usuario: 'JUAN' ,cupos: ' 2'},
-    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666',cupos: '8' },
-    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00',usuario: 'KANGURUU',cupos: '1' },
-    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' ,cupos: '3'},
-  ];
+  evento!: Evento & { id: string };
+  usuarioEmailActual: string = '';
+  public gestureEjecutado = false;
+  private swipeInicializado = false;
+   
 
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
     private gestureCtrl: GestureController,
     private router: Router,
+    private eventoService: EventoService,
+    private toastCtrl: ToastController,
+    private usuarioService: UsuarioService
   ) {}
 
-  ngOnInit() {
-    const id = +this.route.snapshot.paramMap.get('id')!;
-    this.evento = this.eventos.find(e => e.id === id);
+  async ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      try {
+        const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
+        this.evento = eventoObtenido as Evento & { id: string };
+
+        const usuario = await this.usuarioService.getUsuarioActualConectado();
+        this.usuarioEmailActual = usuario?.correo_electronico ?? '';
+
+        if (this.evento.jugadores?.includes(this.usuarioEmailActual)) {
+          this.gestureEjecutado = true; // Desactiva swipe
+          this.mostrarToast('Ya estás inscrito en este evento 👍', 'warning');
+          return;
+        }
+
+        if (this.evento.cupos <= 0) {
+          this.gestureEjecutado = true;
+          this.mostrarToast('No hay cupos disponibles ❌', 'danger');
+          return;
+        }
+
+      } catch (error) {
+        console.error('❌ Error al cargar evento:', error);
+        const toast = await this.toastCtrl.create({
+          message: 'Error al cargar evento',
+          duration: 2000,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await toast.present();
+        this.volverAtras();
+      }
+    }
   }
 
-  ngAfterViewInit() {
-  setTimeout(() => {
+  ngAfterViewChecked() {
+    if (
+      this.evento &&
+      !this.swipeInicializado &&
+      this.swipeThumb &&
+      this.swipeThumb.nativeElement
+    ) {
+      this.swipeInicializado = true;
+      setTimeout(() => this.inicializarSwipe(), 50);
+    }
+  }
+
+  inicializarSwipe() {
     const thumb = this.swipeThumb?.nativeElement;
     const track = this.swipeArea?.nativeElement;
     const fill = this.swipeFill?.nativeElement;
     const text = this.swipeText?.nativeElement;
 
-    if (!thumb || !track || !fill || !text) return;
+    console.log('✅ Verificando elementos swipe:', { thumb, track, fill, text });
+
+    if (!thumb || !track || !fill || !text) {
+      console.warn('⚠️ Elementos de swipe no encontrados');
+      return;
+    }
 
     const maxX = track.offsetWidth - thumb.offsetWidth;
 
     const gesture = this.gestureCtrl.create({
       el: thumb,
-      threshold: 0,
       gestureName: 'slide-button',
+      threshold: 0,
       onMove: (ev) => {
         const delta = Math.max(0, Math.min(ev.deltaX, maxX));
         const progress = (delta / maxX) * 100;
@@ -61,32 +109,62 @@ export class DetalleEventoPage implements OnInit, AfterViewInit {
         fill.style.width = `${progress}%`;
         text.textContent = progress > 90 ? '¡Listo!' : 'Desliza para tomar evento';
 
-        if (delta >= maxX) {
+        if (delta >= maxX && !this.gestureEjecutado) {
+          this.gestureEjecutado = true;
+          gesture.destroy();
           this.unirseAlEvento();
-          gesture.destroy(); // evita múltiples ejecuciones
         }
       },
       onEnd: () => {
-        thumb.style.transition = 'transform 0.3s ease-out';
-        fill.style.transition = 'width 0.3s ease-out';
-        text.textContent = 'Desliza para tomar evento';
-        thumb.style.transform = 'translateX(0px)';
-        fill.style.width = '0%';
+        if (!this.gestureEjecutado) {
+          thumb.style.transition = 'transform 0.3s ease-out';
+          fill.style.transition = 'width 0.3s ease-out';
+          text.textContent = 'Desliza para tomar evento';
+          thumb.style.transform = 'translateX(0px)';
+          fill.style.width = '0%';
 
-        setTimeout(() => {
-          thumb.style.transition = '';
-          fill.style.transition = '';
-        }, 300);
+          setTimeout(() => {
+            thumb.style.transition = '';
+            fill.style.transition = '';
+          }, 300);
+        }
       },
     });
 
     gesture.enable();
-  }, 0); // <- clave para esperar render completo
-}
+  }
 
-  unirseAlEvento() {
-    const id = this.evento.id; 
-    this.router.navigate(['/sala-evento', id]);
+  async unirseAlEvento() {
+    console.log('👉 unirseAlEvento() ejecutado');
+    try {
+      await this.eventoService.tomarEvento(this.evento.id);
+      const toast = await this.toastCtrl.create({
+        message: 'Te has unido al evento con éxito 🎉',
+        duration: 2000,
+        color: 'success',
+        position: 'bottom',
+      });
+      await toast.present();
+      this.router.navigate(['/sala-evento', this.evento.id]);
+    } catch (error) {
+      const toast = await this.toastCtrl.create({
+        message: 'Error: No se pudo unir al evento. ' + (error as any).message,
+        duration: 2500,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+    }
+  }
+
+  async mostrarToast(mensaje: string, color: 'success' | 'warning' | 'danger') {
+    const toast = await this.toastCtrl.create({
+      message: mensaje,
+      duration: 2500,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 
   volverAtras() {
