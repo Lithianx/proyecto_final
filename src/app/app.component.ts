@@ -3,6 +3,8 @@ import { Platform } from '@ionic/angular';  //detecta en que plataforma se está
 import { StatusBar } from '@capacitor/status-bar';
 // import { NavigationBar } from '@capacitor-community/navigation-bar'; // Cambia el color de la barra de navegación inferior (solo en Android)
 // para futura implementación de la barra de navegación inferior
+import { ReporteService } from './services/reporte.service'; // Asegúrate de que la ruta sea correcta
+
 
 @Component({
   selector: 'app-root',
@@ -11,10 +13,23 @@ import { StatusBar } from '@capacitor/status-bar';
   standalone: false,
 })
 export class AppComponent {
-  constructor(private platform: Platform) {
-    this.initializeApp();
-    
+  constructor(
+    private platform: Platform,
+    private reporteService: ReporteService) 
+    {
+      this.initializeApp();
+    }
+
+  ngOnInit() {
+    // Sincroniza al iniciar si hay internet
+    this.reporteService.sincronizarReporte();
+
+    // Sincroniza automáticamente cuando vuelva el internet
+    window.addEventListener('online', () => {
+      this.reporteService.sincronizarReporte();
+    });
   }
+
 
   initializeApp() {
     this.platform.ready().then(() => {

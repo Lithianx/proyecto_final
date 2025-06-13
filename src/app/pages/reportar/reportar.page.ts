@@ -11,7 +11,7 @@ import { LocalStorageService } from 'src/app/services/local-storage-social.servi
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { ReporteService } from 'src/app/services/reporte.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-
+import { UtilsService } from 'src/app/services/utils.service';
 @Component({
   selector: 'app-reportar',
   templateUrl: './reportar.page.html',
@@ -66,10 +66,21 @@ export class ReportarPage implements OnInit {
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
     private reporteService: ReporteService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private utilsService: UtilsService
   ) { }
 
+//verifica si tiene internet
+   async checkInternetConnection(): Promise<boolean> {
+     return this.utilsService.checkInternetConnection();
+   }
+
   async ngOnInit() {
+
+//muestra valor de internet
+    const online = await this.checkInternetConnection();
+    console.log('Conexión a internet:', online);
+
     // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
@@ -79,8 +90,6 @@ export class ReportarPage implements OnInit {
       // Si no hay usuario, podrías redirigir al login
       return;
     }
-
-
     // Accede al parámetro 'id' en la ruta
     this.route.params.subscribe(params => {
       this.postId = params['id'];

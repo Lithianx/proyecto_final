@@ -103,7 +103,7 @@ async verificarConexion() {
     this.usuarios = this.usuarioService.getUsuarios();
 
   // Publicaciones en tiempo real
-this.publicacionService.publicaciones$.subscribe(publicaciones => {
+this.publicacionService.publicaciones$.subscribe(async publicaciones => {
   this.publicaciones = publicaciones.map(pub => ({
     ...pub,
     fecha_publicacion: pub.fecha_publicacion instanceof Date
@@ -115,6 +115,9 @@ this.publicacionService.publicaciones$.subscribe(publicaciones => {
   // Ordenar publicaciones por fecha descendente
   this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
   this.publicacionesAmigos = [...this.publicaciones];
+
+  // Guardar publicaciones en localStorage
+  await this.localStorage.setItem('publicaciones', this.publicaciones);
 });
 
   // Likes de publicaciones en tiempo real

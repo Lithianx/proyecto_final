@@ -21,6 +21,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { FirebaseService } from './firebase.service';
+import { UtilsService } from './utils.service';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -31,7 +32,8 @@ export class UsuarioService {
     private localStorage: LocalStorageService,
     private firestore: Firestore,
     private auth: Auth,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private utilsService: UtilsService
   ) {
     const usuariosRef = collection(this.firestore, 'Usuario');
     this.usuarios$ = collectionData(usuariosRef, { idField: 'id_usuario' }) as Observable<Usuario[]>;
@@ -40,7 +42,8 @@ export class UsuarioService {
 
   // Login híbrido: online (Firebase Auth) y offline (localStorage)
   async login(correo: string, contrasena: string): Promise<Usuario | null> {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       try {
         const credenciales = await signInWithEmailAndPassword(this.auth, correo, contrasena);
         await this.cargarUsuarios();
@@ -128,7 +131,8 @@ export class UsuarioService {
 
   // Obtener usuario actual conectado (online/offline)
   async getUsuarioActualConectado(): Promise<Usuario | null> {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       return new Promise((resolve) => {
         onAuthStateChanged(this.auth, async (user: User | null) => {
           if (user && user.email) {
@@ -159,15 +163,16 @@ export class UsuarioService {
 
 
   async cargarUsuarios(): Promise<void> {
-  if (navigator.onLine) {
-    try {
-      const usuarios = await this.firebaseService.getUsuarios();
-      this.usuariosEnMemoria = usuarios;
-      await this.localStorage.setItem('usuarios', usuarios);
-    } catch (error) {
-      console.error('Error al cargar usuarios desde Firebase:', error);
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
+      try {
+        const usuarios = await this.firebaseService.getUsuarios();
+        this.usuariosEnMemoria = usuarios;
+        await this.localStorage.setItem('usuarios', usuarios);
+      } catch (error) {
+        console.error('Error al cargar usuarios desde Firebase:', error);
+      }
     }
-  }
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
@@ -224,7 +229,8 @@ export class UsuarioService {
   // Cerrar sesión y limpiar usuario actual local
   async logout(): Promise<void> {
     const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
-    if (usuarioActual && navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (usuarioActual && online) {
       await this.setUsuarioOnline(usuarioActual.id_usuario, false);
       await this.auth.signOut();
     }
@@ -233,12 +239,13 @@ export class UsuarioService {
 
 
   async desactivarCuentaUsuario(id_usuario: string): Promise<void> {
-  if (navigator.onLine) {
-    const docRef = doc(this.firestore, 'Usuario', id_usuario);
-    await updateDoc(docRef, { estado_cuenta: false });
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
+      const docRef = doc(this.firestore, 'Usuario', id_usuario);
+      await updateDoc(docRef, { estado_cuenta: false });
+    }
+    await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: false });
   }
-  await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: false });
-}
 
   // Actualiza solo campos específicos en localStorage
   private async actualizarUsuarioLocal(id_usuario: string, cambios: Partial<Usuario>) {

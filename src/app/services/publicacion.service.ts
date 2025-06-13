@@ -5,13 +5,15 @@ import { Seguir } from '../models/seguir.model';
 import { FirebaseService } from './firebase.service';
 import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { UtilsService } from './utils.service';
 
 @Injectable({ providedIn: 'root' })
 export class PublicacionService {
   publicaciones$: Observable<Publicacion[]>;
   constructor(private localStorage: LocalStorageService,
     private firebaseService: FirebaseService,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private utilsService: UtilsService
   ) {
     const publicacionesRef = collection(this.firestore, 'Publicacion');
     this.publicaciones$ = collectionData(publicacionesRef, { idField: 'id_publicacion' }) as Observable<Publicacion[]>;
@@ -20,7 +22,8 @@ export class PublicacionService {
   // Obtiene publicaciones según conexión (y con precarga si no hay)
   async getPublicaciones(): Promise<Publicacion[]> {
     let publicaciones: Publicacion[] | null = null;
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       publicaciones = await this.firebaseService.getPublicaciones();
     }
     if (!publicaciones) {
@@ -29,7 +32,6 @@ export class PublicacionService {
     if (!publicaciones || publicaciones.length === 0) {
       publicaciones = [];
     }
-    // Ordenar por fecha descendente
     publicaciones.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
     return publicaciones;
   }
@@ -44,9 +46,9 @@ export class PublicacionService {
 
   // Agrega publicación según conexión
   async addPublicacion(publicacion: Publicacion) {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       const id = await this.firebaseService.addPublicacion(publicacion);
-      // Asigna el id generado por Firebase antes de guardar en localStorage
       const publicacionConId = { ...publicacion, id_publicacion: id };
       await this.localStorage.addToList<Publicacion>('publicaciones', publicacionConId);
       return id;
@@ -60,56 +62,49 @@ export class PublicacionService {
 
   // Edita publicación según conexión
   async updatePublicacion(publicacion: Publicacion) {
-    if (navigator.onLine) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
       await this.firebaseService.updatePublicacion(publicacion);
-      // Actualiza también el localStorage para mantener la caché sincronizada
       const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
       const actualizadas = publicaciones.map(p =>
         p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
       );
       await this.localStorage.setItem('publicaciones', actualizadas);
 
-      // Si la publicación estaba en publicaciones_personal (pendiente de sincronizar), elimínala
       const personales = await this.getPublicacionesPersonal();
       const filtradas = personales.filter(p => p.id_publicacion !== publicacion.id_publicacion);
       await this.localStorage.setItem('publicaciones_personal', filtradas);
     } else {
-      // Si no hay conexión, guarda el cambio en publicaciones_personal para sincronizar después
       await this.updatePublicacionPersonal(publicacion);
     }
   }
 
   // Elimina publicación según conexión
-async removePublicacion(id: string) {
-  if (navigator.onLine) {
-    // Elimina la publicación en Firebase
-    await this.firebaseService.removePublicacion(id);
+  async removePublicacion(id: string) {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
+      await this.firebaseService.removePublicacion(id);
+      await this.firebaseService.removeGuardadosByPublicacion(id);
+      await this.firebaseService.removeLikesByPublicacion(id);
+      await this.firebaseService.removeComentariosByPublicacion(id);
+      await this.firebaseService.removeComentarioLikesByPublicacion(id);
 
-    // Elimina guardados, likes y comentarios relacionados en Firebase
-    await this.firebaseService.removeGuardadosByPublicacion(id);
-    await this.firebaseService.removeLikesByPublicacion(id);
-    await this.firebaseService.removeComentariosByPublicacion(id);
-    await this.firebaseService.removeComentarioLikesByPublicacion(id);
+      const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      const filtradas = publicaciones.filter(p => p.id_publicacion !== id);
+      await this.localStorage.setItem('publicaciones', filtradas);
 
-    // Actualiza el localStorage principal
-    const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
-    const filtradas = publicaciones.filter(p => p.id_publicacion !== id);
-    await this.localStorage.setItem('publicaciones', filtradas);
-
-    // Elimina guardados, likes y comentarios en localStorage
-    await this.localStorage.removeItemsByField('publicacionesGuardadas', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('publicacionLikes', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('comentarioLikes', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('comentarios', 'id_publicacion', id);
-  } else {
-    // Solo elimina de publicaciones_personal y datos relacionados en localStorage
-    await this.removePublicacionPersonal(id);
-    await this.localStorage.removeItemsByField('publicacionesGuardadas', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('publicacionLikes', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('comentarioLikes', 'id_publicacion', id);
-    await this.localStorage.removeItemsByField('comentarios', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('publicacionesGuardadas', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('publicacionLikes', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('comentarioLikes', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('comentarios', 'id_publicacion', id);
+    } else {
+      await this.removePublicacionPersonal(id);
+      await this.localStorage.removeItemsByField('publicacionesGuardadas', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('publicacionLikes', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('comentarioLikes', 'id_publicacion', id);
+      await this.localStorage.removeItemsByField('comentarios', 'id_publicacion', id);
+    }
   }
-}
 
   ////OFFLINE//////
 
@@ -143,18 +138,15 @@ async removePublicacion(id: string) {
 
   // Sincroniza publicaciones personales cuando haya internet
   async sincronizarPublicacionesPersonales() {
-    if (!navigator.onLine) return;
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) return;
 
     const personales = await this.getPublicacionesPersonal();
     for (const pub of personales) {
-      // Sube la publicación a Firebase y obtiene el nuevo ID
       const id = await this.firebaseService.addPublicacion(pub);
-      // Actualiza el id_publicacion con el generado por Firebase
       pub.id_publicacion = id;
-      // Guarda en el localStorage principal
       await this.localStorage.addToList<Publicacion>('publicaciones', pub);
     }
-    // Limpia las publicaciones personales pendientes
     await this.localStorage.setItem('publicaciones_personal', []);
   }
 
