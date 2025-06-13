@@ -5,6 +5,7 @@ import { StatusBar } from '@capacitor/status-bar';
 // para futura implementación de la barra de navegación inferior
 import { ReporteService } from './services/reporte.service';
 import { SeguirService } from './services/seguir.service';
+import { PublicacionService } from './services/publicacion.service'; // Importa el servicio de publicaciones
 
 
 @Component({
@@ -17,10 +18,11 @@ export class AppComponent {
   constructor(
     private platform: Platform,
     private reporteService: ReporteService,
-    private seguirService: SeguirService
+    private seguirService: SeguirService,
+    private publicacionService: PublicacionService
   ) {
-      this.initializeApp();
-    }
+    this.initializeApp();
+  }
 
   ngOnInit() {
     // Sincroniza al iniciar si hay internet
@@ -29,7 +31,8 @@ export class AppComponent {
     // Sincroniza automáticamente cuando vuelva el internet
     window.addEventListener('online', () => {
       this.reporteService.sincronizarReporte();
-        this.seguirService.sincronizarSeguimientosLocales();
+      this.seguirService.sincronizarSeguimientosLocales();
+      this.publicacionService.sincronizarPublicacionesPersonales();
     });
   }
 
@@ -40,9 +43,9 @@ export class AppComponent {
       StatusBar.setOverlaysWebView({ overlay: false }); // Evita que el contenido quede debajo de la status bar
       StatusBar.setBackgroundColor({ color: '#1e1e1e' }); // color de la status bar para que combine con el color del header
 
- // Barra de navegación inferior
-// NavigationBar.setBackgroundColor({ color: '#1e1e1e' }); // Cambiar color de fondo de la barra
-// NavigationBar.setIconColor({ color: '#ffffff' }); // Cambiar color de los íconos
+      // Barra de navegación inferior
+      // NavigationBar.setBackgroundColor({ color: '#1e1e1e' }); // Cambiar color de fondo de la barra
+      // NavigationBar.setIconColor({ color: '#ffffff' }); // Cambiar color de los íconos
     });
   }
 }

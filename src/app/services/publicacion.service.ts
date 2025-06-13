@@ -142,14 +142,23 @@ export class PublicacionService {
     if (!online) return;
 
     const personales = await this.getPublicacionesPersonal();
-    for (const pub of personales) {
-      const id = await this.firebaseService.addPublicacion(pub);
-      pub.id_publicacion = id;
-      await this.localStorage.addToList<Publicacion>('publicaciones', pub);
-    }
-    await this.localStorage.setItem('publicaciones_personal', []);
-  }
+    const sincronizadas: Publicacion[] = [];
+    const noSincronizadas: Publicacion[] = [];
 
+    for (const pub of personales) {
+      try {
+        const id = await this.firebaseService.addPublicacion(pub);
+        pub.id_publicacion = id;
+        await this.localStorage.addToList<Publicacion>('publicaciones', pub);
+        sincronizadas.push(pub);
+      } catch (e) {
+        // Si falla, la dejamos para intentar después
+        noSincronizadas.push(pub);
+      }
+    }
+    // Solo elimina las que sí se sincronizaron
+    await this.localStorage.setItem('publicaciones_personal', noSincronizadas);
+  }
 
 
 
