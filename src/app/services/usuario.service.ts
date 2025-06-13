@@ -8,10 +8,10 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   fetchSignInMethodsForEmail,
-   sendPasswordResetEmail,
+  sendPasswordResetEmail,
   User,
   onAuthStateChanged,
-   updatePassword
+  updatePassword
 } from '@angular/fire/auth';
 
 import {
@@ -55,8 +55,8 @@ export class UsuarioService {
         await this.cargarUsuarios();
         const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
         if (usuario) {
-            await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
-            await this.localStorage.setItem('id_usuario', usuario.id_usuario);
+          await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+          await this.localStorage.setItem('id_usuario', usuario.id_usuario);
         }
         return usuario ?? null;
       } catch (error) {
@@ -87,6 +87,12 @@ export class UsuarioService {
     }
   }
 
+  async isLoggedIn(): Promise<boolean> {
+    const usuario = await this.localStorage.getItem<Usuario>('usuarioActual');
+    return !!usuario;
+  }
+
+
   /**
    * Crea una nueva cuenta de usuario, registra en Firebase Auth y Firestore.
    */
@@ -101,7 +107,7 @@ export class UsuarioService {
 
       if (cred.user) {
         try {
-          await sendEmailVerification(cred.user); 
+          await sendEmailVerification(cred.user);
         } catch (error) {
           console.warn('No se pudo enviar el correo de verificación:', error);
         }
@@ -116,7 +122,7 @@ export class UsuarioService {
           estado_online: false,
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           sub_name: '',
-          descripcion:''
+          descripcion: ''
         };
 
         await this.agregarUsuario(nuevoUsuario);
