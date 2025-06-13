@@ -18,21 +18,36 @@
 
   <hr class="section-divider">
 
-  <ion-list class="followers-list">
-    <ion-item *ngFor="let user of seguidosFiltrados; let i = index" (click)="verPerfil(user.id)">
-      <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="{{ user.nombre }}" />
-      </ion-avatar>
-      <ion-label>{{ user.nombre }}</ion-label>
-      <ion-button
-        fill="outline"
-        color="danger"
-        class="follow-button"
-        (click)="confirmarEliminar(i, user); $event.stopPropagation();">
-        Eliminar
-      </ion-button>
-    </ion-item>
-  </ion-list>
+  <ng-container *ngIf="usuariosSeguidosFiltrados.length > 0; else sinSeguidos">
+    <ion-list class="followers-list">
+      <ion-item 
+        *ngFor="let user of usuariosSeguidosFiltrados; let i = index" 
+        (click)="verPerfil(user.id_usuario)">
+        
+        <ion-avatar slot="start">
+          <img [src]="user.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" alt="{{ user.nombre_usuario }}" />
+        </ion-avatar>
+        
+        <ion-label>{{ user.nombre_usuario }}</ion-label>
+        
+        <ion-button
+          fill="outline"
+          color="danger"
+          class="follow-button"
+          (click)="confirmarEliminar(i, user); $event.stopPropagation();">
+          Eliminar
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+
+  <ng-template #sinSeguidos>
+    <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+      <ion-icon name="people-outline" size="large" ></ion-icon>
+      <p>No tienes usuarios seguidos aún.</p>
+    </div>
+  </ng-template>
+
 </ion-content>
 
 <app-navbar></app-navbar>
