@@ -7,6 +7,7 @@ import { ReporteService } from './services/reporte.service';
 import { SeguirService } from './services/seguir.service';
 import { PublicacionService } from './services/publicacion.service'; 
 import { ComentarioService } from './services/comentario.service';
+import { GuardaPublicacionService } from './services/guardarpublicacion.service'; 
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,8 @@ export class AppComponent {
     private reporteService: ReporteService,
     private seguirService: SeguirService,
     private publicacionService: PublicacionService,
-    private comentarioService: ComentarioService
+    private comentarioService: ComentarioService,
+    private guardarPublicacionService: GuardaPublicacionService 
   ) {
     this.initializeApp();
   }
@@ -35,6 +37,7 @@ export class AppComponent {
       this.seguirService.sincronizarSeguimientosLocales();
       this.publicacionService.sincronizarPublicacionesPersonales();
       this.comentarioService.sincronizarComentariosLocales();
+      this.guardarPublicacionService.sincronizarGuardadosLocales();
     });
   }
 

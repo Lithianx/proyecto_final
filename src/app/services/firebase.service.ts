@@ -187,6 +187,12 @@ async removeGuardadosByPublicacion(id_publicacion: string): Promise<void> {
   }
 }
 
+async existeGuardado(id_usuario: string, id_publicacion: string): Promise<boolean> {
+  const guardadosRef = collection(this.firestore, 'GuardaPublicacion');
+  const q = query(guardadosRef, where('id_usuario', '==', id_usuario), where('id_publicacion', '==', id_publicacion));
+  const snapshot = await getDocs(q);
+  return !snapshot.empty;
+}
 
 
 /// LIKES PUBLICACIONES Y COMENTARIOS ///
