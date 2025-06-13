@@ -3,6 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { Usuario } from 'src/app/models/usuario.model';
+import { PublicacionService } from 'src/app/services/publicacion.service';
+import { Publicacion } from 'src/app/models/publicacion.model';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-perfil-user',
@@ -12,6 +15,9 @@ import { Usuario } from 'src/app/models/usuario.model';
 })
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
+
+  publicaciones: Publicacion[] = [];
+  publicacionesFiltradas: Publicacion[] = [];
 
   usuarios: Usuario[] = [];
 
@@ -36,17 +42,8 @@ export class PerfilUserPage implements OnInit {
   descripcionBio: string = `No hay descripcion`;
   subname: string = ``;
 
-  publicaciones = [
-    { id: 1, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 1', link: '/detalles-publicacion-personal' },
-    { id: 2, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 2', link: '/detalles-publicacion-personal' },
-    { id: 3, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 3', link: '/detalles-publicacion-personal' },
-    { id: 4, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 4', link: '/detalles-publicacion-personal' },
-    { id: 5, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 5', link: '/detalles-publicacion-personal' },
-    { id: 6, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 6', link: '/detalles-publicacion-personal' },
-  ];
-
   estadisticas = {
-    publicaciones: this.publicaciones.length,
+    publicaciones: 0,
     seguidores: 300,
     seguidos: 180
   };
@@ -80,26 +77,27 @@ export class PerfilUserPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private actionSheetCtrl: ActionSheetController,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private publicacionService: PublicacionService,
+    private utilsService: UtilsService
   ) {}
 
   ngOnInit() {
     // Obtiene el id_usuario desde la ruta y carga el perfil
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe(async params => {
       const id = params.get('id');
       if (id) {
         this.idUsuario = id;
-        this.cargarDatosUsuario(id);
-      } else {
-        console.warn('No se recibió id_usuario en la ruta');
+        await this.cargarDatosUsuario(id);
+        await this.cargarPublicaciones(id);
       }
     });
   }
 
-  // Mejor usar ionViewWillEnter para refrescar cada vez que se entra a la página
   async ionViewWillEnter() {
     if (this.idUsuario) {
       await this.cargarDatosUsuario(this.idUsuario);
+      await this.cargarPublicaciones(this.idUsuario);
     }
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
@@ -118,6 +116,26 @@ export class PerfilUserPage implements OnInit {
       }
     } catch (error) {
       console.error('Error al cargar el usuario:', error);
+    }
+  }
+
+  async cargarPublicaciones(id_usuario: string) {
+    try {
+      console.log('ID usuario recibido:', id_usuario);
+
+      const todasPublicaciones = await this.publicacionService.getPublicaciones();
+      console.log('Publicaciones obtenidas del servicio:', todasPublicaciones);
+
+      this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === id_usuario);
+      this.publicacionesFiltradas = this.publicaciones;
+
+      console.log('Publicaciones filtradas por usuario:', this.publicaciones);
+
+      this.estadisticas.publicaciones = this.publicaciones.length;
+      console.log('Cantidad de publicaciones del usuario:', this.estadisticas.publicaciones);
+
+    } catch (error) {
+      console.error('Error cargando publicaciones:', error);
     }
   }
 
@@ -195,7 +213,47 @@ export class PerfilUserPage implements OnInit {
     await actionSheet.present();
   }
 
-  comentario(publicacion: any) {
-    this.router.navigate(['/comentario', publicacion.id]);
+  opcion(publicacion: Publicacion) {
+    this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: 'Compartir',
+          icon: 'share-outline',
+          handler: () => {
+            this.compartir(publicacion);
+            console.log('Compartir post');
+          },
+        },
+        {
+          text: 'Reportar',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            this.irAReportar(publicacion);
+            console.log('Post reportado');
+          },
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+        },
+      ],
+      cssClass: 'custom-action-sheet'
+    }).then(actionSheet => actionSheet.present());
   }
+
+  async compartir(publicacion: Publicacion) {
+    await this.utilsService.compartirPublicacion(publicacion);
+  }
+
+  comentario(publicacion: Publicacion) {
+    this.router.navigate(['/comentario', publicacion.id_publicacion]);
+  }
+
+  irAReportar(publicacion: Publicacion) {
+    this.router.navigate(['/reportar', publicacion.id_publicacion]);
+  }
+
 }

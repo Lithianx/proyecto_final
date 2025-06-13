@@ -33,7 +33,6 @@
     </div>
 
     <!-- Bio -->
-    <!-- Bio -->
     <div class="perfil-bio">
     <p style="margin-bottom: 0;">{{ subname }}</p>
 
@@ -56,16 +55,54 @@
     </div>
 
     <!-- Publicaciones -->
-    <div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
-      <div 
-        class="post-thumbnail" 
-        *ngFor="let post of publicaciones"
-        (click)="comentario(post)"
-        [class.linked]="post.link"
-      >
-        <img [src]="post.img" [alt]="post.alt" />
+<div class="publicaciones-grid" *ngIf="vistaSeleccionada === 'publicaciones'">
+
+  <div *ngIf="publicaciones.length === 0; else listaPublicaciones" class="no-publicaciones-container">
+    <ion-icon name="folder-open-outline" size="large" ></ion-icon>
+    <p>Aún no hay publicaciones.</p>
+  </div>
+
+  <ng-template #listaPublicaciones>
+    <ion-list lines="none">
+      <!-- Publicación -->
+      <div class="bordes">
+        <ion-card *ngFor="let publicacion of publicacionesFiltradas">
+
+          <ion-item>
+            <ion-avatar slot="start">
+              <img [src]="fotoPerfil" [alt]="'Foto de perfil de ' + nombreUsuario" />
+            </ion-avatar>
+            <ion-label class="etiqueta-usuario">
+              <h2>{{ nombreUsuario }}</h2>
+              <p>{{ publicacion.fecha_publicacion | date: 'short' }}</p>
+            </ion-label>
+
+            <!-- Botón de opciones -->
+            <ion-button fill="clear" size="small" (click)="opcion(publicacion)">
+              <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- Parte donde se muestra imagen o descripción, centrado -->
+          <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
+            <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
+              <img [src]="publicacion.imagen" class="post-image" (click)="comentario(publicacion)" />
+            </ng-container>
+
+            <ng-template #soloDescripcion>
+              <ion-card-content (click)="comentario(publicacion)">
+                <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+              </ion-card-content>
+            </ng-template>
+          </div>
+
+        </ion-card>
       </div>
-    </div>
+    </ion-list>
+  </ng-template>
+
+</div>
+
 
 
     <!-- Eventos Inscritos -->
