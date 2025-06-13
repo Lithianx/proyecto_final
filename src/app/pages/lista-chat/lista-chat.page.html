@@ -20,6 +20,21 @@
       <ion-title>Mensajes</ion-title>
     </ion-toolbar>
     <!-- Lista de chat -->
+
+    <ion-list lines="none">
+      <!-- Mensaje si no hay publicaciones -->
+      <div *ngIf="conversaciones.length === 0" class="sin-conversaciones">
+        <span class="lupa-spinner">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+        </span>
+        <ion-text color="medium">
+          <h3>No hay conversaciones para mostrar.</h3>
+          <h6>Animate a hablar con ellos</h6>
+        </ion-text>
+      </div>
+    </ion-list>
+
+
     <ion-item *ngFor="let conv of conversaciones" class="chat-item"
       [routerLink]="['/chat-privado', conv.id_conversacion]"
       (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
@@ -27,8 +42,7 @@
         <ion-avatar slot="start">
           <img [src]="getUsuarioReceptor(conv)?.avatar" />
         </ion-avatar>
-        <ion-icon
-          [name]="getUsuarioReceptor(conv)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
+        <ion-icon [name]="getUsuarioReceptor(conv)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
       <ion-label>
         <!-- Nombre de usuario y estado -->
@@ -37,41 +51,39 @@
             {{ getUsuarioReceptor(conv)?.nombre_usuario || 'Usuario desconocido' }}
           </h5>
           <!-- Icono de carta si el último mensaje no está visto -->
-<ion-icon
-  *ngIf="
+          <ion-icon *ngIf="
     getUltimoMensaje(conv.id_conversacion)
     && !getUltimoMensaje(conv.id_conversacion)?.estado_visto
     && getUltimoMensaje(conv.id_conversacion)?.id_usuario_emisor !== usuarioActual.id_usuario
-  "
-  name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
-</ion-icon>
+  " name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
+          </ion-icon>
         </div>
         <!-- Último mensaje -->
-<p class="message-text">
-  <ng-container *ngIf="getUltimoMensaje(conv.id_conversacion) as ultimo">
-    <ng-container *ngIf="esPublicacion(ultimo); else otrosTipos">
-      <ion-text><strong> 📝 Publicación compartida</strong></ion-text>
-    </ng-container>
-    <ng-template #otrosTipos>
-      <ng-container *ngIf="ultimo.contenido?.startsWith('[imagen]'); else checkAudio">
-        📷 Imagen recibida
-      </ng-container>
-      <ng-template #checkAudio>
-        <ng-container *ngIf="ultimo.contenido?.startsWith('[audio]'); else checkVideo">
-          🎧 Audio recibido
-        </ng-container>
-      </ng-template>
-      <ng-template #checkVideo>
-        <ng-container *ngIf="ultimo.contenido?.startsWith('[video]'); else texto">
-          🎥 Video recibido
-        </ng-container>
-      </ng-template>
-      <ng-template #texto>
-        {{ ultimo.contenido }}
-      </ng-template>
-    </ng-template>
-  </ng-container>
-</p>
+        <p class="message-text">
+          <ng-container *ngIf="getUltimoMensaje(conv.id_conversacion) as ultimo">
+            <ng-container *ngIf="esPublicacion(ultimo); else otrosTipos">
+              <ion-text><strong> 📝 Publicación compartida</strong></ion-text>
+            </ng-container>
+            <ng-template #otrosTipos>
+              <ng-container *ngIf="ultimo.contenido?.startsWith('[imagen]'); else checkAudio">
+                📷 Imagen recibida
+              </ng-container>
+              <ng-template #checkAudio>
+                <ng-container *ngIf="ultimo.contenido?.startsWith('[audio]'); else checkVideo">
+                  🎧 Audio recibido
+                </ng-container>
+              </ng-template>
+              <ng-template #checkVideo>
+                <ng-container *ngIf="ultimo.contenido?.startsWith('[video]'); else texto">
+                  🎥 Video recibido
+                </ng-container>
+              </ng-template>
+              <ng-template #texto>
+                {{ ultimo.contenido }}
+              </ng-template>
+            </ng-template>
+          </ng-container>
+        </p>
       </ion-label>
     </ion-item>
   </ion-list>

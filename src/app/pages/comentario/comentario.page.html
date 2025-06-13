@@ -100,6 +100,19 @@
       <ion-title>COMENTARIOS</ion-title>
     </ion-toolbar>
     <ion-list>
+
+    <!-- Mensaje si no hay publicaciones -->
+    <div *ngIf="comentarios.length === 0" class="sin-comentarios">
+      <span class="lupa-spinner">
+        <ion-icon name="planet-outline"></ion-icon>
+      </span>
+      <ion-text color="medium">
+        <h3>No hay comentarios para mostrar</h3>
+        <h6>Pero recuerda que siempre puedes ser el primero</h6>
+      </ion-text>
+    </div>
+
+
       <ion-item *ngFor="let comentario of comentarios">
         <ion-avatar slot="start">
           <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar" />
