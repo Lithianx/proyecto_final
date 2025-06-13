@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { NoAuthGuard } from './guards/no-auth.guard';
 import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/adminGuard.guard';
 
 const routes: Routes = [
   {
@@ -153,7 +154,7 @@ const routes: Routes = [
   },
   {
     path: 'admin-reporte',
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, AdminGuard],
     loadChildren: () => import('./pages/admin-reporte/admin-reporte.module').then(m => m.AdminReportePageModule)
   }
 
