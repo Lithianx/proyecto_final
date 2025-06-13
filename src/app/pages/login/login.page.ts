@@ -41,16 +41,16 @@ async iniciarSesion() {
     if (!usuario) {
       this.errorAutenticacion = true;
       await this.mostrarToast('Contraseña o correo incorrecto');
-      return;
+      return; 
     }
 
     // Si estás online, verifica el correo (opcional)
     if (navigator.onLine && usuario && usuario.estado_cuenta === true) {
       const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
+
       if (credenciales.user && !credenciales.user.emailVerified) {
         await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
-        await credenciales.user.sendEmailVerification();
-        return;
+        return; 
       }
     }
 

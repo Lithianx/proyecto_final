@@ -4,7 +4,9 @@ export interface Usuario {
     correo_electronico: string;
     fecha_registro: Date;
     contrasena: string;
-    avatar?: string; // Optional field
+    avatar?: string; 
     estado_cuenta: boolean;
     estado_online: boolean;
+    sub_name: string;
+    descripcion:string;
 }

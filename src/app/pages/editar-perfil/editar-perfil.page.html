@@ -45,6 +45,17 @@
           readonly>
         </ion-input>
       </ion-item>
+      <!-- Nombre de usuario -->
+      <ion-item lines="none" class="input-item">
+        <ion-icon class="color-verde" name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="text"
+          placeholder="Sub nombre "
+          [(ngModel)]="usuario.sub_name"
+          class="custom-input"
+          aria-label="Sub nombre ">
+        </ion-input>
+      </ion-item>
 
       <!-- Descripción -->
       <ion-item lines="none" class="input-item">
@@ -52,7 +63,8 @@
         <ion-textarea
           rows="4"
           placeholder="Descripción del perfil"
-          aria-label="Descripción del perfil">
+          aria-label="Descripción del perfil"
+          [(ngModel)]="usuario.descripcion">
         </ion-textarea>
       </ion-item>
 

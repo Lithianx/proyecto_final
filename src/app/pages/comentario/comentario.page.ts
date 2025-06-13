@@ -50,7 +50,9 @@ export class ComentarioPage implements OnInit {
     contrasena: '',
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
     estado_cuenta: true,
-    estado_online: true
+    estado_online: true,
+    sub_name: '',
+    descripcion:''
   };
 
   seguimientos: Seguir[] = [];

@@ -35,8 +35,10 @@ export class UsuarioService {
     private firebaseService: FirebaseService
   ) { }
 
-
-  // Login híbrido: online (Firebase Auth) y offline (localStorage)
+  /**
+   * Inicia sesión usando autenticación híbrida.
+   * Si hay conexión, usa Firebase Auth. Si no, busca en localStorage.
+   */
   async login(correo: string, contrasena: string): Promise<Usuario | null> {
     if (navigator.onLine) {
       try {
@@ -44,26 +46,34 @@ export class UsuarioService {
         await this.cargarUsuarios();
         const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
         if (usuario) {
-          await this.localStorage.setItem('usuarioActual', usuario);
+            await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+            await this.localStorage.setItem('id_usuario', usuario.id_usuario);
+            console.log('Usuario logueado:', usuario); // <--- aquí
+            console.log('Usuario logueado:', usuario.id_usuario); // <--- aquí
         }
         return usuario ?? null;
       } catch (error) {
         throw error;
       }
     } else {
-      // Login offline: busca en localStorage
+      // Offline: buscar usuario en localStorage
       await this.cargarUsuarios();
       const usuario = this.getUsuarios().find(
         u => u.correo_electronico === correo && u.contrasena === contrasena
       );
       if (usuario) {
-        await this.localStorage.setItem('usuarioActual', usuario);
+        await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+        await this.localStorage.setItem('id_usuario', usuario.id_usuario);
+        console.log('Usuario logueado:', usuario); // <--- aquí
+        console.log('Usuario logueado:', usuario.id_usuario); // <--- aquí
       }
       return usuario ?? null;
     }
   }
 
-
+  /**
+   * Inicia sesión solamente usando Firebase Auth (modo online).
+   */
   async loginConFirebase(correo: string, contrasena: string): Promise<any> {
     try {
       return await signInWithEmailAndPassword(this.auth, correo, contrasena);
@@ -72,8 +82,9 @@ export class UsuarioService {
     }
   }
 
-
-
+  /**
+   * Crea una nueva cuenta de usuario, registra en Firebase Auth y Firestore.
+   */
   async crearCuenta(nombre: string, correo: string, contrasena: string): Promise<Usuario> {
     try {
       const signInMethods = await fetchSignInMethodsForEmail(this.auth, correo);
@@ -85,24 +96,25 @@ export class UsuarioService {
 
       if (cred.user) {
         try {
-          await sendEmailVerification(cred.user);
+          await sendEmailVerification(cred.user); // Envío de verificación
         } catch (error) {
           console.warn('No se pudo enviar el correo de verificación:', error);
         }
 
         const nuevoUsuario: Usuario = {
-          id_usuario: cred.user.uid, // Aquí usamos el UID de Firebase
+          id_usuario: cred.user.uid,
           nombre_usuario: nombre,
           correo_electronico: correo,
           contrasena: contrasena,
           fecha_registro: new Date(),
           estado_cuenta: true,
           estado_online: false,
-          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg'
+          avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+          sub_name: '',
+          descripcion:''
         };
 
         await this.agregarUsuario(nuevoUsuario);
-
         return nuevoUsuario;
       } else {
         throw new Error('No se obtuvo usuario de Firebase');
@@ -113,6 +125,9 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Envía un correo de recuperación de contraseña al usuario.
+   */
   async restablecerContrasena(correo: string): Promise<void> {
     try {
       await sendPasswordResetEmail(this.auth, correo);
@@ -121,9 +136,9 @@ export class UsuarioService {
     }
   }
 
-
-
-  // Obtener usuario actual conectado (online/offline)
+  /**
+   * Obtiene el usuario actualmente autenticado (desde Firebase o localStorage si está offline).
+   */
   async getUsuarioActualConectado(): Promise<Usuario | null> {
     if (navigator.onLine) {
       return new Promise((resolve) => {
@@ -142,16 +157,16 @@ export class UsuarioService {
         });
       });
     } else {
-      // Offline: busca el último usuario logueado en localStorage
+      // Offline: obtener usuario de localStorage
       const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
       return usuarioActual ?? null;
     }
   }
 
-
-
-
-
+  /**
+   * Carga todos los usuarios desde Firestore y localStorage.
+   * Los guarda también en memoria.
+   */
   async cargarUsuarios(): Promise<void> {
     try {
       const usuarios = await this.firebaseService.getUsuarios();
@@ -160,6 +175,8 @@ export class UsuarioService {
     } catch (error) {
       console.error('Error al cargar usuarios desde Firebase:', error);
     }
+
+    // Cargar también desde almacenamiento local como respaldo
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
@@ -173,10 +190,16 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Devuelve la lista de usuarios cargados en memoria.
+   */
   getUsuarios(): Usuario[] {
     return this.usuariosEnMemoria;
   }
 
+  /**
+   * Actualiza la lista de usuarios en memoria y localStorage.
+   */
   async setUsuarios(usuarios: Usuario[]): Promise<void> {
     this.usuariosEnMemoria = usuarios.map(u => ({
       ...u,
@@ -186,10 +209,16 @@ export class UsuarioService {
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
+  /**
+   * Busca un usuario en memoria por su ID.
+   */
   getUsuarioPorId(id_usuario: string): Usuario | undefined {
     return this.usuariosEnMemoria.find(u => u.id_usuario === id_usuario);
   }
 
+  /**
+   * Agrega un nuevo usuario a Firestore, memoria y localStorage.
+   */
   async agregarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
 
@@ -199,8 +228,9 @@ export class UsuarioService {
     await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
   }
 
-
-
+  /**
+   * Actualiza un usuario existente en memoria, localStorage y Firestore.
+   */
   async actualizarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
     usuario.fecha_registro = this.obtenerFechaValida(usuario.fecha_registro);
@@ -213,12 +243,14 @@ export class UsuarioService {
       const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
       await updateDoc(userRef, {
         ...usuario,
-        fecha_registro: usuario.fecha_registro.toISOString() // asegurado
+        fecha_registro: usuario.fecha_registro.toISOString()
       });
     }
   }
 
-  // Cerrar sesión y limpiar usuario actual local
+  /**
+   * Cierra sesión del usuario actual y elimina su info de localStorage.
+   */
   async logout(): Promise<void> {
     if (navigator.onLine) {
       await this.auth.signOut();
@@ -227,49 +259,12 @@ export class UsuarioService {
   }
 
 
-  async obtenerUsuarioDesdeFirestore(uid: string): Promise<Usuario | null> {
-    try {
-      const ref = doc(this.firestore, 'Usuario', uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data() as Usuario;
-        return {
-          ...data,
-          id_usuario: uid,
-          fecha_registro: this.obtenerFechaValida(data.fecha_registro)
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error al obtener usuario desde Firestore:', error);
-      return null;
-    }
-  }
-
-async actualizarUsuarioPorId(id_usuario: string, datosActualizados: any): Promise<void> {
-  const userRef = doc(this.firestore, 'Usuario', id_usuario);
-
-  // Corregimos la fecha si existe y es inválida
-  if (datosActualizados.fecha_registro) {
-    const fecha = this.obtenerFechaValida(datosActualizados.fecha_registro);
-    datosActualizados.fecha_registro = fecha.toISOString();
-  }
-
-  // Evitar enviar null o strings vacíos en correo y nombre
-  if (!datosActualizados.correo_electronico || datosActualizados.correo_electronico.trim() === '') {
-    delete datosActualizados.correo_electronico;
-  }
-  if (!datosActualizados.nombre_usuario || datosActualizados.nombre_usuario.trim() === '') {
-    delete datosActualizados.nombre_usuario;
-  }
-
-  await updateDoc(userRef, datosActualizados);
-}
-
-
-  /** 🔧 Función para evitar fechas inválidas */
+  /**
+   * Corrige fechas inválidas devolviendo la actual si falla la conversión.
+   */
   private obtenerFechaValida(fecha: any): Date {
     const nuevaFecha = new Date(fecha);
     return isNaN(nuevaFecha.getTime()) ? new Date() : nuevaFecha;
   }
+
 }
