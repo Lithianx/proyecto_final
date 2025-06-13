@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 
 import { Usuario } from 'src/app/models/usuario.model';
@@ -9,7 +9,7 @@ import { LocalStorageService } from 'src/app/services/local-storage-social.servi
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { UtilsService } from 'src/app/services/utils.service'; // Asegúrate de importar UtilsService si lo necesitas
-
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-lista-chat',
@@ -17,7 +17,7 @@ import { UtilsService } from 'src/app/services/utils.service'; // Asegúrate de 
   styleUrls: ['./lista-chat.page.scss'],
   standalone: false,
 })
-export class ListaChatPage implements OnInit {
+export class ListaChatPage implements OnInit, OnDestroy {
 
   usuarioActual!: Usuario;
   usuarios: Usuario[] = [];
@@ -32,6 +32,9 @@ export class ListaChatPage implements OnInit {
     private usuarioService: UsuarioService,
     private utilsService: UtilsService 
   ) { }
+
+  private mensajesSub?: Subscription;
+  private conversacionesSub?: Subscription;
 
   async ngOnInit() {
     // Cargar usuario actual
@@ -61,14 +64,19 @@ export class ListaChatPage implements OnInit {
 
 
     // Suscribirse a los mensajes y conversaciones en tiempo real
-    this.comunicacionService.mensajes$.subscribe(mensajes => {
+    this.mensajesSub = this.comunicacionService.mensajes$.subscribe(mensajes => {
       this.mensajes = mensajes;
     });
-    this.comunicacionService.conversaciones$.subscribe(async convs => {
+    this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
       this.conversaciones = convs;
       this.conversacionesOriginal = convs; // Guarda la copia original
       await this.localStorage.setItem('conversaciones', convs);
     });
+  }
+
+  ngOnDestroy() {
+    this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
   }
 
   doRefresh(event: any) {

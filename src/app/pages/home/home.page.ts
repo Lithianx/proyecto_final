@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
 import { Share } from '@capacitor/share';
@@ -20,6 +20,7 @@ import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -27,7 +28,7 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
 
   usuarioActual: Usuario = {
     id_usuario: '0', // string
@@ -90,6 +91,9 @@ export class HomePage implements OnInit {
     console.log('¿Estoy online?', online);
   }
 
+  private publicacionesSub?: Subscription;
+  private likesPublicacionesSub?: Subscription;
+
   async ngOnInit() {
 
     await this.verificarConexion();
@@ -107,8 +111,8 @@ export class HomePage implements OnInit {
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
 
-    // Publicaciones en tiempo real
-    this.publicacionService.publicaciones$.subscribe(async publicaciones => {
+ // Publicaciones en tiempo real
+    this.publicacionesSub = this.publicacionService.publicaciones$.subscribe(async publicaciones => {
       this.publicaciones = publicaciones.map(pub => ({
         ...pub,
         fecha_publicacion: pub.fecha_publicacion instanceof Date
@@ -117,16 +121,13 @@ export class HomePage implements OnInit {
             ? (pub.fecha_publicacion as any).toDate()
             : new Date(pub.fecha_publicacion))
       }));
-      // Ordenar publicaciones por fecha descendente
       this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
       this.publicacionesAmigos = [...this.publicaciones];
-
-      // Guardar publicaciones en localStorage
       await this.localStorage.setItem('publicaciones', this.publicaciones);
     });
 
     // Likes de publicaciones en tiempo real
-    this.likeService.likesPublicaciones$.subscribe(likes => {
+    this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
       this.publicacionesLikes = likes;
     });
 
@@ -142,6 +143,11 @@ export class HomePage implements OnInit {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
     this.publicacionesAmigos = [...this.publicaciones];
+  }
+
+  ngOnDestroy() {
+    this.publicacionesSub?.unsubscribe();
+    this.likesPublicacionesSub?.unsubscribe();
   }
 
   // Método para refrescar la lista de publicaciones

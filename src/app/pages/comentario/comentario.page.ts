@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
 import { Share } from '@capacitor/share';
@@ -22,7 +22,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { ComentarioService } from 'src/app/services/comentario.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
-
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-comentario',
@@ -30,7 +30,7 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./comentario.page.scss'],
   standalone: false,
 })
-export class ComentarioPage implements OnInit {
+export class ComentarioPage implements OnInit, OnDestroy  {
 
   @ViewChild('comentariosContainer', { static: false }) comentariosContainer!: ElementRef;
 
@@ -126,6 +126,11 @@ export class ComentarioPage implements OnInit {
     }, 100);
   }
 
+  private likesPublicacionesSub?: Subscription;
+  private likesComentariosSub?: Subscription;
+  private comentariosSub?: Subscription;
+
+
   async ngOnInit() {
 
     // Cargar usuario actual
@@ -140,16 +145,15 @@ export class ComentarioPage implements OnInit {
 
     await this.cargarDatos();
 
-    this.likeService.likesPublicaciones$.subscribe(likes => {
+    this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
       this.publicacionesLikes = likes;
     });
 
-    // Suscripción en tiempo real a likes de comentarios
-    this.likeService.likesComentarios$.subscribe(likes => {
+    this.likesComentariosSub = this.likeService.likesComentarios$.subscribe(likes => {
       this.likesComentarios = likes;
     });
-    // Suscripción en tiempo real a comentarios de la publicación actual
-    this.comentarioService.comentarios$.subscribe(comentarios => {
+
+    this.comentariosSub = this.comentarioService.comentarios$.subscribe(comentarios => {
       this.comentarios = comentarios
         .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
         .map(c => ({
@@ -162,8 +166,14 @@ export class ComentarioPage implements OnInit {
         }))
         .sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
     });
-
   }
+
+  ngOnDestroy() {
+    this.likesPublicacionesSub?.unsubscribe();
+    this.likesComentariosSub?.unsubscribe();
+    this.comentariosSub?.unsubscribe();
+  }
+
 
   // Método para refrescar la lista de comentarios
   async doRefresh(event: any) {

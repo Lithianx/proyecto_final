@@ -23,6 +23,7 @@ import { IonContent } from '@ionic/angular';
 })
 export class ChatPrivadoPage implements OnInit {
   private mensajesSub?: Subscription;
+  private conversacionesSub?: Subscription;
 
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild('audioInput', { static: false }) audioInput!: ElementRef;
@@ -108,7 +109,7 @@ export class ChatPrivadoPage implements OnInit {
     });
 
     // Busca la conversación actual y el usuario receptor real
-    this.comunicacionService.conversaciones$.subscribe(conversaciones => {
+    this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(conversaciones => {
       const conversacion = conversaciones.find(
         c => String(c.id_conversacion) === this.idConversacionActual
       );
@@ -126,6 +127,7 @@ export class ChatPrivadoPage implements OnInit {
 
   ngOnDestroy() {
     this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
   }
 
   // Scroll infinito: cargar más mensajes al hacer scroll arriba
