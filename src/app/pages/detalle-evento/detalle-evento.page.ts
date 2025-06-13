@@ -62,7 +62,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
           message: 'Error al cargar evento',
           duration: 2000,
           color: 'danger',
-          position: 'bottom',
+          position: 'top',
         });
         await toast.present();
         this.volverAtras();
@@ -142,7 +142,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
         message: 'Te has unido al evento con éxito 🎉',
         duration: 2000,
         color: 'success',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
       this.router.navigate(['/sala-evento', this.evento.id]);
@@ -151,7 +151,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
         message: 'Error: No se pudo unir al evento. ' + (error as any).message,
         duration: 2500,
         color: 'danger',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
     }
@@ -162,7 +162,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
       message: mensaje,
       duration: 2500,
       color,
-      position: 'bottom',
+      position: 'top',
     });
     await toast.present();
   }
