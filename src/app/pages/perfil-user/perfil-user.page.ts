@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { Usuario } from 'src/app/models/usuario.model';
 
 @Component({
   selector: 'app-perfil-user',
@@ -10,25 +12,56 @@ import { ActionSheetController } from '@ionic/angular';
 })
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
-  idUsuario: string = '';
 
-  siguiendo: boolean = true;
-  mostrarModal: boolean = false;
-  private _vistaSeleccionada: string = 'publicaciones';
+  usuarios: Usuario[] = [];
 
-  // Variables del perfil
-  nombreUsuario: string = '';
-  nombreCompleto: string = '';
-  descripcionBio: string = '';
-  fotoPerfil: string = '';
-  publicaciones: any[] = [];
-  eventosinscritos: any[] = [];
-  eventosCreados: any[] = [];
-  estadisticas = {
-    publicaciones: 0,
-    seguidores: 0,
-    seguidos: 0
+  usuarioActual: Usuario = {
+    id_usuario: '0',
+    nombre_usuario: 'Usuario Demo',
+    correo_electronico: 'demo@correo.com',
+    fecha_registro: new Date(),
+    contrasena: '',
+    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    estado_cuenta: true,
+    estado_online: true,
+    sub_name: '',
+    descripcion: ''
   };
+
+  siguiendo: boolean = false;
+  idUsuario: string = '';  // Será asignado desde la ruta
+
+  fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  nombreUsuario: string = 'nombre_de_usuario';
+  descripcionBio: string = `No hay descripcion`;
+  subname: string = ``;
+
+  publicaciones = [
+    { id: 1, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 1', link: '/detalles-publicacion-personal' },
+    { id: 2, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 2', link: '/detalles-publicacion-personal' },
+    { id: 3, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 3', link: '/detalles-publicacion-personal' },
+    { id: 4, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 4', link: '/detalles-publicacion-personal' },
+    { id: 5, img: 'https://raw.githubusercontent.com/R-CoderDotCom/samples/main/bird.png', alt: 'Publicación 5', link: '/detalles-publicacion-personal' },
+    { id: 6, img: 'https://ionicframework.com/docs/img/demos/card-media.png', alt: 'Publicación 6', link: '/detalles-publicacion-personal' },
+  ];
+
+  estadisticas = {
+    publicaciones: this.publicaciones.length,
+    seguidores: 300,
+    seguidos: 180
+  };
+
+  eventosinscritos = [
+    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends', creador: 'usuario1' },
+    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
+  ];
+
+  eventosCreados = [
+    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends' },
+    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant' }
+  ];
+
+  private _vistaSeleccionada: string = 'publicaciones';
 
   get vistaSeleccionada(): string {
     return this._vistaSeleccionada;
@@ -41,26 +74,51 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
+  mostrarModal: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private actionSheetCtrl: ActionSheetController
+    private actionSheetCtrl: ActionSheetController,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit() {
-    // Escuchar cambios en el parámetro id
+    // Obtiene el id_usuario desde la ruta y carga el perfil
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
-      console.log('ID de usuario:', id);
-
       if (id) {
-        this.idUsuario = id; // ✅ Asignación del ID para navegación posterior
-        this.cargarPerfilUsuario(id);
+        this.idUsuario = id;
+        this.cargarDatosUsuario(id);
+      } else {
+        console.warn('No se recibió id_usuario en la ruta');
       }
     });
+  }
 
-    // Inicializar el deslizador con el valor por defecto
+  // Mejor usar ionViewWillEnter para refrescar cada vez que se entra a la página
+  async ionViewWillEnter() {
+    if (this.idUsuario) {
+      await this.cargarDatosUsuario(this.idUsuario);
+    }
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+  }
+
+  private async cargarDatosUsuario(id_usuario: string) {
+    try {
+      const usuario = await this.usuarioService.getUsuarioPorId(id_usuario);
+      if (usuario) {
+        this.usuarioActual = usuario;
+        this.fotoPerfil = usuario.avatar || this.fotoPerfil;
+        this.nombreUsuario = usuario.nombre_usuario || this.nombreUsuario;
+        this.descripcionBio = usuario.descripcion || this.descripcionBio;
+        this.subname = usuario.sub_name || this.subname;
+      } else {
+        console.warn('Usuario no encontrado para id:', id_usuario);
+      }
+    } catch (error) {
+      console.error('Error al cargar el usuario:', error);
+    }
   }
 
   ionViewDidEnter() {
@@ -83,7 +141,7 @@ export class PerfilUserPage implements OnInit {
     let position = 0;
 
     switch (value) {
-     case 'publicaciones':
+      case 'publicaciones':
         position = 3;
         break;
       case 'eventos-inscritos':
@@ -95,47 +153,6 @@ export class PerfilUserPage implements OnInit {
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
-  }
-
-  abrirModal() {
-    console.log('Se abrió el modal');
-    this.mostrarModal = true;
-  }
-
-  cerrarModal(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.mostrarModal = false;
-  }
-
-  cargarPerfilUsuario(id: string) {
-    // Simulación (reemplazar con servicio real)
-    if (id === '1') {
-      this.nombreUsuario = 'maria_gamer';
-      this.nombreCompleto = 'María Rodríguez';
-      this.descripcionBio = '🎮 Streamer de LoL | Amante de los gatos 🐱';
-      this.fotoPerfil = 'https://i.pravatar.cc/150?img=12';
-
-      this.publicaciones = [
-        { id: 1, img: 'https://picsum.photos/id/1011/300/300', alt: 'Post 1', link: '/detalles-publicacion-personal' },
-        { id: 2, img: 'https://picsum.photos/id/1012/300/300', alt: 'Post 2', link: '/detalles-publicacion-personal' }
-      ];
-
-      this.eventosinscritos = [
-        { id: 1, nombre: 'Clash Royale Night', fecha: '10/06/2025', juego: 'Clash Royale', creador: 'andres_dev' }
-      ];
-
-      this.eventosCreados = [
-        { id: 99, nombre: 'League Grand Finals', fecha: '22/06/2025', juego: 'League of Legends' }
-      ];
-
-      this.estadisticas = {
-        publicaciones: this.publicaciones.length,
-        seguidores: 800,
-        seguidos: 320
-      };
-    }
   }
 
   async abrirOpciones() {
@@ -164,7 +181,7 @@ export class PerfilUserPage implements OnInit {
           icon: 'alert-circle-outline',
           handler: () => {
             console.log('Reportar usuario');
-            this.router.navigate(['/reportar-cuenta', this.idUsuario]); // ✅ Usa el ID recibido
+            this.router.navigate(['/reportar-cuenta', this.idUsuario]);
           }
         },
         {
@@ -177,8 +194,8 @@ export class PerfilUserPage implements OnInit {
 
     await actionSheet.present();
   }
+
   comentario(publicacion: any) {
     this.router.navigate(['/comentario', publicacion.id]);
   }
-
 }

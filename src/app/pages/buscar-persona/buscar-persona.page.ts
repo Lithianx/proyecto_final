@@ -21,34 +21,26 @@ export class BuscarPersonaPage implements OnInit {
     private usuarioService: UsuarioService
   ) { }
 
-  async ngOnInit() {
-    this.usuarioService.usuarios$.subscribe(usuarios => {
-      this.todosusuarios = usuarios;
-      // Si hay una búsqueda activa, actualiza el filtro
-      if (this.busquedaActiva && this.usuarios.length > 0) {
-        const query = this.usuarios[0]?.nombre_usuario?.toLowerCase() || '';
-        this.usuarios = this.todosusuarios.filter(usuario =>
-          usuario.nombre_usuario.toLowerCase().includes(query)
-        );
-      }
-    });
-  }
+async ngOnInit() {
+  this.todosusuarios = await this.usuarioService.obtenerUsuarios();
+  this.usuarios = this.todosusuarios;  // Mostrar todos inicialmente
+}
 
 
-  // Filtrado de la lista de chats por el nombre del participante
+  // Filtrado de la lista de usuarios por nombre_usuario
   handleInput(event: any): void {
     const query = event.target.value?.toLowerCase().trim();
 
-    this.busquedaActiva = !!query; // true si hay texto, false si está vacío
-
     if (!query) {
-      this.usuarios = [];
+      this.usuarios = this.todosusuarios;  // Mostrar todos si no hay búsqueda
+      this.busquedaActiva = false;
       return;
     }
+
+    this.busquedaActiva = true;
 
     this.usuarios = this.todosusuarios.filter(usuario =>
       usuario.nombre_usuario.toLowerCase().includes(query)
     );
   }
-
 }

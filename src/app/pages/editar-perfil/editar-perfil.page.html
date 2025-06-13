@@ -5,7 +5,7 @@
     <div class="profile-form-box">
 
       <div class="header-row">
-        <ion-button fill="buttonclear" class="back-button" [routerLink]="['/perfil']" >
+        <ion-button fill="buttonclear" class="back-button" [routerLink]="['/perfil']">
           <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
         </ion-button>
         <h1 class="app-title">Edición de perfil</h1>
@@ -14,62 +14,63 @@
       <div class="profile-picture-edit-section">
         <div class="profile-picture-container">
           <ion-avatar class="profile-avatar">
-            <img src="https://ionicframework.com/docs/img/demos/card-media.png" alt="Foto de perfil actual">
+            <img [src]="usuario.avatar || 'https://ionicframework.com/docs/img/demos/card-media.png'" alt="Foto de perfil actual">
           </ion-avatar>
           <div class="edit-overlay">
             <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
           </div>
         </div>
       </div>
+
+      <!-- Nombre de usuario -->
       <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde"name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-icon class="color-verde" name="person-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-input
           type="text"
           placeholder="Nombre de usuario"
+          [(ngModel)]="usuario.nombre_usuario"
           class="custom-input"
           aria-label="Nombre de usuario">
         </ion-input>
       </ion-item>
-      
 
+      <!-- Correo electrónico -->
       <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde"name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-icon class="color-verde" name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-input
           type="email"
           placeholder="Correo electrónico"
-          aria-label="Correo electrónico">
+          [(ngModel)]="usuario.correo_electronico"
+          aria-label="Correo electrónico"
+          readonly>
+        </ion-input>
+      </ion-item>
+      <!-- Nombre de usuario -->
+      <ion-item lines="none" class="input-item">
+        <ion-icon class="color-verde" name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-input
+          type="text"
+          placeholder="Sub nombre "
+          [(ngModel)]="usuario.sub_name"
+          class="custom-input"
+          aria-label="Sub nombre ">
         </ion-input>
       </ion-item>
 
+      <!-- Descripción -->
       <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde"name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-icon class="color-verde" name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-textarea
           rows="4"
           placeholder="Descripción del perfil"
-          aria-label="Descripción del perfil">
+          aria-label="Descripción del perfil"
+          [(ngModel)]="usuario.descripcion">
         </ion-textarea>
       </ion-item>
 
-      <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde"name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
-        <ion-input
-          type="password"
-          placeholder="Nueva contraseña"
-          aria-label="Nueva contraseña">
-        </ion-input>
-      </ion-item>
-
-      <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde"name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
-        <ion-input
-          type="password"
-          placeholder="Confirmar nueva contraseña"
-          aria-label="Confirmar nueva contraseña">
-        </ion-input>
-      </ion-item>
-
+      <!-- Botón Guardar -->
       <div class="save-button-container">
-        <ion-button expand="block" class="save-button" [routerLink]="['/perfil']">
+        <ion-button expand="block" class="save-button" (click)="guardarCambios()">
           Guardar Cambios
         </ion-button>
       </div>

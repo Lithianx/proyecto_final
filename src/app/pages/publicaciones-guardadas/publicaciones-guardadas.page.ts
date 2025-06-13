@@ -26,6 +26,9 @@ export class PublicacionesGuardadasPage implements OnInit {
 
   ngOnInit() {}
 
+
+  
+
   async confirmarEliminar(index: number, event: Event) {
     event.stopPropagation();
 

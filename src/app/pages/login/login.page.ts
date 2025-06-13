@@ -33,6 +33,7 @@ export class LoginPage {
 async iniciarSesion() {
   try {
     this.errorAutenticacion = false;
+    console.log('Iniciando proceso de inicio de sesión...');
 
     // Usa el método híbrido (online/offline)
     const usuario = await this.usuarioService.login(this.correo, this.contrasena);
@@ -40,7 +41,7 @@ async iniciarSesion() {
     if (!usuario) {
       this.errorAutenticacion = true;
       await this.mostrarToast('Contraseña o correo incorrecto');
-      return;
+      return; 
     }
 
     // Aquí validas si la cuenta está desactivada
@@ -53,10 +54,10 @@ async iniciarSesion() {
     // Si estás online, verifica el correo (opcional)
     if (navigator.onLine && usuario && usuario.estado_cuenta === true) {
       const credenciales = await this.usuarioService.loginConFirebase(this.correo, this.contrasena);
+
       if (credenciales.user && !credenciales.user.emailVerified) {
         await this.mostrarToast('Verifica tu correo antes de iniciar sesión');
-        await credenciales.user.sendEmailVerification();
-        return;
+        return; 
       }
     }
 
@@ -65,12 +66,15 @@ async iniciarSesion() {
 await this.usuarioService.setUsuarioOnline(usuario.id_usuario, true);
 
     this.router.navigate(['/home']);
+    
   } catch (error: any) {
     this.errorAutenticacion = true;
     await this.mostrarToast('Contraseña o correo incorrecto');
   }
   this.errorAutenticacion = false;
 }
+
+
 
 
   async mostrarToast(mensaje: string) {

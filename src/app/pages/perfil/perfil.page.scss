@@ -333,3 +333,6 @@ body {
 ::ng-deep .cerrar-sesion-btn {
   --color: var(--ion-color-danger);
 }
+.descripcion-texto {
+  white-space: pre-line;
+}
