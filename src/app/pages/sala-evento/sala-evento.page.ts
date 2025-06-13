@@ -4,7 +4,7 @@ import { NavController, AlertController, ToastController } from '@ionic/angular'
 import { ChangeDetectorRef } from '@angular/core';
 import { EventoService } from 'src/app/services/evento.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import { doc, getDoc, updateDoc, arrayUnion } from '@angular/fire/firestore';
+import { doc, updateDoc, arrayUnion } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
 
 @Component({
@@ -43,34 +43,31 @@ export class SalaEventoPage implements OnInit {
 
   async ngOnInit() {
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
-    const docRef = doc(this.firestore, 'eventos', this.eventoId);
-    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      this.evento = docSnap.data();
-      this.evento.id = this.eventoId;
+    // ✅ Cargar evento con fechas correctamente parseadas
+    this.evento = await this.eventoService.obtenerEventoPorId(this.eventoId);
 
-      // Obtener usuario actual
-      const currentUser = await this.usuarioService.getUsuarioActualConectado();
-      this.usuarioActual = currentUser?.nombre_usuario ?? '';
+    // ✅ Obtener usuario actual
+    const currentUser = await this.usuarioService.getUsuarioActualConectado();
+    this.usuarioActual = currentUser?.nombre_usuario ?? '';
 
-      // Verificamos si hay arreglo jugadores, si no lo creamos vacío
-      if (!this.evento.jugadores) {
-        this.evento.jugadores = [];
-      }
-
-      // Si el usuario actual no está en la lista, lo agregamos
-      const yaRegistrado = this.evento.jugadores.includes(this.usuarioActual);
-      if (!yaRegistrado) {
-        this.evento.jugadores.push(this.usuarioActual);
-        await updateDoc(docRef, {
-          jugadores: arrayUnion(this.usuarioActual)
-        });
-      }
-
-      // Mostrar en la lista
-      this.jugadores = this.evento.jugadores.map((nombre: string) => ({ nombre }));
+    // ✅ Asegurar que el arreglo de jugadores existe
+    if (!this.evento.jugadores) {
+      this.evento.jugadores = [];
     }
+
+    // ✅ Si el usuario no está, lo agrega y actualiza en Firestore
+    const yaRegistrado = this.evento.jugadores.includes(this.usuarioActual);
+    if (!yaRegistrado) {
+      const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
+      this.evento.jugadores.push(this.usuarioActual);
+      await updateDoc(eventoRef, {
+        jugadores: arrayUnion(this.usuarioActual),
+      });
+    }
+
+    // ✅ Mostrar jugadores
+    this.jugadores = this.evento.jugadores.map((nombre: string) => ({ nombre }));
   }
 
   toggleChat() {
@@ -160,12 +157,42 @@ export class SalaEventoPage implements OnInit {
         },
         {
           text: 'Sí, salir',
-          handler: () => {
-            this.router.navigate(['/home']);
+          handler: async () => {
+            try {
+              const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
+              const eventoData = this.evento;
+
+              const jugadoresActualizados = eventoData.jugadores.filter((j: string) => j !== this.usuarioActual);
+              const nuevosCupos = (eventoData.cupos || 0) + 1;
+
+              await updateDoc(eventoRef, {
+                jugadores: jugadoresActualizados,
+                cupos: nuevosCupos,
+              });
+
+              const toast = await this.toastCtrl.create({
+                message: 'Has salido del evento 👋',
+                duration: 2000,
+                color: 'warning',
+                position: 'bottom',
+              });
+              await toast.present();
+
+              this.router.navigate(['/home']);
+            } catch (error) {
+              const toast = await this.toastCtrl.create({
+                message: 'Error al salir del evento',
+                duration: 2000,
+                color: 'danger',
+                position: 'bottom',
+              });
+              await toast.present();
+            }
           },
         },
       ],
     });
+
     await alert.present();
   }
 
