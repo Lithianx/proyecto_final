@@ -1,10 +1,11 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
-import { AlertController } from '@ionic/angular';
+import { NavController, AlertController, ToastController } from '@ionic/angular';
 import { ChangeDetectorRef } from '@angular/core';
-import { ToastController } from '@ionic/angular';
-
+import { EventoService } from 'src/app/services/evento.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
+import { doc, getDoc, updateDoc, arrayUnion } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-sala-evento',
@@ -13,36 +14,64 @@ import { ToastController } from '@ionic/angular';
   standalone: false,
 })
 export class SalaEventoPage implements OnInit {
-
   evento: any;
-  jugadores: string[] = ['Tú', 'Carlos', 'Ana', 'Juan', 'Esteban', 'Pepe', 'Kanguru', 'Lucho', 'Marta', 'Sofia'];
+  jugadores: any[] = [];
+  eventoId: string = '';
+  chatAbierto = false;
+  mensaje = '';
+  mensajes: { usuario: string; texto: string }[] = [];
 
-  eventos = [
-    { id: 1, nombre: 'Torneo de LoL', lugar: 'Sala 1', hora: '18:00', usuario: 'PEPEX' },
-    { id: 2, nombre: 'Among Us IRL', lugar: 'Patio central', hora: '16:00', usuario: 'CARLOS' },
-    { id: 3, nombre: 'Tetris Battle', lugar: 'Sala 3', hora: '19:30', usuario: 'JUAN' },
-    { id: 4, nombre: 'Torneo de DOTA', lugar: 'Sala 1', hora: '18:00', usuario: 'ESTEBAN666' },
-    { id: 5, nombre: 'Torneo de POKEMON', lugar: 'Sala 1', hora: '18:00', usuario: 'KANGURUU' },
-    { id: 6, nombre: 'UNO', lugar: 'Sala 2', hora: '18:00', usuario: 'PEPEX' },
-  ];
+  cargandoEvento = false;
+  eventoEnCurso = false;
+  tiempoTranscurrido = '00:00:00';
+  private tiempoInicial = 0;
+  private intervalId: any;
 
-  constructor(private route: ActivatedRoute,
+  usuarioActual: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
     private navCtrl: NavController,
     private alertController: AlertController,
     private cdr: ChangeDetectorRef,
     private toastCtrl: ToastController,
-    private router: Router
-  ) { }
+    private router: Router,
+    private eventoService: EventoService,
+    private firestore: Firestore,
+    private usuarioService: UsuarioService
+  ) {}
 
-  ngOnInit() {
-    const id = +this.route.snapshot.paramMap.get('id')!;
-    this.evento = this.eventos.find(e => e.id === id);
+  async ngOnInit() {
+    this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
+    const docRef = doc(this.firestore, 'eventos', this.eventoId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      this.evento = docSnap.data();
+      this.evento.id = this.eventoId;
+
+      // Obtener usuario actual
+      const currentUser = await this.usuarioService.getUsuarioActualConectado();
+      this.usuarioActual = currentUser?.nombre_usuario ?? '';
+
+      // Verificamos si hay arreglo jugadores, si no lo creamos vacío
+      if (!this.evento.jugadores) {
+        this.evento.jugadores = [];
+      }
+
+      // Si el usuario actual no está en la lista, lo agregamos
+      const yaRegistrado = this.evento.jugadores.includes(this.usuarioActual);
+      if (!yaRegistrado) {
+        this.evento.jugadores.push(this.usuarioActual);
+        await updateDoc(docRef, {
+          jugadores: arrayUnion(this.usuarioActual)
+        });
+      }
+
+      // Mostrar en la lista
+      this.jugadores = this.evento.jugadores.map((nombre: string) => ({ nombre }));
+    }
   }
-
-
-  chatAbierto: boolean = false;
-  mensaje: string = '';
-  mensajes: { usuario: string, texto: string }[] = [];
 
   toggleChat() {
     this.chatAbierto = !this.chatAbierto;
@@ -51,86 +80,64 @@ export class SalaEventoPage implements OnInit {
   enviarMensaje() {
     if (this.mensaje.trim()) {
       this.mensajes.push({ usuario: 'Tú', texto: this.mensaje });
-
-      // Simula respuesta
       setTimeout(() => {
-        this.mensajes.push({ usuario: 'Carlos', texto: '¡Entendido!' });
+        this.mensajes.push({ usuario: 'Carlos', texto: 'Entendido!' });
       }, 1000);
-
       this.mensaje = '';
     }
   }
 
-  cargandoEvento: boolean = false;
-  eventoEnCurso: boolean = false;
-  tiempoTranscurrido: string = '00:00:00';
-  private tiempoInicial: number = 0;
-  private intervalId: any;
-
   async iniciarEvento() {
-  if (!this.eventoEnCurso) {
-    this.cargandoEvento = true;
+    if (!this.eventoEnCurso) {
+      this.cargandoEvento = true;
+      setTimeout(() => {
+        this.cargandoEvento = false;
+        this.eventoEnCurso = true;
+        this.tiempoInicial = Date.now();
+        this.iniciarTemporizador();
+      }, 2000);
+    } else {
+      const alerta = await this.alertController.create({
+        header: 'Finalizar Evento',
+        message: '¿Estás seguro que deseas finalizar este evento?',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          {
+            text: 'Finalizar',
+            handler: async () => {
+              this.cargandoEvento = true;
+              this.finalizarEvento();
+              const toast = await this.toastCtrl.create({
+                message: '✅ Evento finalizado',
+                duration: 2000,
+                position: 'bottom',
+                color: 'success',
+              });
+              await toast.present();
+              setTimeout(() => {
+                this.cargandoEvento = false;
+                this.navCtrl.navigateRoot('/home');
+              }, 2000);
+            },
+          },
+        ],
+      });
 
-    setTimeout(() => {
-      this.cargandoEvento = false;
-      this.eventoEnCurso = true;
-      this.tiempoInicial = Date.now();
-      this.iniciarTemporizador();
-    }, 2000);
-  } else {
-    const alerta = await this.alertController.create({
-      header: 'Finalizar Evento',
-      message: '¿Estás seguro que deseas finalizar este evento?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Finalizar',
-          handler: async () => {
-            this.cargandoEvento = true;
-            this.finalizarEvento();
-
-            // Mostrar el toast
-            const toast = await this.toastCtrl.create({
-              message: '✅ saliste del evento', 
-              duration: 2000,
-              position: 'bottom',
-              color: 'success',
-              animated: true
-            });
-            await toast.present();
-
-            // Redirigir después de mostrar el toast
-            setTimeout(() => {
-              this.cargandoEvento = false;
-              this.navCtrl.navigateRoot('/home');
-            }, 2000); // esperar lo mismo que dura el toast
-          }
-        }
-      ]
-    });
-
-    await alerta.present();
+      await alerta.present();
+    }
   }
-}
 
   iniciarTemporizador() {
-  this.intervalId = setInterval(() => {
-    const ahora = Date.now();
-    const diferencia = ahora - this.tiempoInicial;
-
-    const horas = Math.floor(diferencia / 3600000);
-    const minutos = Math.floor((diferencia % 3600000) / 60000);
-    const segundos = Math.floor((diferencia % 60000) / 1000);
-
-    this.tiempoTranscurrido =
-      `${this.pad(horas)}:${this.pad(minutos)}:${this.pad(segundos)}`;
-
-    this.cdr.detectChanges(); // 👈 fuerza actualización de vista
-  }, 1000);
-}
+    this.intervalId = setInterval(() => {
+      const ahora = Date.now();
+      const diff = ahora - this.tiempoInicial;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      this.tiempoTranscurrido = `${this.pad(h)}:${this.pad(m)}:${this.pad(s)}`;
+      this.cdr.detectChanges();
+    }, 1000);
+  }
 
   finalizarEvento() {
     this.eventoEnCurso = false;
@@ -142,42 +149,35 @@ export class SalaEventoPage implements OnInit {
     return num < 10 ? '0' + num : num.toString();
   }
 
+  async confirmarSalida() {
+    const alert = await this.alertController.create({
+      header: 'Confirmar salida',
+      message: '¿Estás seguro que quieres salir del evento?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Sí, salir',
+          handler: () => {
+            this.router.navigate(['/home']);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
 
+  volverAtras() {
+    this.router.navigate(['/home']);
+  }
 
-  async mostrarToastFinalizado() {
-  const toast = await this.toastCtrl.create({
-    message: '✅ Evento finalizado con éxito',
-    duration: 2000,
-    position: 'bottom',
-    color: 'success',
-    animated: true
-  });
+  doRefresh(event: any) {
+    this.ngOnInit().then(() => event.target.complete());
+  }
 
-  await toast.present();
-}
-
-async confirmarSalida() {
-  const alert = await this.alertController.create({
-    header: 'Confirmar salida',
-    message: '¿Estás seguro que quieres salir del evento?',
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        cssClass: 'secondary'
-      },
-      {
-        text: 'Sí, salir',
-        handler: () => {
-          this.router.navigate(['/home']);
-        }
-      }
-    ]
-  });
-
-  await alert.present();
-}
-
-
-
+  filtrarEventos(event: any) {
+    // lógica de filtrado futura
+  }
 }
