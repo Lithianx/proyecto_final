@@ -83,24 +83,6 @@
         </ng-template>
     </ion-modal>
 
-
-
-
-
-    <!-- vista previa de publicación guardada -->
-
-    <ion-card *ngIf="vistaPreviaVisible" class="vista-previa-card">
-        <ion-card-header>
-            <ion-card-title>Vista previa de publicación guardada</ion-card-title>
-        </ion-card-header>
-
-        <ion-card-content>
-            <p>{{ publicacion.contenido }}</p>
-            <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="media-item" />
-        </ion-card-content>
-    </ion-card>
-
-
 </ion-content>
 
 <app-navbar></app-navbar>
