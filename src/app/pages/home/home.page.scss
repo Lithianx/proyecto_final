@@ -14,6 +14,28 @@
   --overflow: auto;
   height: 100%;
 }
+
+
+.sin-publicaciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+  color: #888;
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  ion-text h3 {
+    margin: 0;
+    color: #888;
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+}
+
+
+
 .custom-modal-enviar {
 
   ion-searchbar {

@@ -18,6 +18,12 @@
   </ion-segment>
 
   <ion-list lines="none">
+    <!-- Mensaje si no hay publicaciones -->
+    <div *ngIf="publicacionesFiltradas.length === 0" class="sin-publicaciones">
+      <ion-text color="medium">
+        <h3>No hay publicaciones para mostrar.</h3>
+      </ion-text>
+    </div>
 
     <!-- Publicación -->
     <ion-card *ngFor="let publicacion of publicacionesFiltradas">
@@ -31,9 +37,8 @@
         </ion-label>
         <!-- Botón de seguir -->
         <ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"
-                  [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
-                  (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario))"
-                  [outline]="!sigueAlAutor(publicacion)">
+          [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
+          (click)="seguir(getUsuarioPublicacion(publicacion.id_usuario))" [outline]="!sigueAlAutor(publicacion)">
           {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
         </ion-chip>
 
