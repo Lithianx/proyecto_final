@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -44,7 +45,8 @@ export class CrearPublicacionPage implements OnInit {
     private router: Router,
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private navCtrl: NavController,
   ) { }
 
   async ngOnInit() {
@@ -137,11 +139,6 @@ export class CrearPublicacionPage implements OnInit {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
-  }
-
-  // Función para navegar a la pantalla de edición
-  modificar(post: Publicacion) {
-    console.log('Modificar publicación:', post);
-    this.router.navigate(['/editar-publicacion', post.id_publicacion]);
+    this.navCtrl.back();
   }
 }
