@@ -7,7 +7,7 @@
     <div class="perfil-header-section">
       <div class="perfil-top">
         <ion-avatar class="foto-perfil">
-          <img [src]="fotoPerfil" alt="Foto de perfil del usuario" />
+          <img [src]="fotoPerfil" [alt]="'Foto de perfil de ' + nombreUsuario">
         </ion-avatar>
         <h2>{{ nombreUsuario }}</h2>
         <ion-button fill="clear" size="small" (click)="abrirOpciones()">
@@ -33,9 +33,11 @@
     </div>
 
     <!-- Bio -->
+    <!-- Bio -->
     <div class="perfil-bio">
-      <p><strong>{{ nombreCompleto }}</strong></p>
-      <p>{{ descripcionBio }}</p>
+    <p class="texto-secundario" style="margin-bottom: 0;">{{ subname }}</p>
+
+      <p class="texto-secundario descripcion-texto" style="margin-top: 0;">{{ descripcionBio }}</p>
     </div>
 
     <!-- Navegación -->

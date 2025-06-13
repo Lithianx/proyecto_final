@@ -196,7 +196,12 @@ export class UsuarioService {
   getUsuarios(): Usuario[] {
     return this.usuariosEnMemoria;
   }
-
+  async obtenerUsuarios(): Promise<Usuario[]> {
+    if (this.usuariosEnMemoria.length === 0) {
+      await this.cargarUsuarios();
+    }
+    return this.getUsuarios();
+  }
   /**
    * Actualiza la lista de usuarios en memoria y localStorage.
    */
