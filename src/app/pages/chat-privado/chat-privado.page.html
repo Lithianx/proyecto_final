@@ -10,9 +10,9 @@
     <div class="avatar-container">
       <ng-container *ngIf="chatInfo">
         <ion-avatar>
-          <img [src]="chatInfo.avatar" />
+          <img  [src]="chatInfo.avatar" />
         </ion-avatar>
-        <ion-title>{{ chatInfo.nombre_usuario }}</ion-title>
+        <ion-title (click)="verPerfil(chatInfo)">{{ chatInfo.nombre_usuario }}</ion-title>
       </ng-container>
     </div>
   </ion-toolbar>

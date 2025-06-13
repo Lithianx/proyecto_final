@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { Keyboard } from '@capacitor/keyboard';
 
@@ -52,6 +52,7 @@ export class ChatPrivadoPage implements OnInit {
   cargandoMas = false;
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
@@ -411,6 +412,12 @@ export class ChatPrivadoPage implements OnInit {
       return JSON.parse(mensaje.contenido);
     } catch {
       return null;
+    }
+  }
+
+  verPerfil(usuario: Usuario | undefined) {
+    if (usuario) {
+      this.router.navigate(['/perfil-user', usuario.id_usuario]);
     }
   }
 
