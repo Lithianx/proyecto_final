@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, ModalController } from '@ionic/angular';
+import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
@@ -19,6 +19,7 @@ import { LikeService } from 'src/app/services/like.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -38,7 +39,7 @@ export class HomePage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion:''
+    descripcion: ''
   };
 
   publicaciones: Publicacion[] = [];
@@ -68,6 +69,8 @@ export class HomePage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
+    private navCtrl: NavController,
+    private alertCtrl: AlertController,
     private localStorage: LocalStorageService,
     private likeService: LikeService,
     private seguirService: SeguirService,
@@ -82,10 +85,10 @@ export class HomePage implements OnInit {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
   }
 
-async verificarConexion() {
-  const online = await this.UtilsService.checkInternetConnection();
-  console.log('¿Estoy online?', online);
-}
+  async verificarConexion() {
+    const online = await this.UtilsService.checkInternetConnection();
+    console.log('¿Estoy online?', online);
+  }
 
   async ngOnInit() {
 
@@ -104,28 +107,28 @@ async verificarConexion() {
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
 
-  // Publicaciones en tiempo real
-this.publicacionService.publicaciones$.subscribe(async publicaciones => {
-  this.publicaciones = publicaciones.map(pub => ({
-    ...pub,
-    fecha_publicacion: pub.fecha_publicacion instanceof Date
-      ? pub.fecha_publicacion
-      : (pub.fecha_publicacion && typeof (pub.fecha_publicacion as any).toDate === 'function'
-          ? (pub.fecha_publicacion as any).toDate()
-          : new Date(pub.fecha_publicacion))
-  }));
-  // Ordenar publicaciones por fecha descendente
-  this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
-  this.publicacionesAmigos = [...this.publicaciones];
+    // Publicaciones en tiempo real
+    this.publicacionService.publicaciones$.subscribe(async publicaciones => {
+      this.publicaciones = publicaciones.map(pub => ({
+        ...pub,
+        fecha_publicacion: pub.fecha_publicacion instanceof Date
+          ? pub.fecha_publicacion
+          : (pub.fecha_publicacion && typeof (pub.fecha_publicacion as any).toDate === 'function'
+            ? (pub.fecha_publicacion as any).toDate()
+            : new Date(pub.fecha_publicacion))
+      }));
+      // Ordenar publicaciones por fecha descendente
+      this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
+      this.publicacionesAmigos = [...this.publicaciones];
 
-  // Guardar publicaciones en localStorage
-  await this.localStorage.setItem('publicaciones', this.publicaciones);
-});
+      // Guardar publicaciones en localStorage
+      await this.localStorage.setItem('publicaciones', this.publicaciones);
+    });
 
-  // Likes de publicaciones en tiempo real
-  this.likeService.likesPublicaciones$.subscribe(likes => {
-    this.publicacionesLikes = likes;
-  });
+    // Likes de publicaciones en tiempo real
+    this.likeService.likesPublicaciones$.subscribe(likes => {
+      this.publicacionesLikes = likes;
+    });
 
     // Guardados
     await this.guardaPublicacionService.cargarGuardados();
@@ -142,40 +145,40 @@ this.publicacionService.publicaciones$.subscribe(async publicaciones => {
   }
 
   // Método para refrescar la lista de publicaciones
-async doRefresh(event: any) {
-  // Refresca solo datos NO observables
-  await this.usuarioService.cargarUsuarios();
-  this.usuarios = this.usuarioService.getUsuarios();
+  async doRefresh(event: any) {
+    // Refresca solo datos NO observables
+    await this.usuarioService.cargarUsuarios();
+    this.usuarios = this.usuarioService.getUsuarios();
 
-  await this.guardaPublicacionService.cargarGuardados();
-  this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+    await this.guardaPublicacionService.cargarGuardados();
+    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
 
-  await this.seguirService.cargarSeguimientos();
-  this.seguimientos = this.seguirService.getSeguimientos();
-  this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+    await this.seguirService.cargarSeguimientos();
+    this.seguimientos = this.seguirService.getSeguimientos();
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-  setTimeout(() => {
-    event.target.complete();
-  }, 1000);
-}
+    setTimeout(() => {
+      event.target.complete();
+    }, 1000);
+  }
 
   // Dar o quitar like
-async likePublicacion(publicacion: Publicacion) {
-  await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-}
+  async likePublicacion(publicacion: Publicacion) {
+    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+  }
 
   // Métodos síncronos para la vista
-getLikesPublicacion(id_publicacion: string): number {
-  return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
-}
+  getLikesPublicacion(id_publicacion: string): number {
+    return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
+  }
 
-usuarioLikeoPublicacion(id_publicacion: string): boolean {
-  return !!this.publicacionesLikes.find(
-    l => l.id_publicacion === id_publicacion &&
-         l.id_usuario === this.usuarioActual.id_usuario &&
-         l.estado_like
-  );
-}
+  usuarioLikeoPublicacion(id_publicacion: string): boolean {
+    return !!this.publicacionesLikes.find(
+      l => l.id_publicacion === id_publicacion &&
+        l.id_usuario === this.usuarioActual.id_usuario &&
+        l.estado_like
+    );
+  }
 
   // Guardar publicación
   async guardar(publicacion: Publicacion) {
@@ -194,13 +197,13 @@ usuarioLikeoPublicacion(id_publicacion: string): boolean {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
   }
 
-sigueAlAutor(publicacion: Publicacion): boolean {
-  // Si el autor es el usuario actual, no mostrar opción de seguir
-  if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
-    return false;
+  sigueAlAutor(publicacion: Publicacion): boolean {
+    // Si el autor es el usuario actual, no mostrar opción de seguir
+    if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
+      return false;
+    }
+    return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
   }
-  return this.seguirService.sigue(this.usuarioActual.id_usuario, publicacion.id_usuario);
-}
 
   // Filtrado por texto SOLO para los usuarios que sigues
   handleInput(event: any): void {
@@ -246,16 +249,40 @@ sigueAlAutor(publicacion: Publicacion): boolean {
     this.closeModal();
   }
 
-  opcion(publicacion: Publicacion) {
-    this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
+  opcion(publicacion: any) {
+    localStorage.setItem('id_usuario', this.usuarioActual.id_usuario);
+    const idUsuarioActual = localStorage.getItem('id_usuario') ?? '';
+    const esPropietario = publicacion.id_usuario === idUsuarioActual;
+    const botones = esPropietario
+      ? [
+        {
+          text: 'Editar',
+          icon: 'pencil-outline',
+          handler: () => {
+            this.modificar(publicacion);
+          },
+        },
+        {
+          text: 'Eliminar publicacion',
+          icon: 'alert-circle-outline',
+          role: 'destructive',
+          handler: () => {
+            this.confirmarEliminacion(publicacion);
+          },
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+          handler: () => { }
+        }
+      ]
+      : [
         {
           text: 'Compartir',
           icon: 'share-outline',
           handler: () => {
             this.compartir(publicacion);
-            console.log('Compartir post');
           },
         },
         {
@@ -264,18 +291,65 @@ sigueAlAutor(publicacion: Publicacion): boolean {
           role: 'destructive',
           handler: () => {
             this.irAReportar(publicacion);
-            console.log('Post reportado');
           },
         },
         {
           text: 'Cancelar',
           icon: 'close-outline',
           role: 'cancel',
-        },
-      ],
+          handler: () => { }
+        }
+      ];
+
+    this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: botones,
       cssClass: 'custom-action-sheet'
-    }).then(actionSheet => actionSheet.present());
+    }).then(actionSheet => {
+      actionSheet.present();
+    });
   }
+
+  modificar(publicacion: Publicacion) {
+    this.router.navigate(['/editar-publicacion', publicacion.id_publicacion]);
+  }
+
+  volver() {
+    this.navCtrl.back();
+  }
+
+  async confirmarEliminacion(publicacion: any) {
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar publicación?',
+      message: '¿Estás seguro de que deseas eliminar esta publicación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => { }
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          cssClass: 'alert-button-delete',
+          handler: async () => {
+            await this.publicacionService.removePublicacion(publicacion.id_publicacion);
+            this.volver();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+verPerfil(usuario: Usuario | undefined) {
+  if (usuario) {
+    this.router.navigate(['/perfil-user', usuario.id_usuario]);
+  }
+}
+
 
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);

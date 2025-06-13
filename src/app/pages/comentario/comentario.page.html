@@ -14,17 +14,16 @@
       <ion-avatar slot="start">
         <img [src]="usuarioPost.avatar" />
       </ion-avatar>
-      <ion-label>
+      <ion-label (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
         <h2>{{ usuarioPost.nombre_usuario }}</h2>
         <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
       </ion-label>
       <!-- Botón de seguir -->
-<ion-chip *ngIf="usuarioPost && publicacion.id_usuario !== usuarioActual.id_usuario"
-          [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'"
-          (click)="seguir(usuarioPost)"
-          [outline]="!sigueAlAutor(publicacion)">
-  {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
-</ion-chip>
+      <ion-chip *ngIf="usuarioPost && publicacion.id_usuario !== usuarioActual.id_usuario"
+        [color]="sigueAlAutor(publicacion) ? 'success' : 'primary'" (click)="seguir(usuarioPost)"
+        [outline]="!sigueAlAutor(publicacion)">
+        {{ sigueAlAutor(publicacion) ? 'Siguiendo' : 'Seguir' }}
+      </ion-chip>
 
       <!-- Botón de opciones -->
       <ion-button fill="clear" size="small" (click)="opcion(publicacion)">
@@ -42,13 +41,13 @@
 
     <!-- Acciones -->
     <ion-row class="action-row" responsive>
-        <!-- Botón de me gusta -->
-        <ion-col size="auto">
-          <ion-button fill="clear" size="small" (click)="likePublicacion(publicacion)">
-            <ion-icon [name]="usuarioLikeoPublicacion(publicacion.id_publicacion) ? 'sparkles' : 'sparkles-outline'"
-              size="large"></ion-icon>
-          </ion-button>
-        </ion-col>
+      <!-- Botón de me gusta -->
+      <ion-col size="auto">
+        <ion-button fill="clear" size="small" (click)="likePublicacion(publicacion)">
+          <ion-icon [name]="usuarioLikeoPublicacion(publicacion.id_publicacion) ? 'sparkles' : 'sparkles-outline'"
+            size="large"></ion-icon>
+        </ion-button>
+      </ion-col>
       <!-- Botón de compartir -->
       <ion-col size="auto">
         <ion-button id="open-modal" fill="clear" size="small" (click)="enviar(publicacion)">
@@ -65,29 +64,29 @@
 
     </ion-row>
 
-      <!-- En caso que NO haya imagen -->
-      <ng-template #soloDescripcion>
-        <ion-card-content>
-          <p class="descripcion-sola">{{ publicacion.contenido }}</p>
-          <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
-        </ion-card-content>
-      </ng-template>
+    <!-- En caso que NO haya imagen -->
+    <ng-template #soloDescripcion>
+      <ion-card-content>
+        <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+        <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
+      </ion-card-content>
+    </ng-template>
 
-      <!-- Siempre muestra acciones y descripción si hay imagen -->
-      <ng-container *ngIf="publicacion.imagen">
-        <ion-card-content>
-          <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
-          <p>
-            {{ descripcionExpandida[publicacion.id_publicacion]
-            ? publicacion.contenido
-            : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100 ? '...' : '') }}
-            <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
-              (click)="toggleDescripcion(publicacion.id_publicacion)">
-              {{ descripcionExpandida[publicacion.id_publicacion] ? '...Ver menos' : 'Ver más...' }}
-            </ion-button>
-          </p>
-        </ion-card-content>
-      </ng-container>
+    <!-- Siempre muestra acciones y descripción si hay imagen -->
+    <ng-container *ngIf="publicacion.imagen">
+      <ion-card-content>
+        <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
+        <p>
+          {{ descripcionExpandida[publicacion.id_publicacion]
+          ? publicacion.contenido
+          : (publicacion.contenido | slice:0:100) + (publicacion.contenido.length > 100 ? '...' : '') }}
+          <ion-button *ngIf="publicacion.contenido.length > 100" fill="clear" size="small"
+            (click)="toggleDescripcion(publicacion.id_publicacion)">
+            {{ descripcionExpandida[publicacion.id_publicacion] ? '...Ver menos' : 'Ver más...' }}
+          </ion-button>
+        </p>
+      </ion-card-content>
+    </ng-container>
 
   </ion-card>
 

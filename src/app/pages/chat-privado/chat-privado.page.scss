@@ -91,12 +91,25 @@
 }
 
 .sent .bubble {
+  border-radius: 12px 12px 0 12px;
   background-color: #1cb400;
 }
 
 .received .bubble {
+  border-radius: 12px 12px 12px 0;
   background-color: #494848;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 .hora-visto{

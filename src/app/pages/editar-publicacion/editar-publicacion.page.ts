@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -36,14 +37,14 @@ export class EditarPublicacionPage implements OnInit {
   publicacion!: Publicacion;
   contenido: string = '';
   imagenBase64: string | null = null;
-  vistaPreviaVisible: boolean = false;
   publicaciones: Publicacion[] = []; // Lista de publicaciones cargadas
 
   constructor(
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private navCtrl: NavController,
   ) { }
 
   async ngOnInit() {
@@ -125,6 +126,7 @@ export class EditarPublicacionPage implements OnInit {
     }
   }
 
+  
   async guardarCambios() {
     if (this.publicacion) {
       this.publicacion.contenido = this.contenido;
@@ -140,7 +142,7 @@ export class EditarPublicacionPage implements OnInit {
       }
 
       console.log('Cambios guardados:', this.publicaciones);
-      this.vistaPreviaVisible = true;
+      this.navCtrl.back();
     }
   }
 }
