@@ -15,79 +15,83 @@ export class SeguirService {
   ) {}
 
   // Cargar seguimientos en memoria desde Firebase o localStorage
-async cargarSeguimientos(): Promise<void> {
-  const online = await this.utilsService.checkInternetConnection();
-  if (online) {
-    try {
-      const seguimientos = await this.firebaseService.getSeguimientos();
-      this.seguimientosEnMemoria = seguimientos;
-      await this.localStorage.setItem('seguimientos', seguimientos);
-    } catch (error) {
-      // Si falla Firebase, usa localStorage
+  async cargarSeguimientos(): Promise<void> {
+    const online = await this.utilsService.checkInternetConnection();
+    if (online) {
+      try {
+        const seguimientos = await this.firebaseService.getSeguimientos();
+        this.seguimientosEnMemoria = seguimientos;
+        await this.localStorage.setItem('seguimientos', seguimientos);
+        console.log(`SeguirService: cargados ${seguimientos.length} seguimientos desde Firebase.`);
+      } catch (error) {
+        // Si falla Firebase, usa localStorage
+        const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
+        this.seguimientosEnMemoria = seguimientos;
+        console.log(`SeguirService: cargados ${seguimientos.length} seguimientos desde localStorage (falló Firebase).`);
+      }
+    } else {
+      // Si no hay internet, usa localStorage
       const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
       this.seguimientosEnMemoria = seguimientos;
+      console.log(`SeguirService: cargados ${seguimientos.length} seguimientos desde localStorage (sin internet).`);
     }
-  } else {
-    // Si no hay internet, usa localStorage
-    const seguimientos = await this.localStorage.getList<Seguir>('seguimientos') || [];
-    this.seguimientosEnMemoria = seguimientos;
   }
-}
 
   // Obtener todos los seguimientos en memoria
   getSeguimientos(): Seguir[] {
+    console.log(`SeguirService: obtenidos ${this.seguimientosEnMemoria.length} seguimientos en memoria.`);
     return this.seguimientosEnMemoria;
   }
 
   // Seguir o dejar de seguir a un usuario (ahora string)
-async toggleSeguir(idSeguidor: string, idSeguido: string): Promise<void> {
-  const idx = this.seguimientosEnMemoria.findIndex(
-    s => s.id_usuario_seguidor === idSeguidor && s.id_usuario_seguido === idSeguido
-  );
-  const online = await this.utilsService.checkInternetConnection();
+  async toggleSeguir(idSeguidor: string, idSeguido: string): Promise<void> {
+    const idx = this.seguimientosEnMemoria.findIndex(
+      s => s.id_usuario_seguidor === idSeguidor && s.id_usuario_seguido === idSeguido
+    );
+    const online = await this.utilsService.checkInternetConnection();
 
-  if (idx > -1) {
-    // Si existe, alterna el estado
-    this.seguimientosEnMemoria[idx].estado_seguimiento = !this.seguimientosEnMemoria[idx].estado_seguimiento;
-    if (online) {
-      await this.firebaseService.updateSeguimiento(this.seguimientosEnMemoria[idx]);
+    if (idx > -1) {
+      // Si existe, alterna el estado
+      this.seguimientosEnMemoria[idx].estado_seguimiento = !this.seguimientosEnMemoria[idx].estado_seguimiento;
+      if (online) {
+        await this.firebaseService.updateSeguimiento(this.seguimientosEnMemoria[idx]);
+      }
+    } else {
+      // Si no existe, crea uno nuevo
+      const nuevo = {
+        id_usuario_seguidor: idSeguidor,
+        id_usuario_seguido: idSeguido,
+        estado_seguimiento: true
+      };
+      this.seguimientosEnMemoria.push(nuevo);
+      if (online) {
+        await this.firebaseService.addSeguimiento(nuevo);
+      }
     }
-  } else {
-    // Si no existe, crea uno nuevo
-    const nuevo = {
-      id_usuario_seguidor: idSeguidor,
-      id_usuario_seguido: idSeguido,
-      estado_seguimiento: true
-    };
-    this.seguimientosEnMemoria.push(nuevo);
-    if (online) {
-      await this.firebaseService.addSeguimiento(nuevo);
+    await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
+  }
+
+  async sincronizarSeguimientosLocales(): Promise<void> {
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) return;
+    const seguimientosLocales = await this.localStorage.getList<Seguir>('seguimientos') || [];
+
+    // Elimina duplicados: solo deja el último estado para cada par seguidor/seguido
+    const mapa = new Map<string, Seguir>();
+    for (const seg of seguimientosLocales) {
+      const key = `${seg.id_usuario_seguidor}_${seg.id_usuario_seguido}`;
+      mapa.set(key, seg); // Si hay varios, el último sobrescribe
     }
+    const sinDuplicados = Array.from(mapa.values());
+
+    for (const seguimiento of sinDuplicados) {
+      // Puedes usar add o update según tu lógica, aquí se usa update para ambos casos
+      await this.firebaseService.updateSeguimiento(seguimiento);
+    }
+
+    // Opcional: actualiza localStorage para dejar solo los no duplicados
+    await this.localStorage.setItem('seguimientos', sinDuplicados);
   }
-  await this.localStorage.setItem('seguimientos', this.seguimientosEnMemoria);
-}
-
-async sincronizarSeguimientosLocales(): Promise<void> {
-  const online = await this.utilsService.checkInternetConnection();
-  if (!online) return;
-  const seguimientosLocales = await this.localStorage.getList<Seguir>('seguimientos') || [];
-
-  // Elimina duplicados: solo deja el último estado para cada par seguidor/seguido
-  const mapa = new Map<string, Seguir>();
-  for (const seg of seguimientosLocales) {
-    const key = `${seg.id_usuario_seguidor}_${seg.id_usuario_seguido}`;
-    mapa.set(key, seg); // Si hay varios, el último sobrescribe
-  }
-  const sinDuplicados = Array.from(mapa.values());
-
-  for (const seguimiento of sinDuplicados) {
-    // Puedes usar add o update según tu lógica, aquí se usa update para ambos casos
-    await this.firebaseService.updateSeguimiento(seguimiento);
-  }
-
-  // Opcional: actualiza localStorage para dejar solo los no duplicados
-  await this.localStorage.setItem('seguimientos', sinDuplicados);
-}
 
   // Saber si el usuario ya sigue a otro usuario (ahora string)
   sigue(idSeguidor: string, idSeguido: string): boolean {
@@ -114,13 +118,13 @@ async sincronizarSeguimientosLocales(): Promise<void> {
       user.nombre_usuario.toLowerCase().includes(searchTerm)
     );
   }
+
   // Obtener los usuarios que siguen al usuario actual
-getSeguidores(usuarios: Usuario[], idUsuario: string): Usuario[] {
-  const idsSeguidores = this.seguimientosEnMemoria
-    .filter(s => s.id_usuario_seguido === idUsuario && s.estado_seguimiento)
-    .map(s => s.id_usuario_seguidor);
+  getSeguidores(usuarios: Usuario[], idUsuario: string): Usuario[] {
+    const idsSeguidores = this.seguimientosEnMemoria
+      .filter(s => s.id_usuario_seguido === idUsuario && s.estado_seguimiento)
+      .map(s => s.id_usuario_seguidor);
 
-  return usuarios.filter(u => idsSeguidores.includes(u.id_usuario));
-}
-
+    return usuarios.filter(u => idsSeguidores.includes(u.id_usuario));
+  }
 }

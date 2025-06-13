@@ -6,6 +6,7 @@ import { Usuario } from 'src/app/models/usuario.model';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { UtilsService } from 'src/app/services/utils.service';
+import { SeguirService } from 'src/app/services/seguir.service';
 
 @Component({
   selector: 'app-perfil-user',
@@ -18,8 +19,6 @@ export class PerfilUserPage implements OnInit {
 
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
-
-  usuarios: Usuario[] = [];
 
   usuarioActual: Usuario = {
     id_usuario: '0',
@@ -35,7 +34,8 @@ export class PerfilUserPage implements OnInit {
   };
 
   siguiendo: boolean = false;
-  idUsuario: string = '';  // Será asignado desde la ruta
+  idUsuario: string = '';  // Usuario del perfil visto
+  idUsuarioLogueado: string = ''; // Usuario que está viendo el perfil
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
@@ -44,8 +44,8 @@ export class PerfilUserPage implements OnInit {
 
   estadisticas = {
     publicaciones: 0,
-    seguidores: 300,
-    seguidos: 180
+    seguidores: 0,
+    seguidos: 0
   };
 
   eventosinscritos = [
@@ -79,27 +79,47 @@ export class PerfilUserPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private usuarioService: UsuarioService,
     private publicacionService: PublicacionService,
-    private utilsService: UtilsService
+    private utilsService: UtilsService,
+    private seguirService: SeguirService
   ) {}
 
   ngOnInit() {
-    // Obtiene el id_usuario desde la ruta y carga el perfil
+    // Escuchar cambios en el parámetro 'id' para actualizar datos dinámicamente
     this.route.paramMap.subscribe(async params => {
       const id = params.get('id');
       if (id) {
         this.idUsuario = id;
+        this.idUsuarioLogueado = localStorage.getItem('id_usuario') || '';
+
+        await this.seguirService.cargarSeguimientos();
         await this.cargarDatosUsuario(id);
         await this.cargarPublicaciones(id);
+
+        this.actualizarEstadoSeguir();
+        this.actualizarEstadisticasSeguir(id);
       }
     });
   }
 
   async ionViewWillEnter() {
+    // Actualiza la vista cada vez que la página entra en pantalla
     if (this.idUsuario) {
+      await this.seguirService.cargarSeguimientos();
       await this.cargarDatosUsuario(this.idUsuario);
       await this.cargarPublicaciones(this.idUsuario);
+      this.actualizarEstadoSeguir();
+      this.actualizarEstadisticasSeguir(this.idUsuario);
     }
+
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+  }
+
+  private actualizarEstadoSeguir() {
+    if (!this.idUsuarioLogueado || !this.idUsuario) {
+      this.siguiendo = false;
+      return;
+    }
+    this.siguiendo = this.seguirService.sigue(this.idUsuarioLogueado, this.idUsuario);
   }
 
   private async cargarDatosUsuario(id_usuario: string) {
@@ -121,23 +141,30 @@ export class PerfilUserPage implements OnInit {
 
   async cargarPublicaciones(id_usuario: string) {
     try {
-      console.log('ID usuario recibido:', id_usuario);
-
       const todasPublicaciones = await this.publicacionService.getPublicaciones();
-      console.log('Publicaciones obtenidas del servicio:', todasPublicaciones);
-
       this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === id_usuario);
-      this.publicacionesFiltradas = this.publicaciones;
-
-      console.log('Publicaciones filtradas por usuario:', this.publicaciones);
-
+      this.publicacionesFiltradas = [...this.publicaciones];
       this.estadisticas.publicaciones = this.publicaciones.length;
-      console.log('Cantidad de publicaciones del usuario:', this.estadisticas.publicaciones);
-
     } catch (error) {
       console.error('Error cargando publicaciones:', error);
     }
   }
+
+private actualizarEstadisticasSeguir(id_usuario: string) {
+  const seguimientos = this.seguirService.getSeguimientos() || [];
+
+  const seguidores = seguimientos.filter(
+    s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento === true
+  ).length;
+
+  const seguidos = seguimientos.filter(
+    s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento === true
+  ).length;
+
+  this.estadisticas.seguidores = seguidores;
+  this.estadisticas.seguidos = seguidos;
+}
+
 
   ionViewDidEnter() {
     this.applySliderTransform(this.vistaSeleccionada);
@@ -160,13 +187,13 @@ export class PerfilUserPage implements OnInit {
 
     switch (value) {
       case 'publicaciones':
-        position = 3;
+        position = 0;
         break;
       case 'eventos-inscritos':
-        position = 320 / 3; // ~33.33%
+        position = 33.33;
         break;
       case 'eventos-creados':
-        position = (315 / 3) * 2; // ~66.66%
+        position = 66.66;
         break;
     }
 
@@ -180,16 +207,16 @@ export class PerfilUserPage implements OnInit {
         {
           text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
           icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
-          handler: () => {
+          handler: async () => {
+            await this.seguirService.toggleSeguir(this.idUsuarioLogueado, this.idUsuario);
             this.siguiendo = !this.siguiendo;
-            console.log(this.siguiendo ? 'Ahora estás siguiendo' : 'Has dejado de seguir');
+            this.actualizarEstadisticasSeguir(this.idUsuario);
           }
         },
         {
           text: 'Mandar mensaje',
           icon: 'chatbubble-ellipses-outline',
           handler: () => {
-            console.log('Mandar mensaje a ID:', this.idUsuario);
             this.router.navigate(['/chat-privado', this.idUsuario]);
           }
         },
@@ -198,7 +225,6 @@ export class PerfilUserPage implements OnInit {
           role: 'destructive',
           icon: 'alert-circle-outline',
           handler: () => {
-            console.log('Reportar usuario');
             this.router.navigate(['/reportar-cuenta', this.idUsuario]);
           }
         },
@@ -213,16 +239,15 @@ export class PerfilUserPage implements OnInit {
     await actionSheet.present();
   }
 
-  opcion(publicacion: Publicacion) {
-    this.actionSheetCtrl.create({
+  async opcion(publicacion: Publicacion) {
+    const actionSheet = await this.actionSheetCtrl.create({
       header: 'Opciones',
       buttons: [
         {
           text: 'Compartir',
           icon: 'share-outline',
-          handler: () => {
-            this.compartir(publicacion);
-            console.log('Compartir post');
+          handler: async () => {
+            await this.compartir(publicacion);
           },
         },
         {
@@ -231,7 +256,6 @@ export class PerfilUserPage implements OnInit {
           role: 'destructive',
           handler: () => {
             this.irAReportar(publicacion);
-            console.log('Post reportado');
           },
         },
         {
@@ -241,7 +265,9 @@ export class PerfilUserPage implements OnInit {
         },
       ],
       cssClass: 'custom-action-sheet'
-    }).then(actionSheet => actionSheet.present());
+    });
+
+    await actionSheet.present();
   }
 
   async compartir(publicacion: Publicacion) {
@@ -253,7 +279,6 @@ export class PerfilUserPage implements OnInit {
   }
 
   irAReportar(publicacion: Publicacion) {
-    this.router.navigate(['/reportar', publicacion.id_publicacion]);
+    this.router.navigate(['/reportar-post', publicacion.id_publicacion]);
   }
-
 }
