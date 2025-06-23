@@ -32,7 +32,8 @@ export class PerfilPage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion: ''
+    descripcion: '',
+    rol: ''
   };
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';

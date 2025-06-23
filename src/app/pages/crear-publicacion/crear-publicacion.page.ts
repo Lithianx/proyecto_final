@@ -34,7 +34,8 @@ export class CrearPublicacionPage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion: ''
+    descripcion: '',
+    rol: 'usuario', // 'admin' o 'usuario'
   };
 
   contenido: string = '';

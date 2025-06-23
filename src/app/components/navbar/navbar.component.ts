@@ -44,8 +44,7 @@ export class NavbarComponent  implements OnInit {
   }
 
 async mostrarMenu() {
-  const esAdmin = this.usuarioActual && ADMIN_EMAILS.includes(this.usuarioActual.correo_electronico);
-
+  const esAdmin = this.usuarioActual && this.usuarioActual.rol === 'admin';
   const buttons = [
     {
       text: 'Crear Publicación',
@@ -61,13 +60,14 @@ async mostrarMenu() {
         this.router.navigate(['/crear-evento-flash']);
       }
     },
-            {
-          text: 'Ver Reportes',
-          icon: 'code-slash-outline',
-          handler: () => {
-          this.router.navigate(['/admin-reporte']);
-          }
-       },
+    // Solo admins ven este botón
+    ...(esAdmin ? [{
+      text: 'Ver Reportes',
+      icon: 'code-slash-outline',
+      handler: () => {
+        this.router.navigate(['/admin-reporte']);
+      }
+    }] : []),
     {
       text: 'Cancelar',
       icon: 'close',

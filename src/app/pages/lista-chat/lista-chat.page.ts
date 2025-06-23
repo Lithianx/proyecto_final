@@ -122,7 +122,13 @@ export class ListaChatPage implements OnInit, OnDestroy {
     }
   }
 
-
+parseFechaEnvio(fecha: any): Date | null {
+  if (!fecha) return null;
+  if (fecha instanceof Date) return fecha;
+  if (typeof fecha === 'string') return new Date(fecha);
+  if (typeof fecha === 'object' && typeof fecha.toDate === 'function') return fecha.toDate();
+  return null;
+}
 
   getUsuariosConConversacion(): Usuario[] {
     if (!this.usuarioActual) return [];

@@ -33,7 +33,8 @@ export class ReportarPage implements OnInit {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion:''
+    descripcion:'',
+        rol: ''
   };
 
   postId: string = ''; // string

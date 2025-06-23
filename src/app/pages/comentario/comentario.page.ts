@@ -52,7 +52,8 @@ export class ComentarioPage implements OnInit, OnDestroy  {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion: ''
+    descripcion: '',
+    rol: 'usuario', // 'admin' o 'usuario'
   };
 
   seguimientos: Seguir[] = [];

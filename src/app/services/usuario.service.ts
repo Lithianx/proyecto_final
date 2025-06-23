@@ -122,7 +122,8 @@ export class UsuarioService {
           estado_online: false,
           avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
           sub_name: '',
-          descripcion: ''
+          descripcion: '',
+          rol: 'usuario' // Asignar rol por defecto
         };
 
         await this.agregarUsuario(nuevoUsuario);

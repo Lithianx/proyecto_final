@@ -9,4 +9,5 @@ export interface Usuario {
     estado_online: boolean;
     sub_name: string;
     descripcion:string;
+    rol: string; // 'admin' o 'usuario'
 }

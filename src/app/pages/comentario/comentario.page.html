@@ -16,7 +16,7 @@
       </ion-avatar>
       <ion-label (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
         <h2>{{ usuarioPost.nombre_usuario }}</h2>
-        <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
+        <p>{{ publicacion.fecha_publicacion | date:'dd/MM/yyyy \'a las\' hh:mm a' }}</p>
       </ion-label>
       <!-- Botón de seguir -->
       <ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"
@@ -122,7 +122,7 @@
         <ion-label>
           <h3>{{ getUsuarioComentario(comentario.id_usuario)?.nombre_usuario }}</h3>
           <p>{{ comentario.contenido_comentario }}</p>
-          <small>{{ comentario.fecha_comentario | date:'short' }}</small>
+          <small>{{ comentario.fecha_comentario | date:'dd/MM/yyyy hh:mm a' }}</small>
         </ion-label>
 
         <!-- CONTENEDOR PARA BOTÓN Y LIKES EN COLUMNA -->

@@ -36,7 +36,7 @@
         </ion-avatar>
         <ion-label class="etiqueta-usuario" (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
           <h2>{{ getUsuarioPublicacion(publicacion.id_usuario)?.nombre_usuario }}</h2>
-          <p>{{ publicacion.fecha_publicacion | date:'short' }}</p>
+          <p>{{ publicacion.fecha_publicacion | date:'dd/MM/yyyy \'a las\' hh:mm a' }}</p>
         </ion-label>
         <!-- Botón de seguir -->
         <ion-chip *ngIf="publicacion.id_usuario !== usuarioActual.id_usuario"

@@ -40,7 +40,8 @@ export class HomePage implements OnInit, OnDestroy {
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
-    descripcion: ''
+    descripcion: '',
+    rol: ''
   };
 
   publicaciones: Publicacion[] = [];

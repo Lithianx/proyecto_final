@@ -23,7 +23,7 @@
             <ion-item slot="header" color="light">
 <ion-label>
   <strong *ngIf="getFechaReporte(reporte.fecha_reporte) as fecha">
-    {{ fecha | date:'short' }}
+    {{ fecha | date:'dd/MM/yyyy hh:mm a' }}
   </strong>
   <br>
   <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte, datos.tiposReporte) }}</span>

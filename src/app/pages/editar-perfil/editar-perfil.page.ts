@@ -23,7 +23,8 @@ export class EditarPerfilPage implements OnInit {
     estado_online: false,
     avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
     sub_name: '',
-    descripcion: ''
+    descripcion: '',
+    rol: ''
   };
 
   fotoPerfil: string = this.usuario.avatar;
