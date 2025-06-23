@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
-
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { NavController, IonSearchbar } from '@ionic/angular';
+import { SeguirService } from 'src/app/services/seguir.service';
 import { Usuario } from 'src/app/models/usuario.model';
 import { Mensaje } from 'src/app/models/mensaje.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
@@ -8,7 +8,7 @@ import { Conversacion } from 'src/app/models/conversacion.model';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import { UtilsService } from 'src/app/services/utils.service'; // Asegúrate de importar UtilsService si lo necesitas
+import { UtilsService } from 'src/app/services/utils.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -25,16 +25,23 @@ export class ListaChatPage implements OnInit, OnDestroy {
   conversacionesOriginal: Conversacion[] = [];
   mensajes: Mensaje[] = [];
 
+  usuariosSeguidos: Usuario[] = [];
+  resultadosBusqueda: Usuario[] = [];
+  buscando = false;
+
+  private mensajesSub?: Subscription;
+  private conversacionesSub?: Subscription;
+
+  @ViewChild(IonSearchbar) searchbar!: IonSearchbar;
+
   constructor(
     private navCtrl: NavController,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
     private usuarioService: UsuarioService,
-    private utilsService: UtilsService 
+    private utilsService: UtilsService,
+    private seguirService: SeguirService
   ) { }
-
-  private mensajesSub?: Subscription;
-  private conversacionesSub?: Subscription;
 
   async ngOnInit() {
     // Cargar usuario actual
@@ -43,25 +50,23 @@ export class ListaChatPage implements OnInit, OnDestroy {
       this.usuarioActual = usuario;
       await this.localStorage.setItem('usuarioActual', usuario);
     } else {
-      // Si no hay usuario, podrías redirigir al login
       return;
     }
 
-    // Carga usuarios reales desde el servicio
+    // Cargar usuarios y seguimientos
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
+    await this.seguirService.cargarSeguimientos();
+    this.usuariosSeguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-  // --- NUEVO: Verifica conexión y carga local si no hay internet ---
-  const online = await this.utilsService.checkInternetConnection();
-  if (!online) {
-    // Carga conversaciones y mensajes desde localStorage
-    this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
-    this.conversacionesOriginal = this.conversaciones;
-    this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
-    return;
-  }
-  // --- FIN NUEVO ---
-
+    // Verifica conexión y carga local si no hay internet
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) {
+      this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
+      this.conversacionesOriginal = this.conversaciones;
+      this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
+      return;
+    }
 
     // Suscribirse a los mensajes y conversaciones en tiempo real
     this.mensajesSub = this.comunicacionService.mensajes$.subscribe(mensajes => {
@@ -69,7 +74,7 @@ export class ListaChatPage implements OnInit, OnDestroy {
     });
     this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
       this.conversaciones = convs;
-      this.conversacionesOriginal = convs; // Guarda la copia original
+      this.conversacionesOriginal = convs;
       await this.localStorage.setItem('conversaciones', convs);
     });
   }
@@ -81,29 +86,42 @@ export class ListaChatPage implements OnInit, OnDestroy {
 
   doRefresh(event: any) {
     setTimeout(async () => {
-      // Solo recarga usuarios (no observable)
       await this.usuarioService.cargarUsuarios();
       this.usuarios = this.usuarioService.getUsuarios();
+      await this.seguirService.cargarSeguimientos();
+      this.usuariosSeguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
       event.target.complete();
     }, 1500);
   }
 
-  // Filtrado de la lista de conversaciones por el nombre del participante
+  // Buscador SOLO entre usuarios seguidos
   handleInput(event: any): void {
     const query = event.target.value?.toLowerCase() || '';
     if (!query) {
-      // Si el input está vacío, restaura la lista original
-      this.conversaciones = this.conversacionesOriginal;
+      this.resultadosBusqueda = [];
+      this.buscando = false;
     } else {
-      this.conversaciones = this.comunicacionService.filtrarConversacionesPorNombre(
-        this.conversacionesOriginal,
-        this.usuarios,
-        query
+      this.resultadosBusqueda = this.usuariosSeguidos.filter(u =>
+        u.nombre_usuario.toLowerCase().includes(query)
       );
+      this.buscando = true;
     }
   }
 
-  getUsuario(id_usuario: string) { // string
+  async abrirChat(usuario: Usuario) {
+    const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+      this.usuarioActual.id_usuario,
+      usuario.id_usuario
+    );
+    this.navCtrl.navigateForward(['/chat-privado', id_conversacion]);
+    this.resultadosBusqueda = [];
+    this.buscando = false;
+    if (this.searchbar) {
+      this.searchbar.value = '';
+    }
+  }
+
+  getUsuario(id_usuario: string) {
     return this.usuarios.find(u => u.id_usuario === id_usuario);
   }
 
@@ -111,7 +129,7 @@ export class ListaChatPage implements OnInit, OnDestroy {
     return this.comunicacionService.getUltimoMensajeDeConversacion(this.mensajes, id_conversacion);
   }
 
-  async marcarUltimoMensajeComoVisto(id_conversacion: string): Promise<void> { // string
+  async marcarUltimoMensajeComoVisto(id_conversacion: string): Promise<void> {
     const ultimoMensaje = this.getUltimoMensaje(id_conversacion);
     if (
       ultimoMensaje &&
@@ -122,13 +140,13 @@ export class ListaChatPage implements OnInit, OnDestroy {
     }
   }
 
-parseFechaEnvio(fecha: any): Date | null {
-  if (!fecha) return null;
-  if (fecha instanceof Date) return fecha;
-  if (typeof fecha === 'string') return new Date(fecha);
-  if (typeof fecha === 'object' && typeof fecha.toDate === 'function') return fecha.toDate();
-  return null;
-}
+  parseFechaEnvio(fecha: any): Date | null {
+    if (!fecha) return null;
+    if (fecha instanceof Date) return fecha;
+    if (typeof fecha === 'string') return new Date(fecha);
+    if (typeof fecha === 'object' && typeof fecha.toDate === 'function') return fecha.toDate();
+    return null;
+  }
 
   getUsuariosConConversacion(): Usuario[] {
     if (!this.usuarioActual) return [];
@@ -158,14 +176,14 @@ parseFechaEnvio(fecha: any): Date | null {
     }
   }
 
-esPublicacion(mensaje: Mensaje): boolean {
-  try {
-    const obj = JSON.parse(mensaje.contenido);
-    return obj && obj.id_publicacion && obj.contenido;
-  } catch {
-    return false;
+  esPublicacion(mensaje: Mensaje): boolean {
+    try {
+      const obj = JSON.parse(mensaje.contenido);
+      return obj && obj.id_publicacion && obj.contenido;
+    } catch {
+      return false;
+    }
   }
-}
 
   volver() {
     this.navCtrl.back();

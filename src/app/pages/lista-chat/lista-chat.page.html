@@ -4,25 +4,39 @@
 
   <!-- REFRESHER -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content pullingIcon="game-controller" refreshingIcon="game-controller">
-    </ion-refresher-content>
+    <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <!-- Barra de búsqueda -->
-  <ion-searchbar [debounce]="1000" (ionInput)="handleInput($event)" placeholder="Buscar chat"></ion-searchbar>
-  <!-- chats -->
-  <ion-list [inset]="true" lines="full">
+  <!-- Buscador SOLO entre seguidos -->
+  <ion-searchbar #searchbar [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar chat"></ion-searchbar>
 
+  <!-- Resultados de búsqueda entre seguidos -->
+  <ion-list *ngIf="buscando && resultadosBusqueda.length > 0">
+    <ion-item *ngFor="let usuario of resultadosBusqueda" (click)="abrirChat(usuario)">
+      <ion-avatar slot="start">
+        <img [src]="usuario.avatar" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ usuario.nombre_usuario }}</h2>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="buscando && resultadosBusqueda.length === 0">
+    <ion-item>
+      <ion-label>No se encontraron usuarios seguidos.</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- chats existentes -->
+  <ion-list [inset]="true" lines="full" *ngIf="!buscando">
     <ion-toolbar class="chat-header">
       <ion-buttons slot="start">
         <ion-back-button defaultHref="home"></ion-back-button>
       </ion-buttons>
       <ion-title>Mensajes</ion-title>
     </ion-toolbar>
-    <!-- Lista de chat -->
-
     <ion-list lines="none">
-      <!-- Mensaje si no hay publicaciones -->
       <div *ngIf="conversaciones.length === 0" class="sin-conversaciones">
         <span class="lupa-spinner">
           <ion-icon name="chatbubbles-outline"></ion-icon>
@@ -33,8 +47,6 @@
         </ion-text>
       </div>
     </ion-list>
-
-
     <ion-item *ngFor="let conv of conversaciones" class="chat-item"
       [routerLink]="['/chat-privado', conv.id_conversacion]"
       (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
@@ -45,20 +57,17 @@
         <ion-icon [name]="getUsuarioReceptor(conv)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
       <ion-label>
-        <!-- Nombre de usuario y estado -->
         <div class="user-info" style="display: flex; align-items: center;">
           <h5 style="margin-right: 8px;">
             {{ getUsuarioReceptor(conv)?.nombre_usuario || 'Usuario desconocido' }}
           </h5>
-          <!-- Icono de carta si el último mensaje no está visto -->
           <ion-icon *ngIf="
-    getUltimoMensaje(conv.id_conversacion)
-    && !getUltimoMensaje(conv.id_conversacion)?.estado_visto
-    && getUltimoMensaje(conv.id_conversacion)?.id_usuario_emisor !== usuarioActual.id_usuario
-  " name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
+            getUltimoMensaje(conv.id_conversacion)
+            && !getUltimoMensaje(conv.id_conversacion)?.estado_visto
+            && getUltimoMensaje(conv.id_conversacion)?.id_usuario_emisor !== usuarioActual.id_usuario
+          " name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
           </ion-icon>
         </div>
-        <!-- Último mensaje -->
         <p class="message-text">
           <ng-container *ngIf="getUltimoMensaje(conv.id_conversacion) as ultimo">
             <ng-container *ngIf="esPublicacion(ultimo); else otrosTipos">
