@@ -1,7 +1,4 @@
-<app-encabezado></app-encabezado>
-
-<ion-content scrollEvents="true" (ionScroll)="onScroll($event)">
-  <!-- header local con nombre chat y boton de colcer atras -->
+<ion-header>
   <ion-toolbar class="chat-header">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/lista-chat"></ion-back-button>
@@ -10,74 +7,80 @@
     <div class="avatar-container">
       <ng-container *ngIf="chatInfo">
         <ion-avatar>
-          <img  [src]="chatInfo.avatar" />
+          <img [src]="chatInfo.avatar" />
         </ion-avatar>
         <ion-title (click)="verPerfil(chatInfo)">{{ chatInfo.nombre_usuario }}</ion-title>
       </ng-container>
     </div>
   </ion-toolbar>
+</ion-header>
+
+<ion-content scrollEvents="true" (ionScroll)="onScroll($event)">
+  <!-- header local con nombre chat y boton de colcer atras -->
 
   <!-- Espacio debajo del header -->
   <div class="spacer-header"></div>
 
 
-<div class="chat-container">
-  <div *ngFor="let mensaje of mensajes" 
-    [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
-    <div class="bubble">
+  <div class="chat-container">
+    <div *ngFor="let mensaje of mensajes"
+      [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
+      <div class="bubble">
 
-      <!-- PUBLICACIÓN COMPARTIDA -->
-      <ng-container *ngIf="esPublicacion(mensaje); else otrosTipos">
-        <ion-card>
-          <ion-card-content>
-            <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
-              <p>{{ publicacion.contenido }}</p>
-              <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%; border-radius: 8px;">
-            </div>
-          </ion-card-content>
-        </ion-card>
-        <div class="hora-visto">
-          <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
-          <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
-        </div>
-      </ng-container>
-
-      <!-- OTROS TIPOS DE MENSAJE -->
-      <ng-template #otrosTipos>
-        <!-- Gif -->
-        <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
-          <img [src]="mensaje.contenido" class="gif-chat" (load)="onImageLoad()"/>
+        <!-- PUBLICACIÓN COMPARTIDA -->
+        <ng-container *ngIf="esPublicacion(mensaje); else otrosTipos">
+          <ion-card>
+            <ion-card-content>
+              <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
+                <p>{{ publicacion.contenido }}</p>
+                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%; border-radius: 8px;">
+              </div>
+            </ion-card-content>
+          </ion-card>
+          <div class="hora-visto">
+            <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+            <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
+          </div>
         </ng-container>
 
-        <!-- Imagen -->
-        <img *ngIf="mensaje.contenido?.startsWith('[imagen]')" [src]="mensaje.contenido.replace('[imagen]', '').trim()"
-          class="imagen-mensaje" (load)="onImageLoad()" />
+        <!-- OTROS TIPOS DE MENSAJE -->
+        <ng-template #otrosTipos>
+          <!-- Gif -->
+          <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
+            <img [src]="mensaje.contenido" class="gif-chat" (load)="onImageLoad()" />
+          </ng-container>
 
-        <!-- Video -->
-        <video *ngIf="mensaje.contenido?.startsWith('[video]')" [src]="mensaje.contenido.replace('[video]', '').trim()"
-          controls class="video-chat" (canplay)="onMediaLoad()"></video>
+          <!-- Imagen -->
+          <img *ngIf="mensaje.contenido?.startsWith('[imagen]')"
+            [src]="mensaje.contenido.replace('[imagen]', '').trim()" class="imagen-mensaje" (load)="onImageLoad()" />
 
-        <!-- Audio -->
-        <audio *ngIf="mensaje.contenido?.startsWith('[audio]')" [src]="mensaje.contenido.replace('[audio]', '').trim()"
-          controls type="audio/*" class="audio-chat" (canplay)="onMediaLoad()"></audio>
+          <!-- Video -->
+          <video *ngIf="mensaje.contenido?.startsWith('[video]')"
+            [src]="mensaje.contenido.replace('[video]', '').trim()" controls class="video-chat"
+            (canplay)="onMediaLoad()"></video>
 
-        <!-- Texto -->
-        <p *ngIf="!mensaje.contenido?.startsWith('[imagen]') 
+          <!-- Audio -->
+          <audio *ngIf="mensaje.contenido?.startsWith('[audio]')"
+            [src]="mensaje.contenido.replace('[audio]', '').trim()" controls type="audio/*" class="audio-chat"
+            (canplay)="onMediaLoad()"></audio>
+
+          <!-- Texto -->
+          <p *ngIf="!mensaje.contenido?.startsWith('[imagen]') 
                 && !mensaje.contenido?.startsWith('[video]') 
                 && !mensaje.contenido?.startsWith('[audio]')
                 && !(mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/'))">
-          {{ mensaje.contenido }}
-        </p>
-        <div class="hora-visto">
-          <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
-          <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
-        </div>
-      </ng-template>
+            {{ mensaje.contenido }}
+          </p>
+          <div class="hora-visto">
+            <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+            <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
+          </div>
+        </ng-template>
 
+      </div>
     </div>
+    <div #endOfMessages></div>
   </div>
-  <div #endOfMessages></div>
-</div>
 
 </ion-content>
 
