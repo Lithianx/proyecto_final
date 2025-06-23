@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef,ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { Keyboard } from '@capacitor/keyboard';
@@ -57,7 +57,8 @@ export class ChatPrivadoPage implements OnInit {
     private route: ActivatedRoute,
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private cdRef: ChangeDetectorRef
   ) { }
 
   async ngOnInit() {
@@ -79,34 +80,32 @@ export class ChatPrivadoPage implements OnInit {
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
 
     // Suscríbete a los mensajes del service
-    this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
-      this.todosLosMensajes = mensajes
-        .filter(m => m.id_conversacion === this.idConversacionActual)
-        .map(m => ({
-          ...m,
-          fecha_envio: m.fecha_envio instanceof Date
-            ? m.fecha_envio
-            : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
-              ? (m.fecha_envio as any).toDate()
-              : new Date(m.fecha_envio))
-        }))
-        .sort((a, b) => a.fecha_envio.getTime() - b.fecha_envio.getTime());
+this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
+  this.todosLosMensajes = mensajes
+    .filter(m => m.id_conversacion === this.idConversacionActual)
+    .map(m => ({
+      ...m,
+      fecha_envio: m.fecha_envio instanceof Date
+        ? m.fecha_envio
+        : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
+          ? (m.fecha_envio as any).toDate()
+          : new Date(m.fecha_envio))
+    }))
+    .sort((a, b) => a.fecha_envio.getTime() - b.fecha_envio.getTime());
 
-      // Ajusta mensajesMostrados si hay menos mensajes
-      if (this.todosLosMensajes.length < this.mensajesMostrados) {
-        this.mensajesMostrados = this.todosLosMensajes.length;
-      }
+  // Mostrar siempre todos los mensajes (puedes ajustar esto para scroll infinito)
+  this.mensajes = this.todosLosMensajes;
 
-      this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
+  this.cdRef.detectChanges();
 
-      if (!this.cargandoMas) {
-        this.scrollToBottom(true);
-      } else {
-        this.cargandoMas = false;
-      }
+  if (!this.cargandoMas) {
+    this.scrollToBottom(true);
+  } else {
+    this.cargandoMas = false;
+  }
 
-      await this.marcarMensajesRecibidosComoVistos();
-    });
+  await this.marcarMensajesRecibidosComoVistos();
+});
 
     // Busca la conversación actual y el usuario receptor real
     this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(conversaciones => {
