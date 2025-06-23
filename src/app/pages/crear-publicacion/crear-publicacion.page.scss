@@ -13,18 +13,23 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* Asegura al menos 20px de separación con el header */
-  max-height: calc(100vh - 20px - 56px); // 56px es una altura común de header Ionic, ajusta si es necesario
-  margin-top: 20px;
+  max-height: 80vh; // Limita el alto máximo del card
+  overflow-y: auto; // Permite scroll interno si el contenido es muy largo
+  margin-top: 30px;
 
+  display: flex;
+  flex-direction: column;
   h2 {
     color: #3fe520;
   }
 }
 
 .textarea-publicacion {
-  margin: 10px;
   color: #a6a6a6;
+  max-height: 11.5em;
+  overflow-y: auto;
+  resize: none;
+  padding: 0 12px;
 }
 
 .acciones-publicacion {
@@ -42,13 +47,11 @@
 }
 
 .media-item {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  border-radius: 10px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 18px;
+    padding: 10px;
 }
 
 .post-image {
