@@ -10,7 +10,7 @@ import { LocalStorageService } from 'src/app/services/local-storage-social.servi
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { NavController } from '@ionic/angular';
-
+import { UtilsService } from 'src/app/services/utils.service';
 import { ToastController } from '@ionic/angular';
 
 @Component({
@@ -50,7 +50,8 @@ export class CrearPublicacionPage implements OnInit {
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
     private navCtrl: NavController,
-    private toastController: ToastController
+    private toastCtrl: ToastController,
+    private utilsService: UtilsService
   ) { }
 
   async ngOnInit() {
@@ -125,36 +126,29 @@ export class CrearPublicacionPage implements OnInit {
 
     // Guardar en Firebase y obtener el ID generado
     const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
-    console.log('ID de publicación generado:', id_publicacion);
     nuevaPublicacion.id_publicacion = id_publicacion;
-    console.log('Publicación con ID:', nuevaPublicacion);
-    // Cargar publicaciones según conexión
-    if (navigator.onLine) {
-      this.publicaciones = await this.publicacionService.getPublicaciones();
-      console.log('Publicaciones obtenidas desde Firebase:', this.publicaciones);
-    } else {
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
-    }
 
-    console.log('Publicación creada:', nuevaPublicacion);
+      // Verifica conexión usando tu servicio
+  const online = await this.utilsService.checkInternetConnection();
 
-    this.contenido = '';
-    this.imagenBase64 = null;
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
-    await this.mostrarToast('¡Publicación creada exitosamente!');
-    this.router.navigate(['/home']);
+  // Muestra el toast adecuado
+  await this.toastCtrl.create({
+    message: online
+      ? '¡Publicación creada exitosamente!'
+      : 'Publicación guardada offline. Se sincronizará cuando tengas conexión.',
+    duration: 3000,
+    position: 'bottom',
+    color: online ? 'success' : 'warning'
+  }).then(toast => toast.present());
+
+  // Limpia el formulario
+  this.contenido = '';
+  this.imagenBase64 = null;
+  if (this.fileInput) {
+    this.fileInput.nativeElement.value = '';
   }
 
-
-  async mostrarToast(mensaje: string) {
-  const toast = await this.toastController.create({
-    message: mensaje,
-    duration: 2000,
-    color: 'success',
-    position: 'bottom'
-  });
-  toast.present();
-}
+  // Navega a home
+  this.router.navigate(['/home']);
+  }
 }

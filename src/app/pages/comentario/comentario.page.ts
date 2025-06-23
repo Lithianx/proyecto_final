@@ -12,7 +12,7 @@ import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
 
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
-
+import { ToastController } from '@ionic/angular';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { GuardaPublicacionService } from 'src/app/services/guardarpublicacion.service';
@@ -23,6 +23,7 @@ import { ComentarioService } from 'src/app/services/comentario.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-comentario',
@@ -91,6 +92,7 @@ export class ComentarioPage implements OnInit, OnDestroy  {
     private UtilsService: UtilsService,
     private comentarioService: ComentarioService,
     private comunicacionService: ComunicacionService,
+    private toastCtrl: ToastController,
   ) { }
 
   toggleDescripcion(id: string) {
@@ -216,7 +218,19 @@ export class ComentarioPage implements OnInit, OnDestroy  {
       };
       await this.comentarioService.agregarComentario(nuevo);
       this.nuevoComentario = '';
-      // No actualices this.comentarios manualmente
+
+      // Verifica conexión usando tu servicio
+      const online = await this.UtilsService.checkInternetConnection();
+
+      // Muestra el toast adecuado
+      await this.toastCtrl.create({
+        message: online
+          ? '¡Comentario publicado exitosamente!'
+          : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
+        duration: 1000,
+        position: 'bottom',
+        color: online ? 'success' : 'warning'
+      }).then(toast => toast.present());
     }
   }
 
