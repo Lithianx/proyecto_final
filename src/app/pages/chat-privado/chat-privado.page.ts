@@ -244,16 +244,11 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   async enviarGifGiphy(url: string) {
-    // Obtener la hora actual en la zona horaria de Chile ('America/Santiago')
-    const horaActual = new Date(
-      new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })
-    );
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime().toString(),
       id_conversacion: this.idConversacionActual,
       id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: url,
-      fecha_envio: horaActual,
       estado_visto: false,
     };
 
@@ -382,16 +377,11 @@ export class ChatPrivadoPage implements OnInit {
   async enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
 
-    // Obtener la hora actual en la zona horaria de Chile ('America/Santiago')
-    const horaActual = new Date(
-      new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })
-    );
     const mensaje: Mensaje = {
       id_mensaje: '', // Temporal
       id_conversacion: this.idConversacionActual,
       id_usuario_emisor: this.usuarioActual.id_usuario,
       contenido: this.nuevoMensaje,
-      fecha_envio: horaActual,
       estado_visto: false,
     };
 

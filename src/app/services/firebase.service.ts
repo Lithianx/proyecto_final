@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, getDocs,addDoc,doc,updateDoc,deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs,addDoc,doc,updateDoc,deleteDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Usuario } from 'src/app/models/usuario.model';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { Seguir } from 'src/app/models/seguir.model';
@@ -58,7 +58,7 @@ async addPublicacion(publicacion: Publicacion): Promise<string> {
   const docRef = await addDoc(publicacionesRef, {
     ...publicacion,
     id_publicacion: '', // Temporal o vacío
-    fecha_publicacion: publicacion.fecha_publicacion
+    fecha_publicacion: serverTimestamp() // Hora del servidor
   });
   // 2. Actualiza el documento con el id generado por Firestore
   await updateDoc(docRef, { id_publicacion: docRef.id });
@@ -352,8 +352,12 @@ async getComentarios(): Promise<Comentario[]> {
 async addComentario(comentario: Comentario): Promise<string> {
   const comentariosRef = collection(this.firestore, 'Comentario');
   const { id_comentario, ...comentarioSinId } = comentario;
-  const docRef = await addDoc(comentariosRef, comentarioSinId);
-  // Opcional: guardar el id_comentario dentro del documento
+  // Usa la hora del servidor
+  const docRef = await addDoc(comentariosRef, {
+    ...comentarioSinId,
+    id_comentario: '', // Temporal
+    fecha_comentario: serverTimestamp()
+  });
   await updateDoc(docRef, { id_comentario: docRef.id });
   return docRef.id;
 }

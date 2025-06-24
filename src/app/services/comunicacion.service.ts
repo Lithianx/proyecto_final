@@ -7,7 +7,7 @@ import { LocalStorageService } from './local-storage-social.service';
 import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
 
-import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -73,7 +73,8 @@ export class ComunicacionService {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
       const mensajesRef = collection(this.firestore, 'Mensaje');
-      const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
+      // Usa la hora del servidor
+      const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
       await updateDoc(docRef, { id_mensaje: docRef.id });
     } else {
       await this.localStorage.addToList<Mensaje>('mensajes_offline', mensaje);
@@ -136,7 +137,6 @@ export class ComunicacionService {
       id_conversacion: idConversacion,
       id_usuario_emisor: idUsuario,
       contenido: `[${tipo}] ${base64}`,
-      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
       estado_visto: false,
     };
     await this.enviarMensaje(mensaje);
@@ -167,7 +167,7 @@ export class ComunicacionService {
       const nuevaConversacion = {
         id_usuario_emisor: idUsuario1,
         id_usuario_receptor: idUsuario2,
-      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
+        fecha_envio: serverTimestamp(),
       };
       const docRef = await addDoc(conversacionesRef, nuevaConversacion);
 
@@ -186,7 +186,6 @@ export class ComunicacionService {
       id_conversacion: id_conversacion,
       id_usuario_emisor: id_usuario_emisor,
       contenido: JSON.stringify(publicacion), // Puedes guardar el objeto como string o solo el id
-      fecha_envio: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' })),
       estado_visto: false
     };
     await this.enviarMensaje(mensaje);
@@ -217,7 +216,7 @@ export class ComunicacionService {
         const existe = await this.existeMensajeEnFirestore(mensaje);
         if (!existe) {
           const mensajesRef = collection(this.firestore, 'Mensaje');
-          const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '' });
+          const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
           await updateDoc(docRef, { id_mensaje: docRef.id });
         }
         // Si ya existe o se subió, no lo agregues a noSincronizados

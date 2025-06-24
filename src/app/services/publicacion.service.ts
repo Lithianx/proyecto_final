@@ -3,7 +3,7 @@ import { LocalStorageService } from './local-storage-social.service';
 import { Publicacion } from '../models/publicacion.model';
 import { Seguir } from '../models/seguir.model';
 import { FirebaseService } from './firebase.service';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, serverTimestamp } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { UtilsService } from './utils.service';
 
@@ -45,20 +45,25 @@ export class PublicacionService {
   }
 
   // Agrega publicación según conexión
-  async addPublicacion(publicacion: Publicacion) {
-    const online = await this.utilsService.checkInternetConnection();
-    if (online) {
-      const id = await this.firebaseService.addPublicacion(publicacion);
-      const publicacionConId = { ...publicacion, id_publicacion: id };
-      await this.localStorage.addToList<Publicacion>('publicaciones', publicacionConId);
-      return id;
-    } else {
-      const id = Date.now().toString();
-      const publicacionConId = { ...publicacion, id_publicacion: id };
-      await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacionConId);
-      return id;
-    }
+async addPublicacion(publicacion: Publicacion) {
+  const online = await this.utilsService.checkInternetConnection();
+  if (online) {
+    // No agregues fecha_publicacion aquí, la pone el servidor
+    const id = await this.firebaseService.addPublicacion(publicacion);
+    const publicacionConId = { ...publicacion, id_publicacion: id };
+    await this.localStorage.addToList<Publicacion>('publicaciones', publicacionConId);
+    return id;
+  } else {
+    const id = Date.now().toString();
+    const publicacionConId = {
+      ...publicacion,
+      id_publicacion: id,
+      fecha_publicacion: new Date() // Solo local/offline
+    };
+    await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacionConId);
+    return id;
   }
+}
 
   // Edita publicación según conexión
   async updatePublicacion(publicacion: Publicacion) {

@@ -58,11 +58,15 @@ export class ComentarioService {
       this.comentariosEnMemoria.push(comentarioConId);
       await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
     } else {
-      const id = Date.now().toString();
-      const comentarioConId = { ...comentario, id_comentario: id };
-      this.comentariosEnMemoria.push(comentarioConId);
-      await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
-    }
+    const id = Date.now().toString();
+    const comentarioConId = {
+      ...comentario,
+      id_comentario: id,
+      fecha_comentario: new Date() // Solo local/offline
+    };
+    this.comentariosEnMemoria.push(comentarioConId);
+    await this.localStorage.setItem('comentarios', this.comentariosEnMemoria);
+  }
   }
 
   // Actualizar un comentario existente
