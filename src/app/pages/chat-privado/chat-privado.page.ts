@@ -56,6 +56,10 @@ export class ChatPrivadoPage implements OnInit {
   incrementoMensajes = 30;
   cargandoMas = false;
 
+
+imagenSeleccionada: string | null = null;
+videoSeleccionado: string | null = null;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -190,6 +194,20 @@ export class ChatPrivadoPage implements OnInit {
       }
     }
   }
+
+verImagen(publicacion: { imagen: string }) {
+  this.imagenSeleccionada = publicacion.imagen ?? null;
+}
+
+verVideo(videoUrl: string) {
+  this.videoSeleccionado = videoUrl;
+}
+
+cerrarVisor() {
+  this.imagenSeleccionada = null;
+  this.videoSeleccionado = null;
+}
+
 
   ngOnDestroy() {
     this.mensajesSub?.unsubscribe();

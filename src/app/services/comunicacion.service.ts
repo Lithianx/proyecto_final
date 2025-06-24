@@ -80,22 +80,26 @@ export class ComunicacionService {
   }
 
   // Enviar mensaje (guarda offline si no hay internet)
-  async enviarMensaje(mensaje: Mensaje) {
-    const online = await this.utilsService.checkInternetConnection();
-    if (online) {
+async enviarMensaje(mensaje: Mensaje) {
+  const online = await this.utilsService.checkInternetConnection();
+  if (online) {
+    try {
       const mensajesRef = collection(this.firestore, 'Mensaje');
       const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
       await updateDoc(docRef, { id_mensaje: docRef.id });
-    } else {
-      const id = Date.now().toString();
-      const mensajeOffline = {
-        ...mensaje,
-        id_mensaje: id,
-        fecha_envio: new Date()
-      };
-      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+    } catch (error) {
+      console.error('Error al enviar mensaje a Firestore:', error);
     }
+  } else {
+    const id = Date.now().toString();
+    const mensajeOffline = {
+      ...mensaje,
+      id_mensaje: id,
+      fecha_envio: new Date()
+    };
+    await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
   }
+}
 
   // Obtener mensajes offline (pendientes de sincronizar)
   async getMensajesOffline(): Promise<Mensaje[]> {

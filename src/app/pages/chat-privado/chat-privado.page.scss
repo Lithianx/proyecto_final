@@ -1,3 +1,7 @@
+ion-content {
+  --background: linear-gradient(135deg, #000000 0%, #0b2002 100%);
+}
+
 .chat-header {
   position: fixed;
   color: #f2f2f2;
@@ -33,6 +37,7 @@
   ion-avatar {
     width: 32px;
     height: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
 }
 
@@ -42,32 +47,26 @@
 }
 
 .chat-container {
-  margin-right: 20px;
-  margin-left: 20px;
+  margin: 0 10px;
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  padding-bottom: 40px;
+  padding: 10px 0 40px 0;
   margin-top: 18px;
-
-  p {
-    color: #f2f2f2;
-  }
-
-  span {
-    color: #d9d9d9;
-  }
+  gap: 10px;
 }
 
 .message {
   display: flex;
-  margin-bottom: 10px;
-  max-width: 80%;
+  align-items: flex-end;
+  margin-bottom: 8px;
+  max-width: 90%;
+  gap: 8px;
 }
 
 .sent {
   align-self: flex-end;
   justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
 .received {
@@ -75,84 +74,72 @@
   justify-content: flex-start;
 }
 
+
+.msg-avatar {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+
+
 .bubble {
   border-radius: 18px;
-  padding: 5px 8px;
+  padding: 8px 14px;
   word-wrap: break-word;
-  /* Permite el salto de línea si el texto es largo */
   overflow-wrap: break-word;
-  /* Asegura que el texto largo se ajuste dentro del contenedor */
   white-space: pre-wrap;
-  /* Asegura que los saltos de línea se respeten y se ajuste el texto */
   max-width: 100%;
-  /* Asegura que la burbuja no se salga de los límites */
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.12);
   position: relative;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: background 0.2s;
 }
 
 .sent .bubble {
-  border-radius: 12px 12px 0 12px;
-  background-color: #1cb400;
+  border-radius: 16px 16px 4px 16px;
+  background: linear-gradient(135deg, #0e5a00 60%, #1a9c04 100%);
+  color: #fff;
 }
 
 .received .bubble {
-  border-radius: 12px 12px 12px 0;
-  background-color: #494848;
+  border-radius: 12px 12px 12px 4px;
+  background: linear-gradient(-135deg, #292a2d 60%, #4b4b4f 100%);
+  color: #fff;
 }
 
+.bubble p {
+  margin: 0;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-.hora-visto{
+.hora-visto {
   text-align: right;
+  margin-top: 4px;
   .hora {
-    font-size: 10px;
-    color: white;
-    display: block;
-    text-align: right;
-    margin-top: 4px;
+    font-size: 11px;
+    color: #c6c6c6;
+    display: inline;
+    margin-right: 4px;
   }
-  ion-icon{
+  ion-icon {
     font-size: 15px;
-    color: white;
-    margin-top: 4px;
+    color: #3fe520;
+    vertical-align: middle;
+    margin-left: 2px;
   }
 }
 
 
 
-
-.imagen-chat {
-  max-width: 100%;
-  max-height: 200px;
+.imagen-mensaje, .gif-chat, .video-chat, .audio-chat {
+  max-width: 220px;
+  max-height: 180px;
   border-radius: 10px;
   margin-top: 5px;
+  display: block;
 }
-
-.video-chat {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 10px;
-  margin-top: 5px;
-}
-
-.audio-chat {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 10px;
-  margin-top: 5px;
-}
-
-
 
 ion-icon {
   color: #3fe520;
@@ -216,7 +203,7 @@ ion-icon {
 }
 
 ::ng-deep ion-modal {
-  --height: 300px; // Ajusta la altura según tus necesidades
+  --height: 235px; // Ajusta la altura según tus necesidades
   --width: 90vw;
   --border-radius: 18px;
   align-items: flex-end !important; // Para que salga desde abajo
@@ -250,4 +237,57 @@ ion-icon {
   --background: #181818;
   border-radius: 18px;
   padding: 0 0 16px 0;
+}
+
+
+// Para el visor de video ampliado (overlay)
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: fadeInOverlay 0.2s;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Video ampliado
+.imagen-expandida, .video-expandido {
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  background: #000;
+  object-fit: contain;
+  outline: none;
+}
+
+// Si quieres que el video tenga controles grandes y se vea bien en móvil:
+.video-expandido::-webkit-media-controls {
+  filter: invert(0.8);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #3fe520;
+  border-radius: 6px;
+}
+
+// Opcional: animación de entrada para los mensajes
+.message {
+  animation: fadeInMsg 0.3s;
+}
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
 }
