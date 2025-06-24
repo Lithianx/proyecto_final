@@ -11,23 +11,23 @@ export class UtilsService {
 
   constructor(private http: HttpClient) {}
 
-  async compartirPublicacion(publicacion: Publicacion) {
-    const urlConMetadatos = `http://localhost:8100/comentario/${publicacion.id_publicacion}`;
-    const mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n`;
+async compartirPublicacion(publicacion: Publicacion) {
+  const urlCustom = `https://app-eventos-7f5a8.web.app/comentario/${publicacion.id_publicacion}`;
+  const mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n${urlCustom}`;
 
-    if (Capacitor.getPlatform() !== 'web') {
-      await Share.share({
-        title: 'Descubre esto',
-        text: mensaje,
-        url: urlConMetadatos,
-        dialogTitle: 'Compartir publicación',
-      });
-    } else {
-      const mensajeCodificado = encodeURIComponent(mensaje) + encodeURIComponent(urlConMetadatos);
-      const url = `https://wa.me/?text=${mensajeCodificado}`;
-      window.open(url, '_blank');
-    }
+  if (Capacitor.getPlatform() !== 'web') {
+    await Share.share({
+      title: 'Descubre esto',
+      text: mensaje,
+      url: urlCustom,
+      dialogTitle: 'Compartir publicación',
+    });
+  } else {
+    const mensajeCodificado = encodeURIComponent(mensaje);
+    const url = `https://wa.me/?text=${mensajeCodificado}`;
+    window.open(url, '_blank');
   }
+}
 
 
 
