@@ -10,7 +10,24 @@
     <ion-card class="card-monster" *ngIf="evento">
       <ion-card-header>
         <ion-card-title class="titulo-monster">🎮 {{ evento.nombre_evento }}</ion-card-title>
-        <ion-card-subtitle class="subtitulo-monster"> Creado por: [ {{ evento.creado_por }} ]</ion-card-subtitle>
+        <ion-card-subtitle class="subtitulo-monster">Creado por: [ {{ evento.creado_por }} ]</ion-card-subtitle>
+
+        <!-- NUEVO: Estado del evento con luz -->
+        <div class="estado-luz-texto">
+          <div class="estado-indicador" [ngClass]="{
+      'verde': evento.estado === 'DISPONIBLE',
+      'amarillo': evento.estado === 'EN_CURSO',
+      'rojo': evento.estado === 'FINALIZADO'
+    }"></div>
+
+          <div class="estado-texto" [ngClass]="{
+      'texto-verde': evento.estado === 'DISPONIBLE',
+      'texto-amarillo': evento.estado === 'EN_CURSO',
+      'texto-rojo': evento.estado === 'FINALIZADO'
+    }">
+            Estado: {{ evento.estado }}
+          </div>
+        </div>
       </ion-card-header>
 
       <ion-card-content class="contenido-scroll">
@@ -61,5 +78,3 @@
 </ion-content>
 
 <app-navbar></app-navbar>
-
-

@@ -41,6 +41,10 @@ export class EventoService {
     );
   }
 
+
+
+
+  // pagina detalle-evento
   async tomarEvento(idEvento: string): Promise<void> {
     const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
     const eventoSnap = await getDoc(eventoDoc);
@@ -82,5 +86,45 @@ export class EventoService {
     return user?.displayName ?? user?.email ?? 'Anónimo';
   }
 
-  
+  //Actualizar el estado del evento 
+  async actualizarEstadoEvento(idEvento: string): Promise<void> {
+    const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
+    const eventoSnap = await getDoc(eventoDoc);
+
+    if (!eventoSnap.exists()) return;
+
+    const evento = eventoSnap.data() as any;
+    const now = new Date();
+    const fechaInicio = evento.fechaInicio.toDate ? evento.fechaInicio.toDate() : new Date(evento.fechaInicio);
+    const fechaFin = evento.fechaFin.toDate ? evento.fechaFin.toDate() : new Date(evento.fechaFin);
+
+    if (evento.estado === 'FINALIZADO') {
+      // No hacer nada, ya fue finalizado manualmente
+      return;
+    }
+
+    let nuevoEstado = evento.estado;
+
+    if (now >= fechaFin) {
+      const horasDesdeFin = (now.getTime() - fechaFin.getTime()) / (1000 * 60 * 60);
+      if (horasDesdeFin >= 24) {
+        console.log('Este evento se ocultará porque ya pasaron más de 24h desde que finalizó.');
+        return;
+      }
+      nuevoEstado = 'FINALIZADO';
+    } else if (now >= fechaInicio) {
+      nuevoEstado = 'EN_CURSO';
+    } else {
+      nuevoEstado = 'DISPONIBLE';
+    }
+
+    if (nuevoEstado !== evento.estado) {
+      await updateDoc(eventoDoc, { estado: nuevoEstado });
+    }
+  }
+
+
+
+
+
 }

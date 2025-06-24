@@ -46,7 +46,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     private eventoService: EventoService,
     private firestore: Firestore,
     private usuarioService: UsuarioService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -65,13 +65,17 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         eventoData["fechaFin"] = eventoData["fechaFin"]?.toDate?.() ?? null;
 
         this.evento = eventoData;
+        await this.eventoService.actualizarEstadoEvento(this.eventoId);
+
 
         // ✅ Actualizar lista de jugadores
         this.jugadores = (eventoData["jugadores"] || []).map((nombre: string) => ({ nombre }));
 
         // ✅ Agregar usuario si no está registrado aún
         const yaRegistrado = eventoData["jugadores"]?.includes(this.usuarioActual);
-        if (!yaRegistrado) {
+        const eventoFinalizado = eventoData["estado"] === 'FINALIZADO';
+
+        if (!yaRegistrado && !eventoFinalizado) {
           await updateDoc(eventoRef, {
             jugadores: arrayUnion(this.usuarioActual),
           });
@@ -119,7 +123,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
               this.cargandoEvento = true;
               await this.finalizarEvento();
               const toast = await this.toastCtrl.create({
-                message: '✅ Evento finalizado y eliminado',
+                message: '✅ Evento finalizado correctamente',
                 duration: 2000,
                 position: 'top',
                 color: 'success',
@@ -158,8 +162,10 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     if (this.usuarioActual === this.evento.creado_por) {
       try {
         const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
-        await deleteDoc(eventoRef);
-        console.log('✅ Evento eliminado correctamente');
+        await updateDoc(eventoRef, {
+          estado: 'FINALIZADO'
+        });
+        console.log('✅ Evento marcado como FINALIZADO');
       } catch (error) {
         console.error('❌ Error al eliminar el evento:', error);
       }

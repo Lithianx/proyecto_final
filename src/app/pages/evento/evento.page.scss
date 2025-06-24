@@ -61,3 +61,62 @@ ion-searchbar{
     }
   }
 
+
+  .header-con-estado {
+  display: flex;
+  align-items: flex-start;
+}
+
+.info-evento {
+  display: flex;
+  flex-direction: column;
+}
+
+.estado-luz-texto {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  margin-top: 6px;
+}
+
+.estado-indicador {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.verde {
+  background-color: #2dff00;
+  box-shadow: 0 0 10px rgba(45, 255, 0, 0.6);
+}
+
+.amarillo {
+  background-color: #ffd500;
+  box-shadow: 0 0 10px rgba(255, 213, 0, 0.6);
+}
+
+.rojo {
+  background-color: #ff3c3c;
+  box-shadow: 0 0 10px rgba(255, 60, 60, 0.6);
+}
+
+.estado-texto {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.texto-verde {
+  color: #2dff00;
+}
+
+.texto-amarillo {
+  color: #ffd500;
+}
+
+.texto-rojo {
+  color: #ff3c3c;
+}
+
+
