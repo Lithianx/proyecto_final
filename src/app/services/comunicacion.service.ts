@@ -28,14 +28,26 @@ export class ComunicacionService {
 
     const conversacionesRef = collection(this.firestore, 'Conversacion');
     this.conversaciones$ = collectionData(conversacionesRef, { idField: 'id_conversacion' }) as Observable<Conversacion[]>;
+
+    // Guardar mensajes online en local para visualización offline
+    this.mensajes$.subscribe(async mensajesOnline => {
+      if (mensajesOnline && mensajesOnline.length > 0) {
+        await this.localStorage.setItem('mensajes', mensajesOnline);
+      }
+    });
+
+    // Guardar conversaciones online en local para visualización offline
+    this.conversaciones$.subscribe(async conversacionesOnline => {
+      if (conversacionesOnline && conversacionesOnline.length > 0) {
+        await this.localStorage.setItem('conversaciones', conversacionesOnline);
+      }
+    });
   }
 
-  // Filtrar mensajes por conversación (en el componente, tras suscribirse)
   filtrarMensajesPorConversacion(mensajes: Mensaje[], id_conversacion: string): Mensaje[] {
     return mensajes.filter(m => String(m.id_conversacion) === id_conversacion);
   }
 
-  // Filtrar conversaciones por nombre de usuario
   filtrarConversacionesPorNombre(
     conversaciones: Conversacion[],
     usuarios: Usuario[],
@@ -49,7 +61,6 @@ export class ComunicacionService {
     });
   }
 
-  // Obtener el último mensaje de una conversación
   getUltimoMensajeDeConversacion(mensajes: Mensaje[], id_conversacion: string): Mensaje | undefined {
     return mensajes
       .filter(m => String(m.id_conversacion) === id_conversacion)
@@ -73,34 +84,35 @@ export class ComunicacionService {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
       const mensajesRef = collection(this.firestore, 'Mensaje');
-      // Usa la hora del servidor
       const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
       await updateDoc(docRef, { id_mensaje: docRef.id });
     } else {
-      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensaje);
+      const id = Date.now().toString();
+      const mensajeOffline = {
+        ...mensaje,
+        id_mensaje: id,
+        fecha_envio: new Date()
+      };
+      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
     }
   }
 
-
-  // Obtener mensajes offline (para mostrar en historial)
+  // Obtener mensajes offline (pendientes de sincronizar)
   async getMensajesOffline(): Promise<Mensaje[]> {
     return await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
   }
 
-
-  // Obtener mensajes desde localStorage (para modo offline)
+  // Obtener mensajes online desde local (para visualizar offline)
   async getMensajesLocales(): Promise<Mensaje[]> {
-    return await this.localStorage.getList<Mensaje>('mensajes');
+    return await this.localStorage.getList<Mensaje>('mensajes') || [];
   }
 
   // Marcar mensajes como vistos (actualiza en Firestore)
   async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _idUsuarioActual: string) {
-    // Solo marca como vistos los mensajes recibidos en el array
     for (const m of mensajes) {
       await this.firebaseService.updateMensaje({ ...m, estado_visto: true });
     }
   }
-
 
   // Agregar conversación (guarda offline si no hay internet)
   async agregarConversacion(conversacion: Conversacion) {
@@ -110,7 +122,13 @@ export class ComunicacionService {
       const docRef = await addDoc(conversacionesRef, { ...conversacion, id_conversacion: '' });
       await updateDoc(docRef, { id_conversacion: docRef.id });
     } else {
-      await this.localStorage.addToList<Conversacion>('conversaciones_offline', conversacion);
+      const id = Date.now().toString();
+      const conversacionOffline = {
+        ...conversacion,
+        id_conversacion: id,
+        fecha_envio: new Date()
+      };
+      await this.localStorage.addToList<Conversacion>('conversaciones_offline', conversacionOffline);
     }
   }
 
@@ -119,11 +137,10 @@ export class ComunicacionService {
     return await this.localStorage.getList<Conversacion>('conversaciones_offline') || [];
   }
 
-  // Obtener conversaciones desde localStorage (para modo offline antiguo)
+  // Obtener conversaciones desde localStorage (para modo offline)
   async getConversacionesLocales(): Promise<Conversacion[]> {
-    return await this.localStorage.getList<Conversacion>('conversaciones');
+    return await this.localStorage.getList<Conversacion>('conversaciones') || [];
   }
-
 
   // Enviar mensaje multimedia
   async enviarMensajeMultimedia(
@@ -138,13 +155,13 @@ export class ComunicacionService {
       id_usuario_emisor: idUsuario,
       contenido: `[${tipo}] ${base64}`,
       estado_visto: false,
+      fecha_envio: new Date()
     };
     await this.enviarMensaje(mensaje);
   }
 
   async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): Promise<string> {
     const conversacionesRef = collection(this.firestore, 'Conversacion');
-    // Busca conversación donde los usuarios sean emisor/receptor en cualquier orden
     const q = query(
       conversacionesRef,
       where('id_usuario_emisor', 'in', [idUsuario1, idUsuario2]),
@@ -152,7 +169,6 @@ export class ComunicacionService {
     );
     const snapshot = await getDocs(q);
 
-    // Filtra en memoria para asegurar que los dos usuarios son los únicos participantes
     const conversacionExistente = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() as any }))
       .find(conv =>
@@ -163,30 +179,25 @@ export class ComunicacionService {
     if (conversacionExistente) {
       return conversacionExistente.id;
     } else {
-      // No existe, crea una nueva
       const nuevaConversacion = {
         id_usuario_emisor: idUsuario1,
         id_usuario_receptor: idUsuario2,
         fecha_envio: serverTimestamp(),
       };
       const docRef = await addDoc(conversacionesRef, nuevaConversacion);
-
-      // Actualiza el campo id_conversacion con el ID generado por Firestore
       await updateDoc(docRef, { id_conversacion: docRef.id });
-
       return docRef.id;
     }
   }
-
-
 
   async enviarPublicacion(publicacion: Publicacion, id_conversacion: string, id_usuario_emisor: string) {
     const mensaje: Mensaje = {
       id_mensaje: '', // Se generará en Firestore
       id_conversacion: id_conversacion,
       id_usuario_emisor: id_usuario_emisor,
-      contenido: JSON.stringify(publicacion), // Puedes guardar el objeto como string o solo el id
-      estado_visto: false
+      contenido: JSON.stringify(publicacion),
+      estado_visto: false,
+      fecha_envio: new Date()
     };
     await this.enviarMensaje(mensaje);
   }
@@ -219,7 +230,6 @@ export class ComunicacionService {
           const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
           await updateDoc(docRef, { id_mensaje: docRef.id });
         }
-        // Si ya existe o se subió, no lo agregues a noSincronizados
       } catch {
         noSincronizados.push(mensaje);
       }
@@ -227,7 +237,6 @@ export class ComunicacionService {
     await this.localStorage.setItem('mensajes_offline', noSincronizados);
   }
 
-  // Sincronizar solo las conversaciones offline
   async sincronizarConversacionesLocales(): Promise<void> {
     const online = await this.utilsService.checkInternetConnection();
     if (!online) return;
@@ -246,5 +255,4 @@ export class ComunicacionService {
     }
     await this.localStorage.setItem('conversaciones_offline', noSincronizadas);
   }
-
 }

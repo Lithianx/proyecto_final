@@ -95,24 +95,23 @@ export class HomePage implements OnInit, OnDestroy {
   private publicacionesSub?: Subscription;
   private likesPublicacionesSub?: Subscription;
 
-  async ngOnInit() {
+async ngOnInit() {
+  await this.verificarConexion();
+  const usuario = await this.usuarioService.getUsuarioActualConectado();
+  if (usuario) {
+    this.usuarioActual = usuario;
+    await this.localStorage.setItem('usuarioActual', usuario);
+  } else {
+    return;
+  }
 
-    await this.verificarConexion();
-    // Cargar usuario actual
-    const usuario = await this.usuarioService.getUsuarioActualConectado();
-    if (usuario) {
-      this.usuarioActual = usuario;
-      await this.localStorage.setItem('usuarioActual', usuario);
-    } else {
-      // Si no hay usuario, podrías redirigir al login
-      return;
-    }
+  await this.usuarioService.cargarUsuarios();
+  this.usuarios = this.usuarioService.getUsuarios();
 
-    // Usuarios
-    await this.usuarioService.cargarUsuarios();
-    this.usuarios = this.usuarioService.getUsuarios();
+  const online = await this.UtilsService.checkInternetConnection();
 
- // Publicaciones en tiempo real
+  if (online) {
+    // Publicaciones en tiempo real
     this.publicacionesSub = this.publicacionService.publicaciones$.subscribe(async publicaciones => {
       this.publicaciones = publicaciones.map(pub => ({
         ...pub,
@@ -126,25 +125,28 @@ export class HomePage implements OnInit, OnDestroy {
       this.publicacionesAmigos = [...this.publicaciones];
       await this.localStorage.setItem('publicaciones', this.publicaciones);
     });
-
-    // Likes de publicaciones en tiempo real
-    this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
-      this.publicacionesLikes = likes;
-    });
-
-    // Guardados
-    await this.guardaPublicacionService.cargarGuardados();
-    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
-
-    // Seguimientos
-    await this.seguirService.cargarSeguimientos();
-    this.seguimientos = this.seguirService.getSeguimientos();
-
-    // Carga publicaciones de amigos
-    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
-
+  } else {
+    // Cargar publicaciones desde localStorage
+    this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+    this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
     this.publicacionesAmigos = [...this.publicaciones];
   }
+
+  // Likes de publicaciones en tiempo real
+  this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
+    this.publicacionesLikes = likes;
+  });
+
+  await this.guardaPublicacionService.cargarGuardados();
+  this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+
+  await this.seguirService.cargarSeguimientos();
+  this.seguimientos = this.seguirService.getSeguimientos();
+
+  this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+
+  this.publicacionesAmigos = [...this.publicaciones];
+}
 
   ngOnDestroy() {
     this.publicacionesSub?.unsubscribe();

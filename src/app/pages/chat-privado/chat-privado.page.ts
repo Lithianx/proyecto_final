@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { Keyboard } from '@capacitor/keyboard';
@@ -6,6 +6,7 @@ import { Keyboard } from '@capacitor/keyboard';
 import { Usuario } from 'src/app/models/usuario.model';
 import { Mensaje } from 'src/app/models/mensaje.model';
 
+import { UtilsService } from 'src/app/services/utils.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
@@ -14,6 +15,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
 import { Subscription } from 'rxjs';
 import { IonContent } from '@ionic/angular';
+import { Conversacion } from 'src/app/models/conversacion.model';
 
 @Component({
   selector: 'app-chat-privado',
@@ -45,6 +47,8 @@ export class ChatPrivadoPage implements OnInit {
   usuarioActual!: Usuario;
   usuarios: Usuario[] = [];
   mensajes: Mensaje[] = [];
+  mensajesOffline: Mensaje[] = [];
+  mensajesCombinados: Mensaje[] = [];
 
   // Scroll infinito
   todosLosMensajes: Mensaje[] = [];
@@ -58,8 +62,15 @@ export class ChatPrivadoPage implements OnInit {
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
     private usuarioService: UsuarioService,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private utilsService: UtilsService,
   ) { }
+
+  private convertirFecha(fecha: any): Date {
+    if (fecha instanceof Date) return fecha;
+    if (fecha && typeof fecha.toDate === 'function') return fecha.toDate();
+    return new Date(fecha);
+  }
 
   async ngOnInit() {
     // Cargar usuario actual
@@ -68,7 +79,6 @@ export class ChatPrivadoPage implements OnInit {
       this.usuarioActual = usuario;
       await this.localStorage.setItem('usuarioActual', usuario);
     } else {
-      // Si no hay usuario, podrías redirigir al login
       return;
     }
 
@@ -76,52 +86,109 @@ export class ChatPrivadoPage implements OnInit {
     await this.usuarioService.cargarUsuarios();
     this.usuarios = this.usuarioService.getUsuarios();
 
-    // idConversacionActual ahora es string
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
 
-    // Suscríbete a los mensajes del service
-this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
-  this.todosLosMensajes = mensajes
-    .filter(m => m.id_conversacion === this.idConversacionActual)
-    .map(m => ({
-      ...m,
-      fecha_envio: m.fecha_envio instanceof Date
-        ? m.fecha_envio
-        : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
-          ? (m.fecha_envio as any).toDate()
-          : new Date(m.fecha_envio))
-    }))
-    .sort((a, b) => a.fecha_envio.getTime() - b.fecha_envio.getTime());
+    // Verifica conexión
+    const online = await this.utilsService.checkInternetConnection();
 
-  // Mostrar siempre todos los mensajes (puedes ajustar esto para scroll infinito)
-  this.mensajes = this.todosLosMensajes;
+    if (online) {
+      this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajesOnline => {
+        this.mensajes = mensajesOnline
+          .filter(m => m.id_conversacion === this.idConversacionActual)
+          .map(m => ({
+            ...m,
+            fecha_envio: m.fecha_envio instanceof Date
+              ? m.fecha_envio
+              : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
+                ? (m.fecha_envio as any).toDate()
+                : new Date(m.fecha_envio))
+          }));
 
-  this.cdRef.detectChanges();
+        this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
+          m => m.id_conversacion === this.idConversacionActual &&
+            m.id_usuario_emisor === this.usuarioActual.id_usuario
+        ) || [];
 
-  if (!this.cargandoMas) {
-    this.scrollToBottom(true);
-  } else {
-    this.cargandoMas = false;
-  }
+        this.mensajesCombinados = [
+          ...this.mensajes,
+          ...this.mensajesOffline
+        ].sort((a, b) => {
+          const fechaA = this.convertirFecha(a.fecha_envio);
+          const fechaB = this.convertirFecha(b.fecha_envio);
+          return fechaA.getTime() - fechaB.getTime();
+        });
 
-  await this.marcarMensajesRecibidosComoVistos();
-});
+        this.cdRef.detectChanges();
 
-    // Busca la conversación actual y el usuario receptor real
-    this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(conversaciones => {
-      const conversacion = conversaciones.find(
+        if (!this.cargandoMas) {
+          this.scrollToBottom(true);
+        } else {
+          this.cargandoMas = false;
+        }
+
+        await this.marcarMensajesRecibidosComoVistos();
+      });
+
+      // Busca la conversación actual y el usuario receptor real (online)
+      this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(conversaciones => {
+        const conversacion = conversaciones.find(
+          c => String(c.id_conversacion) === this.idConversacionActual
+        );
+
+        let idUsuarioContraparte = conversacion?.id_usuario_emisor;
+        if (idUsuarioContraparte === this.usuarioActual.id_usuario) {
+          idUsuarioContraparte = conversacion?.id_usuario_receptor;
+        }
+
+        this.chatInfo = this.usuarios.find(u => String(u.id_usuario) === String(idUsuarioContraparte))!;
+      });
+
+    } else {
+      // SIN internet: carga los mensajes online guardados en local
+      this.mensajes = (await this.comunicacionService.getMensajesLocales())
+        .filter(m => m.id_conversacion === this.idConversacionActual)
+        .map(m => ({
+          ...m,
+          fecha_envio: m.fecha_envio instanceof Date
+            ? m.fecha_envio
+            : (m.fecha_envio && typeof (m.fecha_envio as any).toDate === 'function'
+              ? (m.fecha_envio as any).toDate()
+              : new Date(m.fecha_envio))
+        }));
+
+      this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
+        m => m.id_conversacion === this.idConversacionActual &&
+          m.id_usuario_emisor === this.usuarioActual.id_usuario
+      ) || [];
+
+      this.mensajesCombinados = [
+        ...this.mensajes,
+        ...this.mensajesOffline
+      ].sort((a, b) => {
+        const fechaA = this.convertirFecha(a.fecha_envio);
+        const fechaB = this.convertirFecha(b.fecha_envio);
+        return fechaA.getTime() - fechaB.getTime();
+      });
+
+      // Cargar conversaciones y usuario receptor desde localStorage
+      const conversacionesLocales: Conversacion[] = await this.comunicacionService.getConversacionesLocales();
+      const conversacion = conversacionesLocales.find(
         c => String(c.id_conversacion) === this.idConversacionActual
       );
 
-      // Deducir el id del usuario contraparte
       let idUsuarioContraparte = conversacion?.id_usuario_emisor;
       if (idUsuarioContraparte === this.usuarioActual.id_usuario) {
         idUsuarioContraparte = conversacion?.id_usuario_receptor;
       }
-
-      // Buscar el usuario contraparte en la lista real
       this.chatInfo = this.usuarios.find(u => String(u.id_usuario) === String(idUsuarioContraparte))!;
-    });
+
+      this.cdRef.detectChanges();
+      if (!this.cargandoMas) {
+        this.scrollToBottom(true);
+      } else {
+        this.cargandoMas = false;
+      }
+    }
   }
 
   ngOnDestroy() {
@@ -151,7 +218,6 @@ this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes =
 
     this.mensajes = this.todosLosMensajes.slice(-this.mensajesMostrados);
 
-    // Esperar al render de Angular (usando requestAnimationFrame + timeout mínimo)
     requestAnimationFrame(() => {
       setTimeout(() => {
         const newScrollHeight = chatContainer.scrollHeight;
@@ -201,7 +267,6 @@ this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes =
       } catch (e) { }
     }, 100);
   }
-
 
   onImageLoad() {
     if (!this.cargandoMas) {
@@ -386,6 +451,26 @@ this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes =
 
     await this.comunicacionService.enviarMensaje(mensaje);
 
+    // Recarga mensajesOffline y mensajesCombinados si estás offline
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) {
+      this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
+        m => m.id_conversacion === this.idConversacionActual &&
+          m.id_usuario_emisor === this.usuarioActual.id_usuario
+      ) || [];
+
+      this.mensajesCombinados = [
+        ...this.mensajes,
+        ...this.mensajesOffline
+      ].sort((a, b) => {
+        const fechaA = this.convertirFecha(a.fecha_envio);
+        const fechaB = this.convertirFecha(b.fecha_envio);
+        return fechaA.getTime() - fechaB.getTime();
+      });
+
+      this.cdRef.detectChanges();
+    }
+
     const textarea = document.querySelector('textarea');
     if (textarea) {
       textarea.style.height = 'auto';
@@ -393,6 +478,10 @@ this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes =
 
     this.nuevoMensaje = '';
     this.scrollToBottom();
+  }
+
+  esMensajeOffline(id_mensaje: string): boolean {
+    return this.mensajesOffline.some(m => m.id_mensaje === id_mensaje);
   }
 
   esPublicacion(mensaje: Mensaje): boolean {
@@ -417,7 +506,6 @@ this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes =
       this.router.navigate(['/perfil-user', usuario.id_usuario]);
     }
   }
-
 
   ionViewWillLeave() {
     Keyboard.hide();

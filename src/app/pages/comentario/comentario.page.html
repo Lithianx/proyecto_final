@@ -102,8 +102,7 @@
     </ion-toolbar>
     <ion-list>
 
-      <!-- Mensaje si no hay publicaciones -->
-      <div *ngIf="comentarios.length === 0" class="sin-comentarios">
+      <div *ngIf="comentariosCombinados.length === 0" class="sin-comentarios">
         <span class="lupa-spinner">
           <ion-icon name="planet-outline"></ion-icon>
         </span>
@@ -113,19 +112,22 @@
         </ion-text>
       </div>
 
-
-      <ion-item *ngFor="let comentario of comentarios">
+      <ion-item *ngFor="let comentario of comentariosCombinados">
         <ion-avatar slot="start">
           <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar" />
         </ion-avatar>
 
         <ion-label>
           <h3>{{ getUsuarioComentario(comentario.id_usuario)?.nombre_usuario }}</h3>
-          <p>{{ comentario.contenido_comentario }}</p>
+          <p>
+            {{ comentario.contenido_comentario }}
+            <!-- Ícono de reloj si el comentario está en comentariosOffline -->
+            <ion-icon *ngIf="esComentarioOffline(comentario.id_comentario)" name="time-outline" color="warning">
+            </ion-icon>
+          </p>
           <small>{{ comentario.fecha_comentario | date:'dd/MM/yyyy hh:mm a' }}</small>
         </ion-label>
 
-        <!-- CONTENEDOR PARA BOTÓN Y LIKES EN COLUMNA -->
         <div slot="end" class="like-container">
           <ion-button fill="clear" size="small" (click)="comentariolikes(comentario)">
             <ion-icon
@@ -135,7 +137,6 @@
             {{ getLikesComentario(comentario.id_comentario) }}
           </ion-note>
         </div>
-
       </ion-item>
     </ion-list>
   </div>

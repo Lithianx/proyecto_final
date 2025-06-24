@@ -16,14 +16,10 @@
 </ion-header>
 
 <ion-content scrollEvents="true" (ionScroll)="onScroll($event)">
-  <!-- header local con nombre chat y boton de colcer atras -->
-
-  <!-- Espacio debajo del header -->
   <div class="spacer-header"></div>
 
-
   <div class="chat-container">
-    <div *ngFor="let mensaje of mensajes"
+    <div *ngFor="let mensaje of mensajesCombinados"
       [ngClass]="mensaje.id_usuario_emisor === usuarioActual.id_usuario ? 'message sent' : 'message received'">
       <div class="bubble">
 
@@ -39,6 +35,7 @@
           </ion-card>
           <div class="hora-visto">
             <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+            <ion-icon *ngIf="esMensajeOffline(mensaje.id_mensaje)" name="time-outline" color="warning"></ion-icon>
             <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
           </div>
         </ng-container>
@@ -73,6 +70,7 @@
           </p>
           <div class="hora-visto">
             <span class="hora">{{ mensaje.fecha_envio | date:'shortTime' }}</span>
+            <ion-icon *ngIf="esMensajeOffline(mensaje.id_mensaje)" name="time-outline" color="warning"></ion-icon>
             <ion-icon [name]="mensaje.estado_visto ? 'checkmark-done-sharp' : 'checkmark-sharp'"></ion-icon>
           </div>
         </ng-template>
