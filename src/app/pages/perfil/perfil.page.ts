@@ -313,34 +313,37 @@ async ionViewWillEnter() {
           cssClass: 'icono-verde',
           handler: () => this.router.navigate(['/info-cuenta-institucional'])
         },
-        {
-          text: 'Cerrar sesión',
-          icon: 'log-out-outline',
-          role: 'destructive',
-          cssClass: 'cerrar-sesion-btn',
-          handler: async () => {
-            await this.usuarioService.logout();
-            this.router.navigate(['/login']);
+          {
+            text: 'Cerrar sesión',
+            icon: 'log-out-outline',
+            role: 'destructive',
+            cssClass: 'cerrar-sesion-btn',
+            handler: async () => {
+              await this.usuarioService.logout();
+              await this.localStorageService.clear(); 
+              this.router.navigate(['/login']);
+            }
           }
-        }
       ]
     });
     await actionSheet.present();
   }
 
-  // Agrega esta función para cargar eventos creados por el usuario actual
 async cargarEventosCreados() {
   const id_usuario = this.usuarioActual.id_usuario;
+  console.log('ID del usuario para buscar eventos creados:', id_usuario); // ← Verifica este valor
+
   if (!id_usuario) {
     console.warn('No hay id_usuario para cargar eventos creados');
     return;
   }
 
   try {
-    // Llamamos al servicio que trae eventos por creador
     this.eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+    console.log('Eventos creados cargados:', this.eventos); // ← Verifica si devuelve eventos
   } catch (error) {
     console.error('Error al cargar eventos creados:', error);
   }
 }
+
 }

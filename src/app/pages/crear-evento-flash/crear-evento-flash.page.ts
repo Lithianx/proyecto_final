@@ -1,17 +1,16 @@
-
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-
+import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // ✅ Importar correctamente
 
 interface UsuarioFirestore {
   nombre_usuario: string;
-  [key: string]: any; // permite otros campos sin error
+  [key: string]: any;
 }
 
 @Component({
@@ -22,9 +21,7 @@ interface UsuarioFirestore {
 })
 export class CrearEventoFlashPage implements OnInit {
   eventoForm!: FormGroup;
-  fechaMinima: string = new Date().toISOString(); // Fecha mínima es hoy
-
-
+  fechaMinima: string = new Date().toISOString();
 
   constructor(
     private fb: FormBuilder,
@@ -32,9 +29,9 @@ export class CrearEventoFlashPage implements OnInit {
     private toastCtrl: ToastController,
     private router: Router,
     private eventoService: EventoService,
-    private firestore: Firestore
-
-  ) { }
+    private firestore: Firestore,
+    private localStorageService: LocalStorageService // ✅ Usar servicio correcto
+  ) {}
 
   ngOnInit() {
     this.eventoForm = this.fb.group({
@@ -48,50 +45,48 @@ export class CrearEventoFlashPage implements OnInit {
     });
   }
 
-async crearEvento() {
-  if (!this.eventoForm.valid) {
-    const toast = await this.toastCtrl.create({
-      message: 'Por favor completa todos los campos',
-      duration: 2000,
-      color: 'danger',
-      position: 'bottom',
-    });
-    await toast.present();
-    return;
-  }
-
-  const auth = getAuth();
-  const user = auth.currentUser;
-  const formValues = this.eventoForm.value;
-
-  if (!user) {
-    console.warn('⚠️ Usuario no autenticado');
-    return;
-  }
-
-  // Obtener ID del usuario desde localStorage
-  const idUsuario = localStorage.getItem('id_usuario'); // Aquí tomas el id_creador
-  if (!idUsuario) {
-    console.warn('⚠️ id_usuario no encontrado en localStorage');
-    return;
-  }
-
-  // Obtener nombre del usuario desde Firestore
-  let nombreUsuario = 'desconocido';
-  try {
-    const docRef = doc(this.firestore, 'Usuario', user.uid);
-    const snapshot = await getDoc(docRef);
-
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UsuarioFirestore;
-      nombreUsuario = data.nombre_usuario || 'sin nombre';
-      console.log('[DEBUG] Nombre obtenido:', nombreUsuario);
-    } else {
-      console.warn('⚠️ Documento del usuario no encontrado en Firestore');
+  async crearEvento() {
+    if (!this.eventoForm.valid) {
+      const toast = await this.toastCtrl.create({
+        message: 'Por favor completa todos los campos',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+      return;
     }
-  } catch (error) {
-    console.error('⚠️ Error al obtener el nombre del usuario:', error);
-  }
+
+    const formValues = this.eventoForm.value;
+
+    // 🔐 Obtener ID del usuario desde el servicio de Local Storage
+    const idUsuario = await this.localStorageService.getItem<string>('id_usuario');
+    if (!idUsuario || typeof idUsuario !== 'string') {
+      console.warn('⚠️ id_usuario no encontrado en LocalStorageService');
+      return;
+    }
+
+    // 🔍 Obtener nombre del usuario desde Firestore
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    let nombreUsuario = 'desconocido';
+    if (user) {
+      try {
+        const docRef = doc(this.firestore, 'Usuario', user.uid);
+        const snapshot = await getDoc(docRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data() as UsuarioFirestore;
+          nombreUsuario = data.nombre_usuario || 'sin nombre';
+          console.log('[DEBUG] Nombre obtenido:', nombreUsuario);
+        } else {
+          console.warn('⚠️ Documento del usuario no encontrado en Firestore');
+        }
+      } catch (error) {
+        console.error('⚠️ Error al obtener el nombre del usuario:', error);
+      }
+    }
 
     const datos: Evento = {
       id_creador: idUsuario,
@@ -106,31 +101,31 @@ async crearEvento() {
       estado: 'DISPONIBLE'
     };
 
-  try {
-    await this.eventoService.crearEvento(datos);
-    const toast = await this.toastCtrl.create({
-      message: 'Evento creado exitosamente 🎉',
-      duration: 2000,
-      color: 'success',
-      position: 'bottom',
-    });
-    await toast.present();
-    setTimeout(() => this.router.navigate(['/home']), 2000);
-  } catch (error) {
-    console.error('❌ Error al guardar en Firestore', error);
-    const toast = await this.toastCtrl.create({
-      message: 'Error al guardar el evento',
-      duration: 2000,
-      color: 'danger',
-      position: 'bottom',
-    });
-    await toast.present();
+    try {
+      await this.eventoService.crearEvento(datos);
+      const toast = await this.toastCtrl.create({
+        message: 'Evento creado exitosamente 🎉',
+        duration: 2000,
+        color: 'success',
+        position: 'bottom',
+      });
+      await toast.present();
+      setTimeout(() => this.router.navigate(['/home']), 2000);
+    } catch (error) {
+      console.error('❌ Error al guardar en Firestore', error);
+      const toast = await this.toastCtrl.create({
+        message: 'Error al guardar el evento',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+    }
   }
-}
 
   modificarCupos(valor: number) {
     const actual = this.eventoForm.get('cupos')?.value || 1;
-    const nuevo = Math.min(22, Math.max(1, actual + valor)); // Entre 1 y 22
+    const nuevo = Math.min(22, Math.max(1, actual + valor));
     this.eventoForm.get('cupos')?.setValue(nuevo);
   }
 

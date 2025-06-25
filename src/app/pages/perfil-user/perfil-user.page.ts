@@ -7,6 +7,8 @@ import { PublicacionService } from 'src/app/services/publicacion.service';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
+import { Evento } from 'src/app/models/evento.model';
+import { EventoService } from 'src/app/services/evento.service';
 
 @Component({
   selector: 'app-perfil-user',
@@ -16,7 +18,7 @@ import { SeguirService } from 'src/app/services/seguir.service';
 })
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
-
+  eventos: Evento[] = []; 
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
 
@@ -48,15 +50,12 @@ export class PerfilUserPage implements OnInit {
     seguidos: 0
   };
 
-  eventosinscritos = [
+  eventosInscritos = [
     { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends', creador: 'usuario1' },
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
-  eventosCreados = [
-    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends' },
-    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant' }
-  ];
+  eventosCreados: Evento[] = []; // Aquí almacenamos los eventos creados
 
   private _vistaSeleccionada: string = 'publicaciones';
 
@@ -80,7 +79,8 @@ export class PerfilUserPage implements OnInit {
     private usuarioService: UsuarioService,
     private publicacionService: PublicacionService,
     private utilsService: UtilsService,
-    private seguirService: SeguirService
+    private seguirService: SeguirService,
+    private eventoService: EventoService // <- Inyectamos servicio de eventos
   ) {}
 
   ngOnInit() {
@@ -95,6 +95,8 @@ export class PerfilUserPage implements OnInit {
         await this.cargarDatosUsuario(id);
         await this.cargarPublicaciones(id);
 
+        await this.cargarEventosCreados(id); // Cargar eventos creados para este usuario
+
         this.actualizarEstadoSeguir();
         this.actualizarEstadisticasSeguir(id);
       }
@@ -107,6 +109,8 @@ export class PerfilUserPage implements OnInit {
       await this.seguirService.cargarSeguimientos();
       await this.cargarDatosUsuario(this.idUsuario);
       await this.cargarPublicaciones(this.idUsuario);
+      await this.cargarEventosCreados(this.idUsuario); // Recarga eventos creados
+
       this.actualizarEstadoSeguir();
       this.actualizarEstadisticasSeguir(this.idUsuario);
     }
@@ -150,21 +154,34 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-private actualizarEstadisticasSeguir(id_usuario: string) {
-  const seguimientos = this.seguirService.getSeguimientos() || [];
+  // Nuevo método para cargar eventos creados del usuario
+  async cargarEventosCreados(id_usuario: string) {
+    if (!id_usuario) {
+      console.warn('No hay id_usuario para cargar eventos creados');
+      return;
+    }
+    try {
+      this.eventosCreados = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      console.log('Eventos creados cargados:', this.eventosCreados);
+    } catch (error) {
+      console.error('Error al cargar eventos creados:', error);
+    }
+  }
 
-  const seguidores = seguimientos.filter(
-    s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento === true
-  ).length;
+  private actualizarEstadisticasSeguir(id_usuario: string) {
+    const seguimientos = this.seguirService.getSeguimientos() || [];
 
-  const seguidos = seguimientos.filter(
-    s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento === true
-  ).length;
+    const seguidores = seguimientos.filter(
+      s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento === true
+    ).length;
 
-  this.estadisticas.seguidores = seguidores;
-  this.estadisticas.seguidos = seguidos;
-}
+    const seguidos = seguimientos.filter(
+      s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento === true
+    ).length;
 
+    this.estadisticas.seguidores = seguidores;
+    this.estadisticas.seguidos = seguidos;
+  }
 
   ionViewDidEnter() {
     this.applySliderTransform(this.vistaSeleccionada);
