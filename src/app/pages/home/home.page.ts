@@ -354,7 +354,10 @@ async ngOnInit() {
   }
 
 verPerfil(usuario: Usuario | undefined) {
-  if (usuario) {
+  if (!usuario) return;
+  if (usuario.id_usuario === this.usuarioActual.id_usuario) {
+    this.router.navigate(['/perfil']);
+  } else {
     this.router.navigate(['/perfil-user', usuario.id_usuario]);
   }
 }
