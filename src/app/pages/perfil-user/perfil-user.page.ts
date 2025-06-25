@@ -9,6 +9,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
+import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // <--- Importa el servicio
 
 @Component({
   selector: 'app-perfil-user',
@@ -18,7 +19,8 @@ import { EventoService } from 'src/app/services/evento.service';
 })
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
-  eventos: Evento[] = []; 
+
+  eventos: Evento[] = [];
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
 
@@ -36,13 +38,13 @@ export class PerfilUserPage implements OnInit {
   };
 
   siguiendo: boolean = false;
-  idUsuario: string = '';  // Usuario del perfil visto
-  idUsuarioLogueado: string = ''; // Usuario que está viendo el perfil
+  idUsuario: string = '';
+  idUsuarioLogueado: string = '';
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
-  descripcionBio: string = `No hay descripcion`;
-  subname: string = ``;
+  descripcionBio: string = 'No hay descripcion';
+  subname: string = '';
 
   estadisticas = {
     publicaciones: 0,
@@ -55,10 +57,9 @@ export class PerfilUserPage implements OnInit {
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
-  eventosCreados: Evento[] = []; // Aquí almacenamos los eventos creados
+  eventosCreados: Evento[] = [];
 
   private _vistaSeleccionada: string = 'publicaciones';
-
   get vistaSeleccionada(): string {
     return this._vistaSeleccionada;
   }
@@ -80,22 +81,25 @@ export class PerfilUserPage implements OnInit {
     private publicacionService: PublicacionService,
     private utilsService: UtilsService,
     private seguirService: SeguirService,
-    private eventoService: EventoService // <- Inyectamos servicio de eventos
+    private eventoService: EventoService,
+    private localStorageService: LocalStorageService // <--- Inyectar aquí
   ) {}
 
-  ngOnInit() {
-    // Escuchar cambios en el parámetro 'id' para actualizar datos dinámicamente
+  async ngOnInit() {
+    // Obtener el id usuario logueado de forma asíncrona
+    this.idUsuarioLogueado = await this.localStorageService.getItem('id_usuario') || '';
+    console.log('ID usuario logueado en perfil:', this.idUsuarioLogueado);
+
     this.route.paramMap.subscribe(async params => {
       const id = params.get('id');
       if (id) {
         this.idUsuario = id;
-        this.idUsuarioLogueado = localStorage.getItem('id_usuario') || '';
 
+        // Cargar datos necesarios
         await this.seguirService.cargarSeguimientos();
         await this.cargarDatosUsuario(id);
         await this.cargarPublicaciones(id);
-
-        await this.cargarEventosCreados(id); // Cargar eventos creados para este usuario
+        await this.cargarEventosCreados(id);
 
         this.actualizarEstadoSeguir();
         this.actualizarEstadisticasSeguir(id);
@@ -104,12 +108,11 @@ export class PerfilUserPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    // Actualiza la vista cada vez que la página entra en pantalla
     if (this.idUsuario) {
       await this.seguirService.cargarSeguimientos();
       await this.cargarDatosUsuario(this.idUsuario);
       await this.cargarPublicaciones(this.idUsuario);
-      await this.cargarEventosCreados(this.idUsuario); // Recarga eventos creados
+      await this.cargarEventosCreados(this.idUsuario);
 
       this.actualizarEstadoSeguir();
       this.actualizarEstadisticasSeguir(this.idUsuario);
@@ -154,15 +157,10 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-  // Nuevo método para cargar eventos creados del usuario
   async cargarEventosCreados(id_usuario: string) {
-    if (!id_usuario) {
-      console.warn('No hay id_usuario para cargar eventos creados');
-      return;
-    }
+    if (!id_usuario) return;
     try {
       this.eventosCreados = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-      console.log('Eventos creados cargados:', this.eventosCreados);
     } catch (error) {
       console.error('Error al cargar eventos creados:', error);
     }
@@ -170,15 +168,8 @@ export class PerfilUserPage implements OnInit {
 
   private actualizarEstadisticasSeguir(id_usuario: string) {
     const seguimientos = this.seguirService.getSeguimientos() || [];
-
-    const seguidores = seguimientos.filter(
-      s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento === true
-    ).length;
-
-    const seguidos = seguimientos.filter(
-      s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento === true
-    ).length;
-
+    const seguidores = seguimientos.filter(s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento).length;
+    const seguidos = seguimientos.filter(s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento).length;
     this.estadisticas.seguidores = seguidores;
     this.estadisticas.seguidos = seguidos;
   }
@@ -195,22 +186,13 @@ export class PerfilUserPage implements OnInit {
 
   applySliderTransform(value: string) {
     const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
-    if (!segmentElement) {
-      console.warn('Elemento publicacionesNav no encontrado');
-      return;
-    }
+    if (!segmentElement) return;
 
     let position = 0;
     switch (value) {
-      case 'publicaciones':
-        position = 3;
-        break;
-      case 'eventos-inscritos':
-        position = 320 / 3;
-        break;
-      case 'eventos-creados':
-        position = (315 / 3) * 2;
-        break;
+      case 'publicaciones': position = 3; break;
+      case 'eventos-inscritos': position = 320 / 3; break;
+      case 'eventos-creados': position = (315 / 3) * 2; break;
     }
 
     segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
@@ -224,25 +206,30 @@ export class PerfilUserPage implements OnInit {
           text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
           icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
           handler: async () => {
+            console.log('Intentando toggle seguir:');
+            console.log('ID usuario logueado (seguidor):', this.idUsuarioLogueado);
+            console.log('ID usuario perfil (seguido):', this.idUsuario);
+
             await this.seguirService.toggleSeguir(this.idUsuarioLogueado, this.idUsuario);
-            this.siguiendo = !this.siguiendo;
+
+            await this.seguirService.cargarSeguimientos();
+
+            this.siguiendo = this.seguirService.sigue(this.idUsuarioLogueado, this.idUsuario);
+            console.log('Estado siguiente tras toggle:', this.siguiendo);
+
             this.actualizarEstadisticasSeguir(this.idUsuario);
           }
         },
         {
           text: 'Mandar mensaje',
           icon: 'chatbubble-ellipses-outline',
-          handler: () => {
-            this.router.navigate(['/chat-privado', this.idUsuario]);
-          }
+          handler: () => this.router.navigate(['/chat-privado', this.idUsuario])
         },
         {
           text: 'Reportar',
           role: 'destructive',
           icon: 'alert-circle-outline',
-          handler: () => {
-            this.router.navigate(['/reportar-cuenta', this.idUsuario]);
-          }
+          handler: () => this.router.navigate(['/reportar-cuenta', this.idUsuario])
         },
         {
           text: 'Cancelar',
@@ -251,7 +238,6 @@ export class PerfilUserPage implements OnInit {
         }
       ]
     });
-
     await actionSheet.present();
   }
 
@@ -262,27 +248,22 @@ export class PerfilUserPage implements OnInit {
         {
           text: 'Compartir',
           icon: 'share-outline',
-          handler: async () => {
-            await this.compartir(publicacion);
-          },
+          handler: async () => await this.compartir(publicacion)
         },
         {
           text: 'Reportar',
           icon: 'alert-circle-outline',
           role: 'destructive',
-          handler: () => {
-            this.irAReportar(publicacion);
-          },
+          handler: () => this.irAReportar(publicacion)
         },
         {
           text: 'Cancelar',
           icon: 'close-outline',
-          role: 'cancel',
-        },
+          role: 'cancel'
+        }
       ],
       cssClass: 'custom-action-sheet'
     });
-
     await actionSheet.present();
   }
 
