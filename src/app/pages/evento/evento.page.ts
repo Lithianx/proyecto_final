@@ -27,8 +27,15 @@ export class EventoPage implements OnInit {
 
   cargarEventos() {
     this.eventoService.obtenerEventos().subscribe((eventos) => {
-      this.eventos = eventos;
-      this.eventosFiltrados = [...this.eventos];
+      const ahora = new Date();
+
+      this.eventosFiltrados = eventos.filter((e) => {
+        if (e.estado === 'FINALIZADO') {
+          const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
+          return horasPasadas < 24; // solo mostrar eventos finalizados recientes
+        }
+        return true; // mostrar DISPONIBLE y EN_CURSO
+      });
     });
   }
 

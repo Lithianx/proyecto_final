@@ -93,18 +93,18 @@ async crearEvento() {
     console.error('⚠️ Error al obtener el nombre del usuario:', error);
   }
 
-  // Crear el objeto Evento con id_creador incluido
-  const datos: Evento = {
-    id_creador: idUsuario,
-    tipo_evento: formValues.tipo_evento,
-    nombre_evento: formValues.nombre_evento,
-    lugar: formValues.lugar,
-    descripcion: formValues.descripcion,
-    fechaInicio: new Date(formValues.fecha_inicio),
-    fechaFin: new Date(formValues.fecha_termino),
-    cupos: formValues.cupos,
-    creado_por: nombreUsuario,
-  };
+    const datos: Evento = {
+      id_creador: idUsuario,
+      tipo_evento: formValues.tipo_evento,
+      nombre_evento: formValues.nombre_evento,
+      lugar: formValues.lugar,
+      descripcion: formValues.descripcion,
+      fechaInicio: new Date(formValues.fecha_inicio),
+      fechaFin: new Date(formValues.fecha_termino),
+      cupos: formValues.cupos,
+      creado_por: nombreUsuario,
+      estado: 'DISPONIBLE'
+    };
 
   try {
     await this.eventoService.crearEvento(datos);
