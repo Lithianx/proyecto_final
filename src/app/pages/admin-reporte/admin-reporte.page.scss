@@ -11,21 +11,21 @@
 }
 
 .texto-btn {
-    color: #000;
-    font-weight: 600;
+  color: #000;
+  font-weight: 600;
 }
 
 .texto-publicacion {
   font-size: 25px;
-  font-weight: 500; 
+  font-weight: 500;
 }
 
 .img-publicacion {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 18px;
-    padding: 10px;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 18px;
+  padding: 10px;
 }
 
 .modal-imagen {
@@ -76,7 +76,8 @@ ion-accordion .ion-padding {
   padding: 16px;
   margin-top: 4px;
   margin-bottom: 12px;
-  color: var(--color-text-primary); /* Para mantener el texto blanco sobre fondo oscuro */
+  color: var(--color-text-primary);
+  /* Para mantener el texto blanco sobre fondo oscuro */
 }
 
 // =======================
@@ -116,6 +117,13 @@ ion-accordion .ion-padding {
     border-radius: 18px;
     padding: 20px;
     object-fit: cover;
+    transition: box-shadow 0.2s, background 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 4px 24px #3fe52055;
+      background: #232526;
+    }
   }
 
   .texto-publicacion {

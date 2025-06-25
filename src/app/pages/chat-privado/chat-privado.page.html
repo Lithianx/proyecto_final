@@ -25,11 +25,14 @@
 
         <!-- PUBLICACIÓN COMPARTIDA -->
         <ng-container *ngIf="esPublicacion(mensaje); else otrosTipos">
-          <ion-card>
+          <ion-card class="preview-publicacion" (click)="abrirPublicacion(obtenerPublicacion(mensaje))"
+            style="cursor:pointer;">
             <ion-card-content>
               <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
-                <p>{{ publicacion.contenido }}</p>
-                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" style="max-width: 100%; border-radius: 8px;">
+                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen">
+                <p>
+                  {{ publicacion.contenido | slice:0:80 }}<span *ngIf="publicacion.contenido?.length > 80">...</span>
+                </p>
               </div>
             </ion-card-content>
           </ion-card>
@@ -44,7 +47,8 @@
         <ng-template #otrosTipos>
           <!-- Gif -->
           <ng-container *ngIf="mensaje.contenido?.endsWith('.gif') || mensaje.contenido?.includes('giphy.com/media/')">
-            <img [src]="mensaje.contenido" class="gif-chat" (load)="onImageLoad()" />
+            <img [src]="mensaje.contenido" class="gif-chat"
+              (click)="verImagen({ imagen: mensaje.contenido.replace('[gif]', '').trim() })" (load)="onImageLoad()" />
           </ng-container>
 
           <!-- Imagen -->

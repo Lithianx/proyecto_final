@@ -199,6 +199,13 @@ verImagen(publicacion: { imagen: string }) {
   this.imagenSeleccionada = publicacion.imagen ?? null;
 }
 
+
+abrirPublicacion(publicacion: any) {
+  if (publicacion && publicacion.id_publicacion) {
+    this.router.navigate(['/comentario', publicacion.id_publicacion]);
+  }
+}
+
 verVideo(videoUrl: string) {
   this.videoSeleccionado = videoUrl;
 }
