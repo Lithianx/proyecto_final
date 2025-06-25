@@ -29,15 +29,18 @@ export class AdminReportePage implements OnInit {
       this.publicacionService.publicaciones$,
       this.reporteService.tiposReporte$
     ]).pipe(
-      map(([reportes, publicaciones, tiposReporte]) => ({
-        reportes: reportes.slice().sort((a, b) => {
-          const fechaA = this.getFechaReporte(a.fecha_reporte).getTime();
-          const fechaB = this.getFechaReporte(b.fecha_reporte).getTime();
-          return fechaA - fechaB; // Ascendente: más antiguos primero
-        }),
-        publicaciones,
-        tiposReporte
-      }))
+map(([reportes, publicaciones, tiposReporte]) => ({
+  reportes: reportes.slice().sort((a, b) => {
+    const fechaA = this.getFechaReporte(a.fecha_reporte);
+    const fechaB = this.getFechaReporte(b.fecha_reporte);
+    if (!fechaA && !fechaB) return 0;
+    if (!fechaA) return 1;
+    if (!fechaB) return -1;
+    return fechaA.getTime() - fechaB.getTime(); // Ascendente: más antiguos primero
+  }),
+  publicaciones,
+  tiposReporte
+}))
     );
   }
 
@@ -73,12 +76,16 @@ export class AdminReportePage implements OnInit {
   }
 
 
-  getFechaReporte(fecha: any): Date {
-    if (!fecha) return new Date();
-    if (fecha instanceof Date) return fecha;
-    if (fecha.toDate) return fecha.toDate();
-    return new Date(fecha);
+getFechaReporte(fecha: any): Date | null {
+  if (!fecha) return null;
+  if (fecha instanceof Date && !isNaN(fecha.getTime())) return fecha;
+  if (fecha.toDate) {
+    const d = fecha.toDate();
+    return !isNaN(d.getTime()) ? d : null;
   }
+  const d = new Date(fecha);
+  return !isNaN(d.getTime()) ? d : null;
+}
 
   async doRefresh(event: any) {
     setTimeout(() => {

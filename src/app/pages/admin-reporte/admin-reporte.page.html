@@ -21,11 +21,13 @@
         <ion-accordion-group expand="inset">
           <ion-accordion *ngFor="let reporte of datos.reportes">
             <ion-item slot="header" color="light">
-              <ion-label>
-                <strong>{{ getFechaReporte(reporte.fecha_reporte) | date:'short' }}</strong>
-                <br>
-                <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte, datos.tiposReporte) }}</span>
-              </ion-label>
+<ion-label>
+  <strong *ngIf="getFechaReporte(reporte.fecha_reporte) as fecha">
+    {{ fecha | date:'short' }}
+  </strong>
+  <br>
+  <span>Tipo: {{ getDescripcionTipoReporte(reporte.id_tipo_reporte, datos.tiposReporte) }}</span>
+</ion-label>
             </ion-item>
             <div class="ion-padding" slot="content">
               <ng-container *ngIf="getPublicacion(reporte, datos.publicaciones) as publicacion">

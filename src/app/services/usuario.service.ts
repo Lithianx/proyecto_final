@@ -292,7 +292,7 @@ export class UsuarioService {
       const docRef = doc(this.firestore, 'Usuario', id_usuario);
       await updateDoc(docRef, { estado_cuenta: false });
     }
-    await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: false });
+    await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: true });
   }
 
   // Actualiza solo campos específicos en localStorage
