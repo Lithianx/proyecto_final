@@ -186,15 +186,38 @@ export class HomePage implements OnInit, OnDestroy {
     );
   }
 
-  // Guardar publicación
-  async guardar(publicacion: Publicacion) {
-    await this.guardaPublicacionService.toggleGuardado(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-    this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+
+// Guardar o eliminar publicación
+async guardar(publicacion: Publicacion) {
+  const yaEstaGuardada = this.guardaPublicacionService.estaGuardada(
+    this.usuarioActual.id_usuario,
+    publicacion.id_publicacion
+  );
+
+  if (yaEstaGuardada) {
+    // Eliminar completamente de Firebase y del almacenamiento local
+    await this.guardaPublicacionService.eliminarGuardado(
+      this.usuarioActual.id_usuario,
+      publicacion.id_publicacion
+    );
+  } else {
+    // Agregar como nuevo guardado
+    await this.guardaPublicacionService.toggleGuardado(
+      this.usuarioActual.id_usuario,
+      publicacion.id_publicacion
+    );
   }
 
-  estaGuardada(publicacion: Publicacion): boolean {
-    return this.guardaPublicacionService.estaGuardada(this.usuarioActual.id_usuario, publicacion.id_publicacion);
-  }
+  // Actualizar la lista después de la acción
+  this.publicacionesGuardadas = this.guardaPublicacionService.getGuardados();
+}
+// Verifica si la publicación está guardada por el usuario actual
+estaGuardada(publicacion: Publicacion): boolean {
+  return this.guardaPublicacionService.estaGuardada(
+    this.usuarioActual.id_usuario,
+    publicacion.id_publicacion
+  );
+}
 
   // Seguir/Dejar de seguir
   async seguir(usuario: Usuario) {
