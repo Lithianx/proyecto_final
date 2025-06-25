@@ -177,6 +177,7 @@ async updateGuardado(guardado: GuardaPublicacion): Promise<void> {
   }
 }
 
+
 // Elimina todos los guardados relacionados a una publicación
 async removeGuardadosByPublicacion(id_publicacion: string): Promise<void> {
   const ref = collection(this.firestore, 'GuardaPublicacion');
@@ -186,6 +187,18 @@ async removeGuardadosByPublicacion(id_publicacion: string): Promise<void> {
     await deleteDoc(doc(this.firestore, 'GuardaPublicacion', docSnap.id));
   }
 }
+async eliminarGuardado(id_usuario: string, id_publicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'GuardaPublicacion');
+  const q = query(ref,
+    where('id_usuario', '==', id_usuario),
+    where('id_publicacion', '==', id_publicacion)
+  );
+  const snapshot = await getDocs(q);
+  for (const docSnap of snapshot.docs) {
+    await deleteDoc(doc(this.firestore, 'GuardaPublicacion', docSnap.id));
+  }
+}
+
 
 async existeGuardado(id_usuario: string, id_publicacion: string): Promise<boolean> {
   const guardadosRef = collection(this.firestore, 'GuardaPublicacion');

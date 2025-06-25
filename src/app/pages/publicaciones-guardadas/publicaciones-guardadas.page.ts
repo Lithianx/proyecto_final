@@ -49,77 +49,86 @@ export class PublicacionesGuardadasPage {
   }
 
   private async cargarPublicacionesGuardadas(): Promise<void> {
-    const id_usuario = await this.localStorageService.getItem('id_usuario');
+  const id_usuario = await this.localStorageService.getItem('id_usuario');
 
-    if (!id_usuario || typeof id_usuario !== 'string') {
-      console.error('id_usuario no está disponible o no es string');
+  if (!id_usuario || typeof id_usuario !== 'string') {
+    console.error('id_usuario no está disponible o no es string');
+    return;
+  }
+
+  try {
+    this.usuarioActual = await this.usuarioService.getUsuarioPorId(id_usuario);
+    if (!this.usuarioActual) {
+      console.error('No se encontró el usuario actual');
       return;
     }
 
-    try {
-      this.usuarioActual = await this.usuarioService.getUsuarioPorId(id_usuario);
-      if (!this.usuarioActual) {
-        console.error('No se encontró el usuario actual');
-        return;
-      }
+    const todasPublicaciones = await this.publicacionService.getPublicaciones();
+    
+    // ⬇ Obtener las guardadas ordenadas desde el servicio
+    const guardadosOrdenados = this.guardaPublicacionService
+      .getGuardadosOrdenadosPorFecha()
+      .filter(g => g.id_usuario === id_usuario);
 
-      const todasPublicaciones = await this.publicacionService.getPublicaciones();
+    // ⬇ Mapear los guardados a sus publicaciones completas en el mismo orden
+    const publicacionesOrdenadas: Publicacion[] = guardadosOrdenados
+      .map(g => todasPublicaciones.find(p => p.id_publicacion === g.id_publicacion))
+      .filter((p): p is Publicacion => !!p); // Elimina los undefined
 
-      const publicacionesGuardadas: Publicacion[] = todasPublicaciones.filter(pub =>
-        this.guardaPublicacionService.estaGuardada(id_usuario, pub.id_publicacion)
-      );
-
-      this.publicacionesGuardadas = publicacionesGuardadas;
-      this.publicacionesFiltradas = [...publicacionesGuardadas];
-    } catch (error) {
-      console.error('Error al cargar publicaciones guardadas:', error);
-    }
+    this.publicacionesGuardadas = publicacionesOrdenadas;
+    this.publicacionesFiltradas = [...publicacionesOrdenadas];
+  } catch (error) {
+    console.error('Error al cargar publicaciones guardadas:', error);
   }
+}
+
 
   getUsuarioDePublicacion(id_usuario: string): Usuario | undefined {
     return this.usuarios.find(u => u.id_usuario === id_usuario);
   }
 
-  async confirmarEliminar(index: number, event: Event): Promise<void> {
-    event.stopPropagation();
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
+async confirmarEliminar(index: number, event: Event): Promise<void> {
+  event.stopPropagation();
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
 
-    const alert = await this.alertController.create({
-      header: '¿Eliminar publicación?',
-      message: '¿Deseas eliminar esta publicación de guardados?',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Eliminar',
-          handler: async () => {
-            const publicacion = this.publicacionesFiltradas[index];
-            if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
-              console.error('Usuario actual no disponible');
-              return;
-            }
+  const alert = await this.alertController.create({
+    header: '¿Eliminar publicación?',
+    message: '¿Deseas eliminar esta publicación de guardados?',
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Eliminar',
+        handler: async () => {
+          const publicacion = this.publicacionesFiltradas[index];
+          if (!this.usuarioActual || !this.usuarioActual.id_usuario) {
+            console.error('Usuario actual no disponible');
+            return;
+          }
 
-            await this.guardaPublicacionService.toggleGuardado(
-              this.usuarioActual.id_usuario,
-              publicacion.id_publicacion
-            );
+          // Llamada para eliminar el guardado en Firebase
+          await this.guardaPublicacionService.eliminarGuardado(
+            this.usuarioActual.id_usuario,
+            publicacion.id_publicacion
+          );
 
-            // Actualiza las listas en la interfaz
-            this.publicacionesFiltradas.splice(index, 1);
-            const idxOriginal = this.publicacionesGuardadas.findIndex(
-              p => p.id_publicacion === publicacion.id_publicacion
-            );
-            if (idxOriginal > -1) {
-              this.publicacionesGuardadas.splice(idxOriginal, 1);
-            }
+          // Actualiza las listas en la interfaz
+          this.publicacionesFiltradas.splice(index, 1);
+          const idxOriginal = this.publicacionesGuardadas.findIndex(
+            p => p.id_publicacion === publicacion.id_publicacion
+          );
+          if (idxOriginal > -1) {
+            this.publicacionesGuardadas.splice(idxOriginal, 1);
           }
         }
-      ]
-    });
+      }
+    ]
+  });
 
-    await alert.present();
-  }
+  await alert.present();
+}
+
 
   comentario(publicacion: Publicacion) {
     this.router.navigate(['/comentario', publicacion.id_publicacion]);
