@@ -36,10 +36,11 @@
                     <ion-icon name="trash-outline" slot="start"></ion-icon>
                     Eliminar Imagen
                 </ion-button>
-                <ion-button class="btn-cambiar" fill="clear" expand="full" (click)="seleccionarArchivo()">
+                <ion-button class="btn-cambiar" fill="clear" expand="full" (click)="seleccionarImagen()">
                     <ion-icon name="image-outline" slot="start"></ion-icon>
                     Cambiar Foto
                 </ion-button>
+                <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
                 <ion-button fill="clear" expand="full" (click)="mostrarBuscadorGiphy = true">
                     <ion-icon name="happy-outline" slot="start"></ion-icon>
                     Buscar GIF

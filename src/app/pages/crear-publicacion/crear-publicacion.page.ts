@@ -12,6 +12,7 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 import { NavController } from '@ionic/angular';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ToastController } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -88,29 +89,61 @@ export class CrearPublicacionPage implements OnInit {
     this.mostrarBuscadorGiphy = false;
   }
 
-  async seleccionarArchivo() {
+async seleccionarImagen() {
+  const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.() || !!(window as any).Capacitor?.isNative;
+
+  if (isCapacitor) {
     try {
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: false,
-        saveToGallery: true,
+        saveToGallery: false,
         promptLabelHeader: 'Selecciona una opción',
         promptLabelPhoto: 'Elegir de la galería',
         promptLabelPicture: 'Tomar foto',
         promptLabelCancel: 'Cancelar',
         resultType: CameraResultType.DataUrl,
-        source: CameraSource.Prompt // Permite elegir entre cámara y galería
+        source: CameraSource.Prompt
       });
-
       this.imagenBase64 = image.dataUrl || null;
     } catch (error: any) {
-      if (error.message?.toLowerCase().includes('permission')) {
-        alert('Debes permitir el acceso a la cámara o galería desde la configuración de tu dispositivo.');
-      } else {
-        console.warn('No se seleccionó ninguna imagen o se canceló la acción.');
-      }
+      // Muestra un toast si hay error (por ejemplo, permisos)
+      const toast = await this.toastCtrl.create({
+        message: 'No se pudo acceder a la cámara o galería. Revisa los permisos de la app.',
+        duration: 2500,
+        color: 'danger',
+        position: 'top'
+      });
+      toast.present();
+    }
+  } else {
+    // Web: dispara el input file
+    this.fileInput.nativeElement.click();
+  }
+}
+
+async onArchivoSeleccionado(event: any) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) { // Solo imágenes
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagenBase64 = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // Muestra un toast si no es imagen
+    const toast = await this.toastCtrl.create({
+      message: 'Por favor selecciona solo archivos de imagen.',
+      duration: 2500,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
     }
   }
+}
 
   // Función para crear la publicación
   async publicar() {

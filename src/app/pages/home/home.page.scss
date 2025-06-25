@@ -212,3 +212,55 @@ ion-list {
     padding-top: 0 !important;
   }
   
+
+// =======================
+// SCSS PARA VISTA DE PC
+// =======================
+@media (min-width: 768px) {
+  .post-image {
+    width: 600px;
+    height: 400px;
+    max-width: 90vw;
+    max-height: 60vh;
+    margin: 0 auto;
+    display: block;
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .descripcion-sola {
+    font-size: 1.3rem;
+    padding: 2rem 4rem;
+    text-align: center;
+    color: #f2f2f2;
+  }
+
+  .sin-publicaciones,
+  .sin-conversaciones {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  ion-card {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;
+    border-radius: 18px;
+  }
+
+  .action-row {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .etiqueta-usuario h2 {
+    font-size: 1.2rem;
+  }
+
+  .etiqueta-usuario p {
+    font-size: 0.9rem;
+  }
+}

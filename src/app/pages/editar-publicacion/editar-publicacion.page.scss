@@ -6,21 +6,20 @@
   }
 .editar-publicacion-card {
   padding: 10px;
-  width: 80vw;
-  margin: 0 auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-height: 80vh; // Limita el alto máximo del card
-  overflow-y: auto; // Permite scroll interno si el contenido es muy largo
-  margin-top: 30px;
-
+  width: 90vw;
+  max-width: 700px;
+  margin: 30px auto 0 auto;
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+  max-height: none;   
+  overflow-y: visible;  
   display: flex;
   flex-direction: column;
-      h2 {
-      color: #3fe520;
-    }
+  h2 {
+    color: #3fe520;
+  }
 }
 
 .textarea-publicacion {
@@ -84,4 +83,15 @@
   --background: #181818;
   border-radius: 18px;
   padding: 0 0 16px 0;
+}
+
+// =======================
+// SCSS PARA VISTA DE PC
+// =======================
+@media (min-width: 768px) {
+  .editar-publicacion-card {
+    max-width: 700px;
+    min-height: 420px;
+    padding: 24px 32px 32px 32px;
+  }
 }

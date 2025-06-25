@@ -62,7 +62,10 @@
       <!-- En caso que NO haya imagen -->
       <ng-template #soloDescripcion>
         <ion-card-content>
-          <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+          
+          <p class="descripcion-sola">
+           {{ (publicacion.contenido | slice:0:150) + (publicacion.contenido.length > 150 ? '...' : '') }}
+          </p>
           <p><strong>{{ getLikesPublicacion(publicacion.id_publicacion) }} likes</strong></p>
         </ion-card-content>
       </ng-template>

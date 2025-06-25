@@ -28,10 +28,11 @@
 
     <ion-row class="acciones-publicacion">
       <ion-col size="6">
-        <ion-button fill="clear" expand="full" (click)="seleccionarArchivo()">
+        <ion-button fill="clear" expand="full" (click)="seleccionarImagen()">
           <ion-icon name="image-outline" slot="start"></ion-icon>
           Agregar Foto
         </ion-button>
+        <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
       </ion-col>
       <ion-col size="6">
         <ion-button fill="clear" expand="full" (click)="mostrarBuscadorGiphy = true">

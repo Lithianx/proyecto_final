@@ -291,3 +291,43 @@ ion-icon {
   from { opacity: 0; transform: translateY(10px);}
   to { opacity: 1; transform: translateY(0);}
 }
+
+
+// =======================
+// SCSS PARA VISTA DE PC
+// =======================
+@media (min-width: 768px) {
+
+  .chat-container {
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 32px;
+
+  }
+
+  .message {
+    max-width: 60%; /* Más pequeño y ajustado */
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .bubble {
+    font-size: 1.05rem;
+    max-width: 100%;
+    padding: 8px 14px;
+  }
+
+  .imagen-mensaje, .gif-chat, .video-chat, .audio-chat {
+    max-width: 400px;
+    max-height: 300px;
+  }
+
+  ::ng-deep ion-modal,
+  ::ng-deep ion-modal.modal-giphy {
+    --width: 600px !important;
+    --max-width: 98vw;
+    --border-radius: 18px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

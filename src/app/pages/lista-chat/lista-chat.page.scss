@@ -15,6 +15,7 @@ ion-searchbar{
 }
 
 .chat-header {
+  border-radius: 10px;
   color: #f2f2f2;
   ion-back-button {
     color: #3fe520;
@@ -92,5 +93,71 @@ ion-searchbar{
   }
   100% {
     transform: rotate(-10deg);
+  }
+}
+
+
+// =======================
+// SCSS PARA VISTA DE PC
+// =======================
+@media (min-width: 768px) {
+
+  ion-list[inset], 
+  ion-list:not(.sin-conversaciones) {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    background: transparent !important;
+  }
+
+  .chat-header {
+    border-radius: 10px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .chat-item {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .chat-avatar-icon {
+    height: 90px;
+    padding-top: 9px;
+  }
+
+  .user-info {
+    padding-left: 20px;
+    color: #f2f2f2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .message-text {
+    padding-left: 20px;
+    color: #a6a6a6;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 500px;
+    font-size: 1.1rem;
+  }
+
+  .sin-conversaciones {
+    max-width: 700px;
+    margin: 40px auto 0 auto;
+    padding: 32px 0;
+    font-size: 1.3rem;
+  }
+
+  ion-searchbar {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
   }
 }
