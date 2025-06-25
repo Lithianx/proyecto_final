@@ -105,7 +105,18 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   async iniciarEvento() {
     if (!this.eventoEnCurso) {
       this.cargandoEvento = true;
-      setTimeout(() => {
+
+      const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
+
+      // ⏱️ Iniciar temporizador y actualizar estado
+      setTimeout(async () => {
+        try {
+          await updateDoc(eventoRef, { estado: 'EN_CURSO' });
+          console.log('🟡 Estado actualizado a EN_CURSO');
+        } catch (error) {
+          console.error('❌ Error al actualizar estado a EN_CURSO:', error);
+        }
+
         this.cargandoEvento = false;
         this.eventoEnCurso = true;
         this.tiempoInicial = Date.now();
