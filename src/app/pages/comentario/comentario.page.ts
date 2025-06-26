@@ -17,7 +17,7 @@ import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComentarioService } from 'src/app/services/comentario.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController, } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
@@ -90,6 +90,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     private comunicacionService: ComunicacionService,
     private toastCtrl: ToastController,
     private filtroPalabra: FiltroPalabraService,
+    private toastController: ToastController,
   ) { }
 
   toggleDescripcion(id: string) {
@@ -324,17 +325,32 @@ async publicarComentario() {
     this.isModalOpen = false;
   }
 
+  async mostrarToast(mensaje: string, color: string = 'success') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      position: 'top',
+      color
+    });
+    toast.present();
+  }
+
   async sendPostToUser(usuario: Usuario) {
     if (this.selectedPost) {
-      const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
-        this.usuarioActual.id_usuario,
-        usuario.id_usuario
-      );
-      await this.comunicacionService.enviarPublicacion(
-        this.selectedPost,
-        id_conversacion,
-        this.usuarioActual.id_usuario
-      );
+      try {
+        const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+          this.usuarioActual.id_usuario,
+          usuario.id_usuario
+        );
+        await this.comunicacionService.enviarPublicacion(
+          this.selectedPost,
+          id_conversacion,
+          this.usuarioActual.id_usuario
+        );
+        this.mostrarToast('¡Publicación enviada correctamente!');
+      } catch (error) {
+        this.mostrarToast('No se pudo enviar la publicación.', 'danger');
+      }
     }
     this.closeModal();
   }

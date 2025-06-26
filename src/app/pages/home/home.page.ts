@@ -9,7 +9,7 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
-
+import { ToastController } from '@ionic/angular';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
 import { UsuarioService } from 'src/app/services/usuario.service';
@@ -81,7 +81,18 @@ export class HomePage implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private UtilsService: UtilsService,
     private comunicacionService: ComunicacionService,
+    private toastController: ToastController,
   ) { }
+
+  async mostrarToast(mensaje: string, color: string = 'success') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      position: 'top',
+      color
+    });
+    toast.present();
+  }
 
   toggleDescripcion(id: string) {
     this.descripcionExpandida[id] = !this.descripcionExpandida[id];
@@ -267,16 +278,20 @@ estaGuardada(publicacion: Publicacion): boolean {
 
   async sendPostToUser(usuario: Usuario) {
     if (this.selectedPost) {
-      // Debes obtener o crear la conversación privada entre los dos usuarios
-      const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
-        this.usuarioActual.id_usuario,
-        usuario.id_usuario
-      );
-      await this.comunicacionService.enviarPublicacion(
-        this.selectedPost,
-        id_conversacion,
-        this.usuarioActual.id_usuario
-      );
+      try {
+        const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+          this.usuarioActual.id_usuario,
+          usuario.id_usuario
+        );
+        await this.comunicacionService.enviarPublicacion(
+          this.selectedPost,
+          id_conversacion,
+          this.usuarioActual.id_usuario
+        );
+        this.mostrarToast('¡Publicación enviada correctamente!');
+      } catch (error) {
+        this.mostrarToast('No se pudo enviar la publicación.', 'danger');
+      }
     }
     this.closeModal();
   }
