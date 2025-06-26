@@ -51,6 +51,11 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
           this.gestureEjecutado = true;
           this.mostrarToast('Este evento ya está en curso 🚫', 'warning');
         }
+        if (this.evento.estado === 'SIN_CUPOS') {
+          this.gestureEjecutado = true;
+          this.mostrarToast('Este evento ya está lleno 🚫', 'danger');
+          return;
+        }
 
 
 
