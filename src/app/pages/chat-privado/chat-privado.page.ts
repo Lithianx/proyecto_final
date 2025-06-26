@@ -14,7 +14,7 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
 import { Subscription } from 'rxjs';
-import { IonContent } from '@ionic/angular';
+import { IonContent, ToastController } from '@ionic/angular';
 import { Conversacion } from 'src/app/models/conversacion.model';
 
 @Component({
@@ -68,6 +68,7 @@ export class ChatPrivadoPage implements OnInit {
     private usuarioService: UsuarioService,
     private cdRef: ChangeDetectorRef,
     private utilsService: UtilsService,
+    private toastController: ToastController
   ) { }
 
   private convertirFecha(fecha: any): Date {
@@ -393,6 +394,10 @@ console.log('mensajesOffline', this.mensajesOffline);
     }
   }
 
+ // ===========================
+  // MÉTODO ORIGINAL (PERMITE VIDEO)
+  // ===========================
+  /*
   abrirInputVideo() {
     this.videoInput.nativeElement.click();
   }
@@ -414,11 +419,28 @@ console.log('mensajesOffline', this.mensajesOffline);
       reader.readAsDataURL(file);
     }
   }
+  */
+
+  // ===========================
+  // MÉTODOS SIN VIDEO (ACTIVOS)
+  // ===========================
+  abrirInputVideo() {
+    this.mostrarToast('No se pueden enviar videos por este chat.');
+  }
+
+  async onVideoSeleccionado(event: any) {
+    this.mostrarToast('No se pueden enviar videos por este chat.');
+    event.target.value = '';
+  }
 
   seleccionarArchivo() {
     this.fileInput.nativeElement.click();
   }
 
+  // ===========================
+  // MÉTODO ORIGINAL (PERMITE VIDEO)
+  // ===========================
+  /*
   async onArchivoSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -440,6 +462,36 @@ console.log('mensajesOffline', this.mensajesOffline);
             this.idConversacionActual,
             this.usuarioActual.id_usuario,
           );
+        }
+        this.scrollToBottom();
+
+        event.target.value = '';
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+  */
+
+  // ===========================
+  // MÉTODO SIN VIDEO (ACTIVO)
+  // ===========================
+  async onArchivoSeleccionado(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        if (file.type.startsWith('image/')) {
+          await this.comunicacionService.enviarMensajeMultimedia(
+            'imagen',
+            base64,
+            this.idConversacionActual,
+            this.usuarioActual.id_usuario,
+          );
+        } else if (file.type.startsWith('video/')) {
+          this.mostrarToast('No se pueden enviar videos por este chat.');
         }
         this.scrollToBottom();
 
@@ -478,8 +530,69 @@ console.log('mensajesOffline', this.mensajesOffline);
     this.scrollToBottom();
   }
 
-  async enviarMensaje() {
+  // ===========================
+// MÉTODO ORIGINAL (PERMITE TODO TIPO DE MENSAJE)
+// ===========================
+/*
+async enviarMensaje() {
+  if (this.nuevoMensaje.trim() === '') return;
+
+  const mensaje: Mensaje = {
+    id_mensaje: '', // Temporal
+    id_conversacion: this.idConversacionActual,
+    id_usuario_emisor: this.usuarioActual.id_usuario,
+    contenido: this.nuevoMensaje,
+    estado_visto: false,
+  };
+
+  await this.comunicacionService.enviarMensaje(mensaje);
+
+  // Recarga mensajesOffline y mensajesCombinados si estás offline
+  const online = await this.utilsService.checkInternetConnection();
+  if (!online) {
+    this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
+      m => m.id_conversacion === this.idConversacionActual &&
+        m.id_usuario_emisor === this.usuarioActual.id_usuario
+    ) || [];
+
+    this.mensajesCombinados = [
+      ...this.mensajes,
+      ...this.mensajesOffline
+    ].sort((a, b) => {
+      const fechaA = this.convertirFecha(a.fecha_envio);
+      const fechaB = this.convertirFecha(b.fecha_envio);
+      return fechaA.getTime() - fechaB.getTime();
+    });
+
+    this.cdRef.detectChanges();
+  }
+
+  const textarea = document.querySelector('textarea');
+  if (textarea) {
+    textarea.style.height = 'auto';
+  }
+
+  this.nuevoMensaje = '';
+  this.scrollToBottom();
+}
+*/
+
+// ===========================
+// MÉTODO MODIFICADO (NO PERMITE VIDEOS)
+// ===========================
+async enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
+
+    // Si el mensaje es video, NO lo envía
+    if (
+      this.nuevoMensaje.startsWith('[video]') ||
+      this.nuevoMensaje.endsWith('.mp4') ||
+      this.nuevoMensaje.endsWith('.webm') ||
+      this.nuevoMensaje.endsWith('.mov')
+    ) {
+      this.mostrarToast('No se pueden enviar videos por este chat.');
+      return;
+    }
 
     const mensaje: Mensaje = {
       id_mensaje: '', // Temporal
@@ -492,24 +605,24 @@ console.log('mensajesOffline', this.mensajesOffline);
     await this.comunicacionService.enviarMensaje(mensaje);
 
     // Recarga mensajesOffline y mensajesCombinados si estás offline
-const online = await this.utilsService.checkInternetConnection();
-if (!online) {
-  this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
-    m => m.id_conversacion === this.idConversacionActual &&
-      m.id_usuario_emisor === this.usuarioActual.id_usuario
-  ) || [];
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) {
+      this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
+        m => m.id_conversacion === this.idConversacionActual &&
+          m.id_usuario_emisor === this.usuarioActual.id_usuario
+      ) || [];
 
-  this.mensajesCombinados = [
-    ...this.mensajes,
-    ...this.mensajesOffline
-  ].sort((a, b) => {
-    const fechaA = this.convertirFecha(a.fecha_envio);
-    const fechaB = this.convertirFecha(b.fecha_envio);
-    return fechaA.getTime() - fechaB.getTime();
-  });
+      this.mensajesCombinados = [
+        ...this.mensajes,
+        ...this.mensajesOffline
+      ].sort((a, b) => {
+        const fechaA = this.convertirFecha(a.fecha_envio);
+        const fechaB = this.convertirFecha(b.fecha_envio);
+        return fechaA.getTime() - fechaB.getTime();
+      });
 
-  this.cdRef.detectChanges();
-}
+      this.cdRef.detectChanges();
+    }
 
     const textarea = document.querySelector('textarea');
     if (textarea) {
@@ -549,5 +662,17 @@ if (!online) {
 
   ionViewWillLeave() {
     Keyboard.hide();
+  }
+
+
+    // Utilidad para mostrar toast
+  async mostrarToast(mensaje: string) {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      position: 'top',
+      color: 'danger'
+    });
+    toast.present();
   }
 }

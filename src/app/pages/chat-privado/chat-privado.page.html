@@ -56,10 +56,12 @@
             [src]="mensaje.contenido.replace('[imagen]', '').trim()" class="imagen-mensaje"
             (click)="verImagen({ imagen: mensaje.contenido.replace('[imagen]', '').trim() })" (load)="onImageLoad()" />
 
-          <!-- Video -->
+          <!-- Video (BLOQUEADO) -->
+          <!--
           <video *ngIf="mensaje.contenido?.startsWith('[video]')"
             [src]="mensaje.contenido.replace('[video]', '').trim()" controls class="video-chat"
             (click)="verVideo(mensaje.contenido.replace('[video]', '').trim())" (canplay)="onMediaLoad()"></video>
+          -->
 
           <!-- Audio -->
           <audio *ngIf="mensaje.contenido?.startsWith('[audio]')"
@@ -93,8 +95,8 @@
       <ion-button fill="clear" (click)="mostrarModalArchivos = true">
         <ion-icon name="attach-outline"></ion-icon>
       </ion-button>
-      <!-- Input oculto para subir imagen -->
-      <input type="file" #fileInput accept="image/*,video/*" hidden (change)="onArchivoSeleccionado($event)" />
+      <!-- Input oculto para subir imagen (SOLO IMÁGENES) -->
+      <input type="file" #fileInput accept="image/*" hidden (change)="onArchivoSeleccionado($event)" />
 
       <!-- Botón para grabar audio -->
       <ion-button class="grabar" fill="clear" (mousedown)="iniciarGrabacion()" (mouseup)="detenerGrabacion()"
@@ -128,9 +130,17 @@
           <ion-icon name="camera-outline" slot="start"></ion-icon>
           <ion-label>Tomar foto</ion-label>
         </ion-item>
+        <!-- Video (BLOQUEADO) -->
+        <!--
         <ion-item button (click)="abrirSelectorArchivos(); mostrarModalArchivos = false">
           <ion-icon name="folder-open-outline" slot="start"></ion-icon>
           <ion-label>Seleccionar de galeria fotos o videos</ion-label>
+        </ion-item>
+        -->
+
+        <ion-item button (click)="abrirSelectorArchivos(); mostrarModalArchivos = false">
+          <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+          <ion-label>Seleccionar de galería (solo fotos)</ion-label>
         </ion-item>
         <ion-item button (click)="abrirBuscadorGiphy()">
           <ion-icon name="search-outline" slot="start"></ion-icon>
@@ -167,14 +177,14 @@
   </ng-template>
 </ion-modal>
 
-
-
 <!-- VISOR DE IMAGEN -->
 <div *ngIf="imagenSeleccionada" class="overlay" (click)="cerrarVisor()">
   <img [src]="imagenSeleccionada" class="imagen-expandida" />
 </div>
 
-<!-- Visor de video ampliado -->
+<!-- Visor de video ampliado (BLOQUEADO) -->
+<!--
 <div *ngIf="videoSeleccionado" class="overlay" (click)="cerrarVisor()">
   <video [src]="videoSeleccionado" class="video-expandido" controls autoplay></video>
 </div>
+-->

@@ -81,7 +81,10 @@ export class ComunicacionService {
       })[0];
   }
 
-  // Enviar mensaje (guarda offline si no hay internet)
+  // ===========================
+  // MÉTODO ORIGINAL (PERMITE TODO TIPO DE MENSAJE)
+  // ===========================
+  /*
   async enviarMensaje(mensaje: Mensaje) {
     const online = await this.utilsService.checkInternetConnection();
     // Cifrar el contenido antes de guardar/enviar
@@ -107,22 +110,64 @@ export class ComunicacionService {
       await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
     }
   }
+  */
 
-async getMensajesOfflineDescifrados(): Promise<Mensaje[]> {
-  const mensajesOffline = await this.getMensajesOffline();
-  return Promise.all(mensajesOffline.map(async m => ({
-    ...m,
-    contenido: await this.cryptoService.descifrar(m.contenido)
-  })));
-}
+  // ===========================
+  // MÉTODO MODIFICADO (NO PERMITE VIDEOS)
+  // ===========================
+  async enviarMensaje(mensaje: Mensaje): Promise<boolean> {
+    // Si el mensaje es video, NO lo envía
+    if (
+      mensaje.contenido.startsWith('[video]') ||
+      mensaje.contenido.endsWith('.mp4') ||
+      mensaje.contenido.endsWith('.webm') ||
+      mensaje.contenido.endsWith('.mov')
+    ) {
+      // Puedes mostrar un toast/alerta aquí si lo deseas
+      alert('No se pueden enviar videos por este chat.');
+      return false;
+    }
 
+    const online = await this.utilsService.checkInternetConnection();
+    // Cifrar el contenido antes de guardar/enviar
+    const mensajeCifrado = {
+      ...mensaje,
+      contenido: await this.cryptoService.cifrar(mensaje.contenido)
+    };
+    if (online) {
+      try {
+        const mensajesRef = collection(this.firestore, 'Mensaje');
+        const docRef = await addDoc(mensajesRef, { ...mensajeCifrado, id_mensaje: '', fecha_envio: serverTimestamp() });
+        await updateDoc(docRef, { id_mensaje: docRef.id });
+      } catch (error) {
+        console.error('Error al enviar mensaje a Firestore:', error);
+      }
+    } else {
+      const id = Date.now().toString();
+      const mensajeOffline = {
+        ...mensajeCifrado,
+        id_mensaje: id,
+        fecha_envio: new Date()
+      };
+      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+    }
+    return true;
+  }
 
-async getMensajesDescifrados(mensajes: Mensaje[]): Promise<Mensaje[]> {
-  return Promise.all(mensajes.map(async m => ({
-    ...m,
-    contenido: await this.cryptoService.descifrar(m.contenido)
-  })));
-}
+  async getMensajesOfflineDescifrados(): Promise<Mensaje[]> {
+    const mensajesOffline = await this.getMensajesOffline();
+    return Promise.all(mensajesOffline.map(async m => ({
+      ...m,
+      contenido: await this.cryptoService.descifrar(m.contenido)
+    })));
+  }
+
+  async getMensajesDescifrados(mensajes: Mensaje[]): Promise<Mensaje[]> {
+    return Promise.all(mensajes.map(async m => ({
+      ...m,
+      contenido: await this.cryptoService.descifrar(m.contenido)
+    })));
+  }
 
   // Obtener mensajes offline (pendientes de sincronizar)
   async getMensajesOffline(): Promise<Mensaje[]> {
@@ -169,13 +214,41 @@ async getMensajesDescifrados(mensajes: Mensaje[]): Promise<Mensaje[]> {
     return await this.localStorage.getList<Conversacion>('conversaciones') || [];
   }
 
-  // Enviar mensaje multimedia
+  // ===========================
+  // MÉTODO ORIGINAL (PERMITE VIDEO EN MULTIMEDIA)
+  // ===========================
+  /*
   async enviarMensajeMultimedia(
     tipo: 'imagen' | 'video' | 'audio',
     base64: string,
     idConversacion: string,
     idUsuario: string
   ) {
+    const mensaje: Mensaje = {
+      id_mensaje: new Date().getTime().toString(),
+      id_conversacion: idConversacion,
+      id_usuario_emisor: idUsuario,
+      contenido: `[${tipo}] ${base64}`,
+      estado_visto: false,
+      fecha_envio: new Date()
+    };
+    await this.enviarMensaje(mensaje);
+  }
+  */
+
+  // ===========================
+  // MÉTODO SIN VIDEO (ACTIVO)
+  // ===========================
+  async enviarMensajeMultimedia(
+    tipo: 'imagen' | 'video' | 'audio',
+    base64: string,
+    idConversacion: string,
+    idUsuario: string
+  ) {
+    if (tipo === 'video') {
+      alert('No se pueden enviar videos por este chat.');
+      return;
+    }
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime().toString(),
       id_conversacion: idConversacion,
