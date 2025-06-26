@@ -11,6 +11,7 @@ import { NavController } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -50,7 +51,8 @@ export class EditarPublicacionPage implements OnInit {
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
     private navCtrl: NavController,
-  private toastCtrl: ToastController
+  private toastCtrl: ToastController,
+  private filtroPalabra: FiltroPalabraService
   ) { }
 
   async ngOnInit() {
@@ -166,25 +168,36 @@ async onArchivoSeleccionado(event: any) {
 }
 
   
-  async guardarCambios() {
-    if (this.publicacion) {
-      this.publicacion.contenido = this.contenido;
-      this.publicacion.imagen = this.imagenBase64 || '';
-
-      await this.publicacionService.updatePublicacion(this.publicacion);
-
-      // Si quieres mostrar todas las publicaciones (online/offline)
-      if (navigator.onLine) {
-        this.publicaciones = await this.publicacionService.getPublicaciones();
-      } else {
-        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
-      }
-
-      console.log('Cambios guardados:', this.publicaciones);
-      await this.mostrarToast('¡Publicación modificada exitosamente!');
-      this.router.navigate(['/home']);
-    }
+async guardarCambios() {
+  if (this.filtroPalabra.contienePalabraVetada(this.contenido)) {
+    const toast = await this.toastCtrl.create({
+      message: 'Tu publicación contiene palabras no permitidas.',
+      duration: 2500,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+    return;
   }
+
+  if (this.publicacion) {
+    this.publicacion.contenido = this.contenido;
+    this.publicacion.imagen = this.imagenBase64 || '';
+
+    await this.publicacionService.updatePublicacion(this.publicacion);
+
+    // Si quieres mostrar todas las publicaciones (online/offline)
+    if (navigator.onLine) {
+      this.publicaciones = await this.publicacionService.getPublicaciones();
+    } else {
+      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+    }
+
+    console.log('Cambios guardados:', this.publicaciones);
+    await this.mostrarToast('¡Publicación modificada exitosamente!');
+    this.router.navigate(['/home']);
+  }
+}
 
 
   async mostrarToast(mensaje: string) {

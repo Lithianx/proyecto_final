@@ -20,6 +20,8 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
+import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
+
 @Component({
   selector: 'app-comentario',
   templateUrl: './comentario.page.html',
@@ -87,6 +89,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     private comentarioService: ComentarioService,
     private comunicacionService: ComunicacionService,
     private toastCtrl: ToastController,
+    private filtroPalabra: FiltroPalabraService,
   ) { }
 
   toggleDescripcion(id: string) {
@@ -230,41 +233,53 @@ this.comentariosCombinados = [
     return this.usuarioService.getUsuarioPorId(id_usuario);
   }
 
-  async publicarComentario() {
-    const mensaje = this.nuevoComentario.trim();
-    if (mensaje) {
-      const nuevo: Comentario = {
-        id_comentario: Date.now().toString(),
-        id_publicacion: this.publicacion.id_publicacion,
-        id_usuario: this.usuarioActual.id_usuario,
-        contenido_comentario: mensaje,
-        fecha_comentario: new Date(),
-      };
-      await this.comentarioService.agregarComentario(nuevo);
-      this.nuevoComentario = '';
+async publicarComentario() {
+  const mensaje = this.nuevoComentario.trim();
+  if (!mensaje) return;
 
-      const online = await this.UtilsService.checkInternetConnection();
-
-      await this.toastCtrl.create({
-        message: online
-          ? '¡Comentario publicado exitosamente!'
-          : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
-        duration: 1000,
-        position: 'bottom',
-        color: online ? 'success' : 'warning'
-      }).then(toast => toast.present());
-
-    // Recarga solo la offline y la combinada
-    this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
-      c => c.id_publicacion === this.publicacion.id_publicacion &&
-        c.id_usuario === this.usuarioActual.id_usuario
-    ) || [];
-    this.comentariosCombinados = [
-      ...this.comentarios,
-      ...this.comentariosOffline
-    ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
-    }
+  // Filtro de palabras vetadas
+  if (this.filtroPalabra.contienePalabraVetada(mensaje)) {
+    const toast = await this.toastCtrl.create({
+      message: 'Tu comentario contiene palabras no permitidas.',
+      duration: 2500,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+    return;
   }
+
+  const nuevo: Comentario = {
+    id_comentario: Date.now().toString(),
+    id_publicacion: this.publicacion.id_publicacion,
+    id_usuario: this.usuarioActual.id_usuario,
+    contenido_comentario: mensaje,
+    fecha_comentario: new Date(),
+  };
+  await this.comentarioService.agregarComentario(nuevo);
+  this.nuevoComentario = '';
+
+  const online = await this.UtilsService.checkInternetConnection();
+
+  await this.toastCtrl.create({
+    message: online
+      ? '¡Comentario publicado exitosamente!'
+      : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
+    duration: 1000,
+    position: 'top',
+    color: online ? 'success' : 'warning'
+  }).then(toast => toast.present());
+
+  // Recarga solo la offline y la combinada
+  this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
+    c => c.id_publicacion === this.publicacion.id_publicacion &&
+      c.id_usuario === this.usuarioActual.id_usuario
+  ) || [];
+  this.comentariosCombinados = [
+    ...this.comentarios,
+    ...this.comentariosOffline
+  ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+}
 
   getLikesComentario(id_comentario: string): number {
     return this.likesComentarios.filter(l => l.id_comentario === id_comentario && l.estado_like).length;

@@ -13,6 +13,7 @@ import { NavController } from '@ionic/angular';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ToastController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';
+import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
 
 @Component({
   selector: 'app-crear-publicacion',
@@ -52,7 +53,8 @@ export class CrearPublicacionPage implements OnInit {
     private usuarioService: UsuarioService,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
-    private utilsService: UtilsService
+    private utilsService: UtilsService,
+    private filtroPalabra: FiltroPalabraService
   ) { }
 
   async ngOnInit() {
@@ -146,22 +148,34 @@ async onArchivoSeleccionado(event: any) {
 }
 
   // Función para crear la publicación
-  async publicar() {
-    if (!this.contenido.trim() && !this.imagenBase64) return;
+async publicar() {
+  if (!this.contenido.trim() && !this.imagenBase64) return;
 
-    const nuevaPublicacion: Publicacion = {
-      id_publicacion: '', // Temporal
-      id_usuario: this.usuarioActual.id_usuario,
-      contenido: this.contenido || '',
-      imagen: this.imagenBase64 || '',
-      fecha_publicacion: new Date(),
-    };
+  // Filtro de palabras vetadas
+  if (this.filtroPalabra.contienePalabraVetada(this.contenido)) {
+    const toast = await this.toastCtrl.create({
+      message: 'Tu publicación contiene palabras no permitidas.',
+      duration: 2500,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+    return;
+  }
 
-    // Guardar en Firebase y obtener el ID generado
-    const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
-    nuevaPublicacion.id_publicacion = id_publicacion;
+  const nuevaPublicacion: Publicacion = {
+    id_publicacion: '', // Temporal
+    id_usuario: this.usuarioActual.id_usuario,
+    contenido: this.contenido || '',
+    imagen: this.imagenBase64 || '',
+    fecha_publicacion: new Date(),
+  };
 
-      // Verifica conexión usando tu servicio
+  // Guardar en Firebase y obtener el ID generado
+  const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
+  nuevaPublicacion.id_publicacion = id_publicacion;
+
+  // Verifica conexión usando tu servicio
   const online = await this.utilsService.checkInternetConnection();
 
   // Muestra el toast adecuado
@@ -170,7 +184,7 @@ async onArchivoSeleccionado(event: any) {
       ? '¡Publicación creada exitosamente!'
       : 'Publicación guardada offline. Se sincronizará cuando tengas conexión.',
     duration: 3000,
-    position: 'bottom',
+    position: 'top',
     color: online ? 'success' : 'warning'
   }).then(toast => toast.present());
 
@@ -183,5 +197,5 @@ async onArchivoSeleccionado(event: any) {
 
   // Navega a home
   this.router.navigate(['/home']);
-  }
+}
 }
