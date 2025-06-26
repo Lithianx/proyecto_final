@@ -22,7 +22,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
   usuarioEmailActual: string = '';
   public gestureEjecutado = false;
   private swipeInicializado = false;
-   
+
 
   constructor(
     private route: ActivatedRoute,
@@ -32,7 +32,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
     private eventoService: EventoService,
     private toastCtrl: ToastController,
     private usuarioService: UsuarioService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -40,6 +40,24 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
       try {
         const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
         this.evento = eventoObtenido as Evento & { id: string };
+
+        // Verificar estado del evento y bloquear swipe si corresponde
+        if (this.evento.estado === 'FINALIZADO') {
+          this.gestureEjecutado = true;
+          this.mostrarToast('Este evento ya finalizó ⛔', 'danger');
+        }
+
+        if (this.evento.estado === 'EN_CURSO') {
+          this.gestureEjecutado = true;
+          this.mostrarToast('Este evento ya está en curso 🚫', 'warning');
+        }
+        if (this.evento.estado === 'SIN_CUPOS') {
+          this.gestureEjecutado = true;
+          this.mostrarToast('Este evento ya está lleno 🚫', 'danger');
+          return;
+        }
+
+
 
         const usuario = await this.usuarioService.getUsuarioActualConectado();
         this.usuarioEmailActual = usuario?.correo_electronico ?? '';

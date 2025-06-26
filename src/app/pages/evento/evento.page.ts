@@ -23,12 +23,33 @@ export class EventoPage implements OnInit {
 
   ngOnInit() {
     this.cargarEventos();
+
+    // Refrescar cada 10 segundos
+    setInterval(() => {
+      this.cargarEventos();
+    }, 10000); // 10 segundos
   }
 
   cargarEventos() {
-    this.eventoService.obtenerEventos().subscribe((eventos) => {
-      this.eventos = eventos;
-      this.eventosFiltrados = [...this.eventos];
+    this.eventoService.obtenerEventos().subscribe(async (eventos) => {
+      const ahora = new Date();
+
+      // Actualizar estado de cada evento antes de mostrar
+      for (const evento of eventos) {
+        await this.eventoService.actualizarEstadoEvento(evento.id);
+      }
+
+      // Volver a obtener los eventos ya con estado actualizado
+      this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
+        this.eventos = eventosActualizados;
+        this.eventosFiltrados = eventosActualizados.filter((e) => {
+          if (e.estado === 'FINALIZADO') {
+            const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
+            return horasPasadas < 24;
+          }
+          return true;
+        });
+      });
     });
   }
 
