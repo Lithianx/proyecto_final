@@ -13,14 +13,23 @@ export class UtilsService {
 
 async compartirPublicacion(publicacion: Publicacion) {
   const urlCustom = `https://app-eventos-7f5a8.web.app/comentario/${publicacion.id_publicacion}`;
-  const mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n${urlCustom}`;
+  let mensaje = '';
+  if (publicacion.contenido && publicacion.contenido.trim() !== '') {
+    mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n${urlCustom}`;
+  } else {
+    mensaje = `¡Tienes que ver esto!\n${urlCustom}`;
+  }
 
   if (Capacitor.getPlatform() !== 'web') {
     await Share.share({
       title: 'Descubre esto',
       text: mensaje,
-      url: urlCustom,
-      dialogTitle: 'Compartir publicación',
+      dialogTitle: 'Compartir publicación'
+    });
+  } else if (navigator.share) {
+    await navigator.share({
+      title: 'Descubre esto',
+      text: mensaje
     });
   } else {
     const mensajeCodificado = encodeURIComponent(mensaje);

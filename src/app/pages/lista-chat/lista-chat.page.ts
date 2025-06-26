@@ -10,6 +10,7 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { Subscription } from 'rxjs';
+import { CryptoService } from 'src/app/services/crypto.service';
 
 @Component({
   selector: 'app-lista-chat',
@@ -40,7 +41,8 @@ export class ListaChatPage implements OnInit, OnDestroy {
     private comunicacionService: ComunicacionService,
     private usuarioService: UsuarioService,
     private utilsService: UtilsService,
-    private seguirService: SeguirService
+    private seguirService: SeguirService,
+    private cryptoService: CryptoService
   ) { }
 
   async ngOnInit() {
@@ -59,24 +61,27 @@ export class ListaChatPage implements OnInit, OnDestroy {
     await this.seguirService.cargarSeguimientos();
     this.usuariosSeguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-    // Verifica conexión y carga local si no hay internet
-    const online = await this.utilsService.checkInternetConnection();
-    if (!online) {
-      this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
-      this.conversacionesOriginal = this.conversaciones;
-      this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
-      return;
-    }
+  // Verifica conexión y carga local si no hay internet
+  const online = await this.utilsService.checkInternetConnection();
+  if (!online) {
+    this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
+    this.conversacionesOriginal = this.conversaciones;
+    this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
+    await this.cargarUltimosMensajesDescifrados();
+    return;
+  }
 
-    // Suscribirse a los mensajes y conversaciones en tiempo real
-    this.mensajesSub = this.comunicacionService.mensajes$.subscribe(mensajes => {
-      this.mensajes = mensajes;
-    });
-    this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
-      this.conversaciones = convs;
-      this.conversacionesOriginal = convs;
-      await this.localStorage.setItem('conversaciones', convs);
-    });
+  // Suscribirse a los mensajes y conversaciones en tiempo real
+  this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
+    this.mensajes = mensajes;
+    await this.cargarUltimosMensajesDescifrados();
+  });
+  this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
+    this.conversaciones = convs;
+    this.conversacionesOriginal = convs;
+    await this.localStorage.setItem('conversaciones', convs);
+    await this.cargarUltimosMensajesDescifrados();
+  });
   }
 
   ngOnDestroy() {
@@ -129,6 +134,34 @@ export class ListaChatPage implements OnInit, OnDestroy {
     return this.comunicacionService.getUltimoMensajeDeConversacion(this.mensajes, id_conversacion);
   }
 
+ultimoMensajeDescifrado: { [id_conversacion: string]: Mensaje } = {};
+
+async getUltimoMensajeDescifrado(id_conversacion: string): Promise<Mensaje | undefined> {
+  const mensaje = this.getUltimoMensaje(id_conversacion);
+  if (mensaje) {
+    return {
+      ...mensaje,
+      contenido: await this.cryptoService.descifrar(mensaje.contenido)
+    };
+  }
+  return undefined;
+}
+
+async cargarUltimosMensajesDescifrados() {
+  this.ultimoMensajeDescifrado = {};
+  for (const conv of this.conversaciones) {
+    const mensaje = this.getUltimoMensaje(conv.id_conversacion);
+    if (mensaje) {
+      this.ultimoMensajeDescifrado[conv.id_conversacion] = {
+        ...mensaje,
+        contenido: await this.cryptoService.descifrar(mensaje.contenido)
+      };
+    }
+  }
+}
+
+
+  
   async marcarUltimoMensajeComoVisto(id_conversacion: string): Promise<void> {
     const ultimoMensaje = this.getUltimoMensaje(id_conversacion);
     if (

@@ -6,6 +6,7 @@ import { Publicacion } from '../models/publicacion.model';
 import { LocalStorageService } from './local-storage-social.service';
 import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
+import { CryptoService } from './crypto.service';
 
 import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
@@ -21,7 +22,8 @@ export class ComunicacionService {
     private localStorage: LocalStorageService,
     private firebaseService: FirebaseService,
     private firestore: Firestore,
-    private utilsService: UtilsService
+    private utilsService: UtilsService,
+    private cryptoService: CryptoService
   ) {
     const mensajesRef = collection(this.firestore, 'Mensaje');
     this.mensajes$ = collectionData(mensajesRef, { idField: 'id_mensaje' }) as Observable<Mensaje[]>;
@@ -80,25 +82,46 @@ export class ComunicacionService {
   }
 
   // Enviar mensaje (guarda offline si no hay internet)
-async enviarMensaje(mensaje: Mensaje) {
-  const online = await this.utilsService.checkInternetConnection();
-  if (online) {
-    try {
-      const mensajesRef = collection(this.firestore, 'Mensaje');
-      const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
-      await updateDoc(docRef, { id_mensaje: docRef.id });
-    } catch (error) {
-      console.error('Error al enviar mensaje a Firestore:', error);
-    }
-  } else {
-    const id = Date.now().toString();
-    const mensajeOffline = {
+  async enviarMensaje(mensaje: Mensaje) {
+    const online = await this.utilsService.checkInternetConnection();
+    // Cifrar el contenido antes de guardar/enviar
+    const mensajeCifrado = {
       ...mensaje,
-      id_mensaje: id,
-      fecha_envio: new Date()
+      contenido: await this.cryptoService.cifrar(mensaje.contenido)
     };
-    await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+    if (online) {
+      try {
+        const mensajesRef = collection(this.firestore, 'Mensaje');
+        const docRef = await addDoc(mensajesRef, { ...mensajeCifrado, id_mensaje: '', fecha_envio: serverTimestamp() });
+        await updateDoc(docRef, { id_mensaje: docRef.id });
+      } catch (error) {
+        console.error('Error al enviar mensaje a Firestore:', error);
+      }
+    } else {
+      const id = Date.now().toString();
+      const mensajeOffline = {
+        ...mensajeCifrado,
+        id_mensaje: id,
+        fecha_envio: new Date()
+      };
+      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+    }
   }
+
+async getMensajesOfflineDescifrados(): Promise<Mensaje[]> {
+  const mensajesOffline = await this.getMensajesOffline();
+  return Promise.all(mensajesOffline.map(async m => ({
+    ...m,
+    contenido: await this.cryptoService.descifrar(m.contenido)
+  })));
+}
+
+
+async getMensajesDescifrados(mensajes: Mensaje[]): Promise<Mensaje[]> {
+  return Promise.all(mensajes.map(async m => ({
+    ...m,
+    contenido: await this.cryptoService.descifrar(m.contenido)
+  })));
 }
 
   // Obtener mensajes offline (pendientes de sincronizar)

@@ -104,7 +104,9 @@ export class ChatPrivadoPage implements OnInit {
 
     if (online) {
       this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajesOnline => {
-        this.mensajes = mensajesOnline
+        // DESCIFRA los mensajes online
+        const mensajesDescifrados = await this.comunicacionService.getMensajesDescifrados(mensajesOnline);
+        this.mensajes = mensajesDescifrados
           .filter(m => m.id_conversacion === this.idConversacionActual)
           .map(m => ({
             ...m,
@@ -115,7 +117,8 @@ export class ChatPrivadoPage implements OnInit {
                 : new Date(m.fecha_envio))
           }));
 
-        this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
+        // DESCIFRA los mensajes offline
+        this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
           m => m.id_conversacion === this.idConversacionActual &&
             m.id_usuario_emisor === this.usuarioActual.id_usuario
         ) || [];
@@ -155,8 +158,10 @@ export class ChatPrivadoPage implements OnInit {
       });
 
     } else {
-      // SIN internet: carga los mensajes online guardados en local
-      this.mensajes = (await this.comunicacionService.getMensajesLocales())
+      // SIN internet: DESCIFRA los mensajes locales y offline
+      const mensajesLocales = await this.comunicacionService.getMensajesLocales();
+      const mensajesLocalesDescifrados = await this.comunicacionService.getMensajesDescifrados(mensajesLocales);
+      this.mensajes = mensajesLocalesDescifrados
         .filter(m => m.id_conversacion === this.idConversacionActual)
         .map(m => ({
           ...m,
@@ -167,7 +172,7 @@ export class ChatPrivadoPage implements OnInit {
               : new Date(m.fecha_envio))
         }));
 
-      this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
+      this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
         m => m.id_conversacion === this.idConversacionActual &&
           m.id_usuario_emisor === this.usuarioActual.id_usuario
       ) || [];
@@ -200,6 +205,9 @@ export class ChatPrivadoPage implements OnInit {
         this.cargandoMas = false;
       }
     }
+    console.log('mensajesCombinados', this.mensajesCombinados);
+    console.log('mensajes', this.mensajes);
+console.log('mensajesOffline', this.mensajesOffline);
   }
 
   verImagen(publicacion: { imagen: string }) {
@@ -484,24 +492,24 @@ export class ChatPrivadoPage implements OnInit {
     await this.comunicacionService.enviarMensaje(mensaje);
 
     // Recarga mensajesOffline y mensajesCombinados si estás offline
-    const online = await this.utilsService.checkInternetConnection();
-    if (!online) {
-      this.mensajesOffline = (await this.comunicacionService.getMensajesOffline()).filter(
-        m => m.id_conversacion === this.idConversacionActual &&
-          m.id_usuario_emisor === this.usuarioActual.id_usuario
-      ) || [];
+const online = await this.utilsService.checkInternetConnection();
+if (!online) {
+  this.mensajesOffline = (await this.comunicacionService.getMensajesOfflineDescifrados()).filter(
+    m => m.id_conversacion === this.idConversacionActual &&
+      m.id_usuario_emisor === this.usuarioActual.id_usuario
+  ) || [];
 
-      this.mensajesCombinados = [
-        ...this.mensajes,
-        ...this.mensajesOffline
-      ].sort((a, b) => {
-        const fechaA = this.convertirFecha(a.fecha_envio);
-        const fechaB = this.convertirFecha(b.fecha_envio);
-        return fechaA.getTime() - fechaB.getTime();
-      });
+  this.mensajesCombinados = [
+    ...this.mensajes,
+    ...this.mensajesOffline
+  ].sort((a, b) => {
+    const fechaA = this.convertirFecha(a.fecha_envio);
+    const fechaB = this.convertirFecha(b.fecha_envio);
+    return fechaA.getTime() - fechaB.getTime();
+  });
 
-      this.cdRef.detectChanges();
-    }
+  this.cdRef.detectChanges();
+}
 
     const textarea = document.querySelector('textarea');
     if (textarea) {

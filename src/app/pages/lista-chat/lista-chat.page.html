@@ -68,36 +68,36 @@
           " name="mail-unread-outline" color="primary" style="font-size: 1.2em; margin-left: 4px;">
           </ion-icon>
         </div>
-        <p class="message-text">
-          <ng-container *ngIf="getUltimoMensaje(conv.id_conversacion) as ultimo">
-            <ng-container *ngIf="esPublicacion(ultimo); else otrosTipos">
-              <ion-text><strong> 📝 Publicación compartida</strong></ion-text>
-            </ng-container>
-            <ng-template #otrosTipos>
-              <ng-container *ngIf="ultimo.contenido?.startsWith('[imagen]'); else checkAudio">
-                📷 Imagen recibida
-              </ng-container>
-              <ng-template #checkAudio>
-                <ng-container *ngIf="ultimo.contenido?.startsWith('[audio]'); else checkVideo">
-                  🎧 Audio recibido
-                </ng-container>
-              </ng-template>
-              <ng-template #checkVideo>
-                <ng-container *ngIf="ultimo.contenido?.startsWith('[video]'); else checkGif">
-                  🎥 Video recibido
-                </ng-container>
-              </ng-template>
-              <ng-template #checkGif>
-                <ng-container *ngIf="(ultimo.contenido?.endsWith('.gif') || ultimo.contenido?.includes('giphy.com/media/')); else texto">
-                  🖼️ GIF recibido
-                </ng-container>
-              </ng-template>
-              <ng-template #texto>
-                {{ ultimo.contenido }}
-              </ng-template>
-            </ng-template>
-          </ng-container>
-        </p>
+<p class="message-text">
+  <ng-container *ngIf="ultimoMensajeDescifrado[conv.id_conversacion] as ultimo">
+    <ng-container *ngIf="esPublicacion(ultimo); else otrosTipos">
+      <ion-text><strong> 📝 Publicación compartida</strong></ion-text>
+    </ng-container>
+    <ng-template #otrosTipos>
+      <ng-container *ngIf="ultimo.contenido?.startsWith('[imagen]'); else checkAudio">
+        📷 Imagen recibida
+      </ng-container>
+      <ng-template #checkAudio>
+        <ng-container *ngIf="ultimo.contenido?.startsWith('[audio]'); else checkVideo">
+          🎧 Audio recibido
+        </ng-container>
+      </ng-template>
+      <ng-template #checkVideo>
+        <ng-container *ngIf="ultimo.contenido?.startsWith('[video]'); else checkGif">
+          🎥 Video recibido
+        </ng-container>
+      </ng-template>
+      <ng-template #checkGif>
+        <ng-container *ngIf="(ultimo.contenido?.endsWith('.gif') || ultimo.contenido?.includes('giphy.com/media/')); else texto">
+          🖼️ GIF recibido
+        </ng-container>
+      </ng-template>
+      <ng-template #texto>
+        {{ ultimo.contenido }}
+      </ng-template>
+    </ng-template>
+  </ng-container>
+</p>
         <p class="message-text">{{ parseFechaEnvio(conv.fecha_envio) | date:'dd/MM/yyyy hh:mm a' }}</p>
       </ion-label>
     </ion-item>
