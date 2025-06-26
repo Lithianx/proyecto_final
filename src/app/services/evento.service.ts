@@ -99,7 +99,7 @@ export class EventoService {
     const fechaFin = evento.fechaFin.toDate ? evento.fechaFin.toDate() : new Date(evento.fechaFin);
 
     if (evento.estado === 'FINALIZADO') {
-      // No hacer nada, ya fue finalizado manualmente
+      // No modificar estado si ya está finalizado manualmente
       return;
     }
 
@@ -108,10 +108,12 @@ export class EventoService {
     if (now >= fechaFin) {
       const horasDesdeFin = (now.getTime() - fechaFin.getTime()) / (1000 * 60 * 60);
       if (horasDesdeFin >= 24) {
-        console.log('Este evento se ocultará porque ya pasaron más de 24h desde que finalizó.');
+        console.log('⏱ Este evento se ocultará porque ya pasaron más de 24h desde que finalizó.');
         return;
       }
       nuevoEstado = 'FINALIZADO';
+    } else if (evento.cupos <= 0) {
+      nuevoEstado = 'SIN_CUPOS';
     } else if (now >= fechaInicio) {
       nuevoEstado = 'EN_CURSO';
     } else {
@@ -120,6 +122,7 @@ export class EventoService {
 
     if (nuevoEstado !== evento.estado) {
       await updateDoc(eventoDoc, { estado: nuevoEstado });
+      console.log(`🔁 Estado actualizado a: ${nuevoEstado}`);
     }
   }
 

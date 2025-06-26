@@ -24,14 +24,16 @@
           <div class="estado-indicador" [ngClass]="{
         'verde': evento.estado === 'DISPONIBLE',
         'amarillo': evento.estado === 'EN_CURSO',
-        'rojo': evento.estado === 'FINALIZADO'
+        'rojo': evento.estado === 'FINALIZADO',
+        'naranja': evento.estado === 'SIN_CUPOS'
         }">
         </div>
 
         <div class="estado-texto" [ngClass]="{
         'texto-verde': evento.estado === 'DISPONIBLE',
         'texto-amarillo': evento.estado === 'EN_CURSO',
-        'texto-rojo': evento.estado === 'FINALIZADO'
+        'texto-rojo': evento.estado === 'FINALIZADO',
+        'texto-naranja': evento.estado === 'SIN_CUPOS'
       }">
             {{ evento.estado }}
           </div>
