@@ -60,7 +60,10 @@ export class UsuarioService {
             nombre_usuario: usuario.nombre_usuario,
             avatar: usuario.avatar,
             rol: usuario.rol,
-            correo_electronico: usuario.correo_electronico
+            correo_electronico: usuario.correo_electronico,
+            sub_name: usuario.sub_name,
+            descripcion: usuario.descripcion
+             
           };
           await this.localStorage.setItem('usuarioActual', usuarioMinimo);
           await this.localStorage.setItem('id_usuario', usuario.id_usuario);
@@ -81,7 +84,9 @@ export class UsuarioService {
           nombre_usuario: usuario.nombre_usuario,
           avatar: usuario.avatar,
           rol: usuario.rol,
-          correo_electronico: usuario.correo_electronico
+          correo_electronico: usuario.correo_electronico,
+          sub_name: usuario.sub_name,
+          descripcion: usuario.descripcion
         };
         await this.localStorage.setItem('usuarioActual', usuarioMinimo);
         await this.localStorage.setItem('id_usuario', usuario.id_usuario);
@@ -179,7 +184,9 @@ export class UsuarioService {
                 nombre_usuario: usuarioEncontrado.nombre_usuario,
                 avatar: usuarioEncontrado.avatar,
                 rol: usuarioEncontrado.rol,
-                correo_electronico: usuarioEncontrado.correo_electronico
+                correo_electronico: usuarioEncontrado.correo_electronico,
+                sub_name: usuarioEncontrado.sub_name,
+                descripcion: usuarioEncontrado.descripcion
               };
               await this.localStorage.setItem('usuarioActual', usuarioMinimo);
             }
@@ -212,7 +219,9 @@ export class UsuarioService {
           nombre_usuario: u.nombre_usuario,
           avatar: u.avatar,
           rol: u.rol,
-          correo_electronico: u.correo_electronico
+          correo_electronico: u.correo_electronico,
+          sub_name: u.sub_name,
+          descripcion: u.descripcion
         }));
         await this.localStorage.setItem('usuarios', usuariosMinimos);
       } catch (error) {
@@ -233,9 +242,9 @@ export class UsuarioService {
         fecha_registro: new Date(),
         contrasena: '',
         estado_cuenta: true,
-        estado_online: false,
-        sub_name: '',
-        descripcion: ''
+        estado_online: true,
+        sub_name: u.sub_name,
+        descripcion: u.descripcion
       }));
     } else {
       this.usuariosEnMemoria = [];
@@ -271,7 +280,9 @@ export class UsuarioService {
       nombre_usuario: u.nombre_usuario,
       avatar: u.avatar,
       rol: u.rol,
-      correo_electronico: u.correo_electronico
+      correo_electronico: u.correo_electronico,
+      sub_name: u.sub_name,
+      descripcion: u.descripcion
     }));
     await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
@@ -297,7 +308,9 @@ export class UsuarioService {
       nombre_usuario: u.nombre_usuario,
       avatar: u.avatar,
       rol: u.rol,
-      correo_electronico: u.correo_electronico
+      correo_electronico: u.correo_electronico,
+      sub_name: u.sub_name,
+      descripcion: u.descripcion
     }));
     await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
@@ -317,7 +330,9 @@ export class UsuarioService {
         nombre_usuario: u.nombre_usuario,
         avatar: u.avatar,
         rol: u.rol,
-        correo_electronico: u.correo_electronico
+        correo_electronico: u.correo_electronico,
+        sub_name: u.sub_name,
+        descripcion: u.descripcion
       }));
       await this.localStorage.setItem('usuarios', usuariosMinimos);
 
@@ -362,7 +377,9 @@ export class UsuarioService {
         nombre_usuario: u.nombre_usuario,
         avatar: u.avatar,
         rol: u.rol,
-        correo_electronico: u.correo_electronico
+        correo_electronico: u.correo_electronico,
+        sub_name: u.sub_name,
+        descripcion: u.descripcion
       }));
       await this.localStorage.setItem('usuarios', usuariosMinimos);
       this.usuariosEnMemoria = usuarios;
