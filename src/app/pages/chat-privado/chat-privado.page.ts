@@ -57,8 +57,8 @@ export class ChatPrivadoPage implements OnInit {
   cargandoMas = false;
 
 
-imagenSeleccionada: string | null = null;
-videoSeleccionado: string | null = null;
+  imagenSeleccionada: string | null = null;
+  videoSeleccionado: string | null = null;
 
   constructor(
     private router: Router,
@@ -81,7 +81,14 @@ videoSeleccionado: string | null = null;
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
       this.usuarioActual = usuario;
-      await this.localStorage.setItem('usuarioActual', usuario);
+      const usuarioMinimo = {
+        id_usuario: usuario.id_usuario,
+        nombre_usuario: usuario.nombre_usuario,
+        avatar: usuario.avatar,
+        rol: usuario.rol,
+        correo_electronico: usuario.correo_electronico,
+      };
+      await this.localStorage.setItem('usuarioActual', usuarioMinimo);
     } else {
       return;
     }
@@ -195,25 +202,25 @@ videoSeleccionado: string | null = null;
     }
   }
 
-verImagen(publicacion: { imagen: string }) {
-  this.imagenSeleccionada = publicacion.imagen ?? null;
-}
-
-
-abrirPublicacion(publicacion: any) {
-  if (publicacion && publicacion.id_publicacion) {
-    this.router.navigate(['/comentario', publicacion.id_publicacion]);
+  verImagen(publicacion: { imagen: string }) {
+    this.imagenSeleccionada = publicacion.imagen ?? null;
   }
-}
 
-verVideo(videoUrl: string) {
-  this.videoSeleccionado = videoUrl;
-}
 
-cerrarVisor() {
-  this.imagenSeleccionada = null;
-  this.videoSeleccionado = null;
-}
+  abrirPublicacion(publicacion: any) {
+    if (publicacion && publicacion.id_publicacion) {
+      this.router.navigate(['/comentario', publicacion.id_publicacion]);
+    }
+  }
+
+  verVideo(videoUrl: string) {
+    this.videoSeleccionado = videoUrl;
+  }
+
+  cerrarVisor() {
+    this.imagenSeleccionada = null;
+    this.videoSeleccionado = null;
+  }
 
 
   ngOnDestroy() {

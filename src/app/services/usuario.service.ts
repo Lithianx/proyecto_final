@@ -55,7 +55,14 @@ export class UsuarioService {
         await this.cargarUsuarios();
         const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
         if (usuario) {
-          await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+          const usuarioMinimo = {
+            id_usuario: usuario.id_usuario,
+            nombre_usuario: usuario.nombre_usuario,
+            avatar: usuario.avatar,
+            rol: usuario.rol,
+            correo_electronico: usuario.correo_electronico
+          };
+          await this.localStorage.setItem('usuarioActual', usuarioMinimo);
           await this.localStorage.setItem('id_usuario', usuario.id_usuario);
         }
         return usuario ?? null;
@@ -69,7 +76,14 @@ export class UsuarioService {
         u => u.correo_electronico === correo && u.contrasena === contrasena
       );
       if (usuario) {
-        await this.localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+        const usuarioMinimo = {
+          id_usuario: usuario.id_usuario,
+          nombre_usuario: usuario.nombre_usuario,
+          avatar: usuario.avatar,
+          rol: usuario.rol,
+          correo_electronico: usuario.correo_electronico
+        };
+        await this.localStorage.setItem('usuarioActual', usuarioMinimo);
         await this.localStorage.setItem('id_usuario', usuario.id_usuario);
       }
       return usuario ?? null;
@@ -91,7 +105,6 @@ export class UsuarioService {
     const usuario = await this.localStorage.getItem<Usuario>('usuarioActual');
     return !!usuario;
   }
-
 
   /**
    * Crea una nueva cuenta de usuario, registra en Firebase Auth y Firestore.
@@ -161,7 +174,14 @@ export class UsuarioService {
             const usuarios = this.getUsuarios();
             const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
             if (usuarioEncontrado) {
-              await this.localStorage.setItem('usuarioActual', usuarioEncontrado);
+              const usuarioMinimo = {
+                id_usuario: usuarioEncontrado.id_usuario,
+                nombre_usuario: usuarioEncontrado.nombre_usuario,
+                avatar: usuarioEncontrado.avatar,
+                rol: usuarioEncontrado.rol,
+                correo_electronico: usuarioEncontrado.correo_electronico
+              };
+              await this.localStorage.setItem('usuarioActual', usuarioMinimo);
             }
             resolve(usuarioEncontrado ?? null);
           } else {
@@ -176,20 +196,25 @@ export class UsuarioService {
     }
   }
 
-
   async setUsuarioOnline(id_usuario: string, online: boolean) {
     const userRef = doc(this.firestore, 'Usuario', id_usuario);
     await updateDoc(userRef, { estado_online: online });
   }
-
 
   async cargarUsuarios(): Promise<void> {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
       try {
         const usuarios = await this.firebaseService.getUsuarios();
-        this.usuariosEnMemoria = usuarios;
-        await this.localStorage.setItem('usuarios', usuarios);
+        this.usuariosEnMemoria = usuarios; // Mantén los objetos completos en memoria
+        const usuariosMinimos = usuarios.map(u => ({
+          id_usuario: u.id_usuario,
+          nombre_usuario: u.nombre_usuario,
+          avatar: u.avatar,
+          rol: u.rol,
+          correo_electronico: u.correo_electronico
+        }));
+        await this.localStorage.setItem('usuarios', usuariosMinimos);
       } catch (error) {
         console.error('Error al cargar usuarios desde Firebase:', error);
       }
@@ -198,10 +223,19 @@ export class UsuarioService {
     // Cargar también desde almacenamiento local como respaldo
     const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios');
     if (usuariosLocal && usuariosLocal.length > 0) {
+      // Rellenar los campos faltantes para cumplir con la interfaz Usuario
       this.usuariosEnMemoria = usuariosLocal.map(u => ({
-        ...u,
-        id_usuario: String(u.id_usuario),
-        fecha_registro: this.obtenerFechaValida(u.fecha_registro)
+        id_usuario: u.id_usuario,
+        nombre_usuario: u.nombre_usuario,
+        avatar: u.avatar,
+        rol: u.rol,
+        correo_electronico: u.correo_electronico || '',
+        fecha_registro: new Date(),
+        contrasena: '',
+        estado_cuenta: true,
+        estado_online: false,
+        sub_name: '',
+        descripcion: ''
       }));
     } else {
       this.usuariosEnMemoria = [];
@@ -215,12 +249,14 @@ export class UsuarioService {
   getUsuarios(): Usuario[] {
     return this.usuariosEnMemoria;
   }
+
   async obtenerUsuarios(): Promise<Usuario[]> {
     if (this.usuariosEnMemoria.length === 0) {
       await this.cargarUsuarios();
     }
     return this.getUsuarios();
   }
+
   /**
    * Actualiza la lista de usuarios en memoria y localStorage.
    */
@@ -230,7 +266,14 @@ export class UsuarioService {
       id_usuario: String(u.id_usuario),
       fecha_registro: this.obtenerFechaValida(u.fecha_registro)
     }));
-    await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+    const usuariosMinimos = this.usuariosEnMemoria.map(u => ({
+      id_usuario: u.id_usuario,
+      nombre_usuario: u.nombre_usuario,
+      avatar: u.avatar,
+      rol: u.rol,
+      correo_electronico: u.correo_electronico
+    }));
+    await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
 
   /**
@@ -243,14 +286,20 @@ export class UsuarioService {
   /**
    * Agrega un nuevo usuario a Firestore, memoria y localStorage.
    */
-
   async agregarUsuario(usuario: Usuario): Promise<void> {
     usuario.id_usuario = String(usuario.id_usuario);
 
     this.usuariosEnMemoria.push(usuario);
     const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
     await setDoc(userRef, usuario);
-    await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+    const usuariosMinimos = this.usuariosEnMemoria.map(u => ({
+      id_usuario: u.id_usuario,
+      nombre_usuario: u.nombre_usuario,
+      avatar: u.avatar,
+      rol: u.rol,
+      correo_electronico: u.correo_electronico
+    }));
+    await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
 
   /**
@@ -263,7 +312,14 @@ export class UsuarioService {
     const idx = this.usuariosEnMemoria.findIndex(u => u.id_usuario === usuario.id_usuario);
     if (idx !== -1) {
       this.usuariosEnMemoria[idx] = usuario;
-      await this.localStorage.setItem('usuarios', this.usuariosEnMemoria);
+      const usuariosMinimos = this.usuariosEnMemoria.map(u => ({
+        id_usuario: u.id_usuario,
+        nombre_usuario: u.nombre_usuario,
+        avatar: u.avatar,
+        rol: u.rol,
+        correo_electronico: u.correo_electronico
+      }));
+      await this.localStorage.setItem('usuarios', usuariosMinimos);
 
       const userRef = doc(this.firestore, 'Usuario', usuario.id_usuario);
       await updateDoc(userRef, {
@@ -286,7 +342,6 @@ export class UsuarioService {
     await this.localStorage.removeItem('usuarioActual');
   }
 
-
   async desactivarCuentaUsuario(id_usuario: string): Promise<void> {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
@@ -302,11 +357,17 @@ export class UsuarioService {
     const idx = usuarios.findIndex(u => u.id_usuario === id_usuario);
     if (idx !== -1) {
       usuarios[idx] = { ...usuarios[idx], ...cambios };
-      await this.localStorage.setItem('usuarios', usuarios);
+      const usuariosMinimos = usuarios.map(u => ({
+        id_usuario: u.id_usuario,
+        nombre_usuario: u.nombre_usuario,
+        avatar: u.avatar,
+        rol: u.rol,
+        correo_electronico: u.correo_electronico
+      }));
+      await this.localStorage.setItem('usuarios', usuariosMinimos);
       this.usuariosEnMemoria = usuarios;
     }
   }
-
 
   /**
    * Corrige fechas inválidas devolviendo la actual si falla la conversión.
@@ -315,5 +376,4 @@ export class UsuarioService {
     const nuevaFecha = new Date(fecha);
     return isNaN(nuevaFecha.getTime()) ? new Date() : nuevaFecha;
   }
-
 }
