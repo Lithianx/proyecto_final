@@ -27,10 +27,8 @@
             <!-- Encabezado de publicación -->
             <ion-item>
               <ion-avatar slot="start">
-                <img
-                  [src]="getUsuarioDePublicacion(publicacion.id_usuario)?.avatar || 'assets/avatar-default.png'"
-                  [alt]="'Foto de perfil de ' + (getUsuarioDePublicacion(publicacion.id_usuario)?.nombre_usuario || 'Usuario')"
-                />
+                <img [src]="getUsuarioDePublicacion(publicacion.id_usuario)?.avatar || 'assets/avatar-default.png'"
+                  [alt]="'Foto de perfil de ' + (getUsuarioDePublicacion(publicacion.id_usuario)?.nombre_usuario || 'Usuario')" />
               </ion-avatar>
               <ion-label class="etiqueta-usuario">
                 <h2>{{ getUsuarioDePublicacion(publicacion.id_usuario)?.nombre_usuario || 'Usuario' }}</h2>
@@ -38,23 +36,24 @@
               </ion-label>
 
               <!-- Botón de quitar guardado -->
-              <ion-button fill="clear" slot="end" class="bookmark-icon" (click)="confirmarEliminar(i, $event)" aria-label="Eliminar publicación guardada">
+              <ion-button fill="clear" slot="end" class="bookmark-icon" (click)="confirmarEliminar(i, $event)"
+                aria-label="Eliminar publicación guardada">
                 <ion-icon name="bookmark" slot="icon-only"></ion-icon>
               </ion-button>
             </ion-item>
 
             <!-- Contenido de la publicación -->
-            <div
-              class="contenido-publicacion"
-              style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;"
-            >
+            <div class="contenido-publicacion"
+              style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
               <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
                 <img [src]="publicacion.imagen" class="post-image" (click)="comentario(publicacion)" />
               </ng-container>
 
               <ng-template #soloDescripcion>
                 <ion-card-content (click)="comentario(publicacion)">
-                  <p class="descripcion-sola">{{ publicacion.contenido }}</p>
+                  <p class="descripcion-sola">
+                    {{ (publicacion.contenido | slice:0:150) + (publicacion.contenido.length > 150 ? '...' : '') }}
+                  </p>
                 </ion-card-content>
               </ng-template>
             </div>

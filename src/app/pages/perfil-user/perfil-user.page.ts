@@ -258,7 +258,9 @@ export class PerfilUserPage implements OnInit {
           text: 'Reportar',
           icon: 'alert-circle-outline',
           role: 'destructive',
-          handler: () => this.irAReportar(publicacion)
+          handler: () => {
+            this.irAReportar(publicacion);
+          },
         },
         {
           text: 'Cancelar',
@@ -280,6 +282,6 @@ export class PerfilUserPage implements OnInit {
   }
 
   irAReportar(publicacion: Publicacion) {
-    this.router.navigate(['/reportar-post', publicacion.id_publicacion]);
+    this.router.navigate(['/reportar', publicacion.id_publicacion]);
   }
 }
