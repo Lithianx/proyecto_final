@@ -7,6 +7,7 @@ import { TipoReporte } from 'src/app/models/tipo-reporte.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-admin-reporte',
@@ -22,25 +23,26 @@ export class AdminReportePage implements OnInit {
   constructor(
     private reporteService: ReporteService,
     private publicacionService: PublicacionService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private toastController: ToastController
   ) {
     this.datos$ = combineLatest([
       this.reporteService.reportes$,
       this.publicacionService.publicaciones$,
       this.reporteService.tiposReporte$
     ]).pipe(
-map(([reportes, publicaciones, tiposReporte]) => ({
-  reportes: reportes.slice().sort((a, b) => {
-    const fechaA = this.getFechaReporte(a.fecha_reporte);
-    const fechaB = this.getFechaReporte(b.fecha_reporte);
-    if (!fechaA && !fechaB) return 0;
-    if (!fechaA) return 1;
-    if (!fechaB) return -1;
-    return fechaA.getTime() - fechaB.getTime(); // Ascendente: más antiguos primero
-  }),
-  publicaciones,
-  tiposReporte
-}))
+      map(([reportes, publicaciones, tiposReporte]) => ({
+        reportes: reportes.slice().sort((a, b) => {
+          const fechaA = this.getFechaReporte(a.fecha_reporte);
+          const fechaB = this.getFechaReporte(b.fecha_reporte);
+          if (!fechaA && !fechaB) return 0;
+          if (!fechaA) return 1;
+          if (!fechaB) return -1;
+          return fechaA.getTime() - fechaB.getTime(); // Ascendente: más antiguos primero
+        }),
+        publicaciones,
+        tiposReporte
+      }))
     );
   }
 
@@ -57,35 +59,53 @@ map(([reportes, publicaciones, tiposReporte]) => ({
   }
 
   async aceptarReporte(reporte: Reporte, publicaciones: Publicacion[]) {
-    // Elimina la publicación asociada
-    await this.publicacionService.removePublicacion(reporte.id_publicacion);
+    try {
+      // Elimina la publicación asociada
+      await this.publicacionService.removePublicacion(reporte.id_publicacion);
 
-    // Busca el usuario creador de la publicación
-    const publicacion = this.getPublicacion(reporte, publicaciones);
-    if (publicacion) {
-      await this.usuarioService.desactivarCuentaUsuario(publicacion.id_usuario);
+      // Busca el usuario creador de la publicación
+      const publicacion = this.getPublicacion(reporte, publicaciones);
+      if (publicacion) {
+        await this.usuarioService.desactivarCuentaUsuario(publicacion.id_usuario);
+      }
+
+      // Elimina todos los reportes asociados a la publicación
+      await this.reporteService.eliminarReportesPorPublicacion(reporte.id_publicacion);
+      this.mostrarToast('Reporte aceptado y publicación eliminada.', 'success');
+    } catch (error) {
+      this.mostrarToast('Error al aceptar el reporte.', 'danger');
     }
-
-    // Elimina todos los reportes asociados a la publicación
-    await this.reporteService.eliminarReportesPorPublicacion(reporte.id_publicacion);
   }
 
   async rechazarReporte(reporte: Reporte) {
-    await this.reporteService.eliminarReporte(reporte.id_reporte);
-    // No necesitas actualizar arrays locales, los observables lo hacen solo
+    try {
+      await this.reporteService.eliminarReporte(reporte.id_reporte);
+      this.mostrarToast('Reporte rechazado.', 'success');
+    } catch (error) {
+      this.mostrarToast('Error al rechazar el reporte.', 'danger');
+    }
   }
 
+  async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning' = 'success') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      color,
+      position: 'top'
+    });
+    toast.present();
+  }
 
-getFechaReporte(fecha: any): Date | null {
-  if (!fecha) return null;
-  if (fecha instanceof Date && !isNaN(fecha.getTime())) return fecha;
-  if (fecha.toDate) {
-    const d = fecha.toDate();
+  getFechaReporte(fecha: any): Date | null {
+    if (!fecha) return null;
+    if (fecha instanceof Date && !isNaN(fecha.getTime())) return fecha;
+    if (fecha.toDate) {
+      const d = fecha.toDate();
+      return !isNaN(d.getTime()) ? d : null;
+    }
+    const d = new Date(fecha);
     return !isNaN(d.getTime()) ? d : null;
   }
-  const d = new Date(fecha);
-  return !isNaN(d.getTime()) ? d : null;
-}
 
   async doRefresh(event: any) {
     setTimeout(() => {
