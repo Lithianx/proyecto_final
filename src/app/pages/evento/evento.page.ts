@@ -12,55 +12,39 @@ import { LocalStorageEventoService } from 'src/app/services/local-storage-evento
   standalone: false,
 })
 export class EventoPage implements OnInit {
-
   eventos: Evento[] = [];
   eventosFiltrados: Evento[] = [];
+  idUsuarioActual: string = '';
+  datosCargados = false;
 
   constructor(
     private router: Router,
     private navCtrl: NavController,
     private eventoService: EventoService,
     private localStorageEventoService: LocalStorageEventoService
-  ) { }
-
-
-  idUsuarioActual: string = '';
-  public datosCargados = false;
+  ) {}
 
   ngOnInit() {
-    this.localStorageEventoService.getItem<string>('id_usuario').then(id => {
+    this.localStorageEventoService.getItem<string>('id_usuario').then((id) => {
       this.idUsuarioActual = id ?? '';
       this.cargarEventos().then(() => {
-        this.datosCargados = true; // ⬅️ ya están listos los datos para mostrar
+        this.datosCargados = true;
       });
     });
   }
 
-
-  // Refrescar cada 10 segundos
-  /* setInterval(() => {
-    this.cargarEventos();
-  }, 10000); */
-
   async cargarEventos(): Promise<void> {
     return new Promise((resolve) => {
       this.eventoService.obtenerEventos().subscribe(async (eventos) => {
-        const ahora = new Date();
-
         for (const evento of eventos) {
           await this.eventoService.actualizarEstadoEvento(evento.id);
         }
 
         this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
+          // Ya no filtramos por fechaFin
           this.eventos = eventosActualizados;
-          this.eventosFiltrados = eventosActualizados.filter((e) => {
-            if (e.estado === 'FINALIZADO') {
-              const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
-              return horasPasadas < 24;
-            }
-            return true;
-          });
-          resolve(); // ⬅️ resolver cuando se cargue todo
+          this.eventosFiltrados = [...eventosActualizados];
+          resolve();
         });
       });
     });
@@ -85,10 +69,11 @@ export class EventoPage implements OnInit {
       return;
     }
 
-    this.eventosFiltrados = this.eventos.filter(evento =>
+    this.eventosFiltrados = this.eventos.filter((evento) =>
       evento.nombre_evento.toLowerCase().includes(texto) ||
       evento.lugar.toLowerCase().includes(texto) ||
-      evento.tipo_evento.toLowerCase().includes(texto)
+      evento.tipo_evento.toLowerCase().includes(texto) ||
+      evento.creado_por.toLowerCase().includes(texto)
     );
   }
 
@@ -101,5 +86,4 @@ export class EventoPage implements OnInit {
       this.router.navigate(['/detalle-evento', evento.id]);
     }
   }
-
 }

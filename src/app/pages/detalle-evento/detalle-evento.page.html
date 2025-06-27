@@ -12,19 +12,21 @@
         <ion-card-title class="titulo-monster">🎮 {{ evento.nombre_evento }}</ion-card-title>
         <ion-card-subtitle class="subtitulo-monster">Creado por: [ {{ evento.creado_por }} ]</ion-card-subtitle>
 
-        <!-- NUEVO: Estado del evento con luz -->
+        <!-- Estado con luz -->
         <div class="estado-luz-texto">
           <div class="estado-indicador" [ngClass]="{
-      'verde': evento.estado === 'DISPONIBLE',
-      'amarillo': evento.estado === 'EN CURSO',
-      'rojo': evento.estado === 'FINALIZADO'
-    }"></div>
+            'verde': evento.estado === 'DISPONIBLE',
+            'amarillo': evento.estado === 'EN CURSO',
+            'rojo': evento.estado === 'FINALIZADO',
+            'naranja': evento.estado === 'SIN CUPOS'
+          }"></div>
 
           <div class="estado-texto" [ngClass]="{
-      'texto-verde': evento.estado === 'DISPONIBLE',
-      'texto-amarillo': evento.estado === 'EN CURSO',
-      'texto-rojo': evento.estado === 'FINALIZADO'
-    }">
+            'texto-verde': evento.estado === 'DISPONIBLE',
+            'texto-amarillo': evento.estado === 'EN CURSO',
+            'texto-rojo': evento.estado === 'FINALIZADO',
+            'texto-naranja': evento.estado === 'SIN CUPOS'
+          }">
             Estado: {{ evento.estado }}
           </div>
         </div>
@@ -50,8 +52,8 @@
 
           <div class="fila-doble">
             <div class="campo-evento">
-              <label>⏳ Fecha Fin</label>
-              <p>{{ evento.fechaFin | date: 'short' }}</p>
+              <label>🎮 Tipo de Evento</label>
+              <p>{{ evento.tipo_evento }}</p>
             </div>
             <div class="campo-evento">
               <label>👥 Cupos</label>
@@ -60,8 +62,7 @@
           </div>
         </div>
 
-
-        <!-- Botón deslizable al final -->
+        <!-- Botón deslizable -->
         <div class="swipe-button-container" *ngIf="!gestureEjecutado" #swipeArea>
           <div class="swipe-track">
             <div class="swipe-fill" #swipeFill></div>

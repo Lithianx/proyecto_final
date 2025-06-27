@@ -22,6 +22,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
   usuarioEmailActual: string = '';
   public gestureEjecutado = false;
   private swipeInicializado = false;
+  public mostrarSwipe: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,17 +33,14 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
     private toastCtrl: ToastController,
     private usuarioService: UsuarioService,
     private localStorageEventoService: LocalStorageEventoService
-  ) { }
-
-  public mostrarSwipe: boolean = false;
-
+  ) {}
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       try {
         const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
-        this.evento = eventoObtenido as Evento & { id: string };
+        this.evento = eventoObtenido;
 
         const usuario = await this.usuarioService.getUsuarioActualConectado();
         this.usuarioEmailActual = usuario?.correo_electronico ?? '';
@@ -72,14 +70,17 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
           return;
         }
 
+        // Validaciones por estado
         if (this.evento.estado === 'FINALIZADO') {
           this.gestureEjecutado = true;
           this.mostrarToast('Este evento ya finalizó ⛔️', 'danger');
+          return;
         }
 
         if (this.evento.estado === 'EN CURSO') {
           this.gestureEjecutado = true;
           this.mostrarToast('Este evento ya está en curso 🚫', 'warning');
+          return;
         }
 
         if (this.evento.estado === 'SIN CUPOS') {
@@ -99,8 +100,8 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
           this.mostrarToast('No hay cupos disponibles ❌', 'danger');
           return;
         }
-        this.mostrarSwipe = true;
 
+        this.mostrarSwipe = true;
       } catch (error) {
         console.error('❌ Error al cargar evento:', error);
         const toast = await this.toastCtrl.create({
@@ -132,8 +133,6 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
     const track = this.swipeArea?.nativeElement;
     const fill = this.swipeFill?.nativeElement;
     const text = this.swipeText?.nativeElement;
-
-    console.log('✅ Verificando elementos swipe:', { thumb, track, fill, text });
 
     if (!thumb || !track || !fill || !text) {
       console.warn('⚠️ Elementos de swipe no encontrados');
@@ -180,7 +179,6 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
   }
 
   async unirseAlEvento() {
-    console.log('👉 unirseAlEvento() ejecutado');
     try {
       await this.eventoService.tomarEvento(this.evento.id);
       const toast = await this.toastCtrl.create({

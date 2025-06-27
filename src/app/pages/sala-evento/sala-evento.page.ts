@@ -55,23 +55,22 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
     const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
 
-    // 📡 Escuchar cambios en tiempo real
     this.unsubscribeSnapshot = onSnapshot(eventoRef, async (snapshot) => {
       if (snapshot.exists()) {
         const eventoData = snapshot.data();
 
-        // ✅ Convertir fechas a tipo Date para el date pipe
+        // ✅ Convertir fechaInicio a tipo Date
         eventoData["fechaInicio"] = eventoData["fechaInicio"]?.toDate?.() ?? null;
-        eventoData["fechaFin"] = eventoData["fechaFin"]?.toDate?.() ?? null;
 
         this.evento = eventoData;
-        await this.eventoService.actualizarEstadoEvento(this.eventoId);
 
+        // Opcional: Descomentar si quieres mantener lógica adicional por tiempo
+        // await this.eventoService.actualizarEstadoEvento(this.eventoId);
 
-        // ✅ Actualizar lista de jugadores
+        // ✅ Lista de jugadores actualizada
         this.jugadores = (eventoData["jugadores"] || []).map((nombre: string) => ({ nombre }));
 
-        // ✅ Agregar usuario si no está registrado aún
+        // ✅ Agregar jugador si no está, y si no es el creador ni está finalizado
         const yaRegistrado = eventoData["jugadores"]?.includes(this.usuarioActual);
         const eventoFinalizado = eventoData["estado"] === 'FINALIZADO';
         const soyCreador = this.usuarioActual === eventoData["creado_por"];
@@ -109,13 +108,12 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
       const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
 
-      // ⏱️ Iniciar temporizador y actualizar estado
       setTimeout(async () => {
         try {
           await updateDoc(eventoRef, { estado: 'EN CURSO' });
           console.log('🟡 Estado actualizado a EN CURSO');
         } catch (error) {
-          console.error('❌ Error al actualizar estado a EN CURSO:', error);
+          console.error('❌ Error al actualizar estado:', error);
         }
 
         this.cargandoEvento = false;
@@ -179,7 +177,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         });
         console.log('✅ Evento marcado como FINALIZADO');
       } catch (error) {
-        console.error('❌ Error al eliminar el evento:', error);
+        console.error('❌ Error al finalizar evento:', error);
       }
     }
   }

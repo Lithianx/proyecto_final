@@ -6,7 +6,7 @@ import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { getAuth } from 'firebase/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // ✅ Importar correctamente
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
 interface UsuarioFirestore {
   nombre_usuario: string;
@@ -22,6 +22,13 @@ interface UsuarioFirestore {
 export class CrearEventoFlashPage implements OnInit {
   eventoForm!: FormGroup;
   fechaMinima: string = new Date().toISOString();
+  juegosDisponibles: string[] = [];
+
+  juegosPorTipo: { [key: string]: string[] } = {
+    DEPORTE: ['Fútbol', 'Básquetbol', 'Vóleibol', 'Tenis', 'Padel'],
+    'JUEGO DE MESA': ['UNO', 'Catan', 'Ajedrez', 'D&D', 'Pokémon TCG'],
+    VIDEOJUEGO: ['League of Legends', 'Valorant', 'Dota 2', 'Counter-Strike', 'Fortnite']
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -30,19 +37,31 @@ export class CrearEventoFlashPage implements OnInit {
     private router: Router,
     private eventoService: EventoService,
     private firestore: Firestore,
-    private localStorageService: LocalStorageService // ✅ Usar servicio correcto
+    private localStorageService: LocalStorageService
   ) {}
 
   ngOnInit() {
     this.eventoForm = this.fb.group({
       tipo_evento: ['DEPORTE', Validators.required],
-      nombre_evento: ['', Validators.required],
+      juego_seleccionado: ['', Validators.required],
       lugar: ['', Validators.required],
       descripcion: ['', Validators.required],
       fecha_inicio: ['', Validators.required],
-      fecha_termino: ['', Validators.required],
       cupos: [1, [Validators.required, Validators.min(1)]]
     });
+
+    // Inicializar lista de juegos
+    this.actualizarJuegos('DEPORTE');
+
+    // Actualizar dinámicamente según tipo de evento
+    this.eventoForm.get('tipo_evento')?.valueChanges.subscribe((tipo) => {
+      this.actualizarJuegos(tipo);
+    });
+  }
+
+  actualizarJuegos(tipo: string) {
+    this.juegosDisponibles = this.juegosPorTipo[tipo] || [];
+    this.eventoForm.get('juego_seleccionado')?.setValue('');
   }
 
   async crearEvento() {
@@ -59,14 +78,14 @@ export class CrearEventoFlashPage implements OnInit {
 
     const formValues = this.eventoForm.value;
 
-    // 🔐 Obtener ID del usuario desde el servicio de Local Storage
+    // Obtener ID del usuario desde el servicio
     const idUsuario = await this.localStorageService.getItem<string>('id_usuario');
     if (!idUsuario || typeof idUsuario !== 'string') {
       console.warn('⚠️ id_usuario no encontrado en LocalStorageService');
       return;
     }
 
-    // 🔍 Obtener nombre del usuario desde Firestore
+    // Obtener nombre del usuario desde Firestore
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -91,11 +110,10 @@ export class CrearEventoFlashPage implements OnInit {
     const datos: Evento = {
       id_creador: idUsuario,
       tipo_evento: formValues.tipo_evento,
-      nombre_evento: formValues.nombre_evento,
+      nombre_evento: formValues.juego_seleccionado, // ✅ se usa el juego como nombre
       lugar: formValues.lugar,
       descripcion: formValues.descripcion,
       fechaInicio: new Date(formValues.fecha_inicio),
-      fechaFin: new Date(formValues.fecha_termino),
       cupos: formValues.cupos,
       creado_por: nombreUsuario,
       estado: 'DISPONIBLE',

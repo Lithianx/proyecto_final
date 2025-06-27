@@ -13,13 +13,14 @@
     <h2 class="titulo">Eventos Disponibles</h2>
   </div>
 
-  <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar evento"></ion-searchbar>
+  <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar juego o creador"></ion-searchbar>
 
   <ng-container *ngIf="datosCargados">
     <ion-card *ngFor="let evento of eventosFiltrados" class="evento-card">
       <ion-card-header class="header-con-estado">
         <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
         <ion-card-subtitle>{{ evento.tipo_evento }}</ion-card-subtitle>
+
         <div class="info-evento">
           <div class="estado-luz-texto">
             <div class="estado-indicador" [ngClass]="{
@@ -43,6 +44,10 @@
       </ion-card-header>
 
       <ion-card-content>
+        <p>
+          <strong>Juego:</strong> {{ evento.nombre_evento }}
+          
+        </p>
         <p>
           <strong>Lugar:</strong> {{ evento.lugar }}<span style="color: rgb(44, 236, 19);"> | </span>
           <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}

@@ -9,12 +9,15 @@ import {
   doc,
   getDoc,
   updateDoc,
+  query,
+  where,
+  getDocs,
+  QuerySnapshot
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Evento } from '../models/evento.model';
 import { Auth } from '@angular/fire/auth';
-import { query, where, getDocs, QuerySnapshot } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -26,25 +29,24 @@ export class EventoService {
     this.eventosRef = collection(this.firestore, 'eventos');
   }
 
-  // Crear un nuevo evento en Firestore
+  // ✅ Crear un nuevo evento
   crearEvento(evento: Evento): Promise<any> {
     return addDoc(this.eventosRef, evento);
   }
 
-  // Obtener todos los eventos con sus fechas convertidas a objetos Date
+  // ✅ Obtener todos los eventos en tiempo real
   obtenerEventos(): Observable<(Evento & { id: string })[]> {
     return collectionData(this.eventosRef, { idField: 'id' }).pipe(
       map((eventos) =>
         eventos.map((evento: any) => ({
           ...evento,
-          fechaInicio: evento.fechaInicio?.toDate?.() ?? new Date(),
-          fechaFin: evento.fechaFin?.toDate?.() ?? new Date(),
+          fechaInicio: evento.fechaInicio?.toDate?.() ?? new Date()
         })) as (Evento & { id: string })[]
       )
     );
   }
 
-  // Disminuir en uno el cupo disponible de un evento
+  // ✅ Disminuir cupos en Firestore
   async tomarEvento(idEvento: string): Promise<void> {
     const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
     const eventoSnap = await getDoc(eventoDoc);
@@ -54,7 +56,7 @@ export class EventoService {
     }
 
     const data = eventoSnap.data();
-    const cupos = data["cupos"] || 0;
+    const cupos = data['cupos'] || 0;
 
     if (cupos <= 0) {
       throw new Error('No hay cupos disponibles');
@@ -63,7 +65,7 @@ export class EventoService {
     await updateDoc(eventoDoc, { cupos: cupos - 1 });
   }
 
-  // Obtener un evento por su ID con fechas convertidas a Date
+  // ✅ Obtener evento por ID
   async obtenerEventoPorId(id: string): Promise<Evento & { id: string }> {
     const eventoDoc = doc(this.firestore, `eventos/${id}`);
     const eventoSnap = await getDoc(eventoDoc);
@@ -76,18 +78,17 @@ export class EventoService {
     return {
       id,
       ...data,
-      fechaInicio: data["fechaInicio"]?.toDate?.() ?? new Date(),
-      fechaFin: data["fechaFin"]?.toDate?.() ?? new Date(),
+      fechaInicio: data['fechaInicio']?.toDate?.() ?? new Date()
     } as Evento & { id: string };
   }
 
-  // Obtener nombre del usuario autenticado actual
+  // ✅ Obtener nombre del usuario conectado (opcional)
   async obtenerNombreUsuarioActual(): Promise<string> {
     const user = await this.auth.currentUser;
     return user?.displayName ?? user?.email ?? 'Anónimo';
   }
 
-  //Actualizar el estado del evento 
+  // ⚠️ ACTUALIZACIÓN DEL ESTADO (ya no depende de fechas automáticas)
   async actualizarEstadoEvento(idEvento: string): Promise<void> {
     const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
     const eventoSnap = await getDoc(eventoDoc);
@@ -95,28 +96,15 @@ export class EventoService {
     if (!eventoSnap.exists()) return;
 
     const evento = eventoSnap.data() as any;
-    const now = new Date();
-    const fechaInicio = evento.fechaInicio.toDate ? evento.fechaInicio.toDate() : new Date(evento.fechaInicio);
-    const fechaFin = evento.fechaFin.toDate ? evento.fechaFin.toDate() : new Date(evento.fechaFin);
 
-    // 🚫 No modificar si ya está en curso o finalizado
-    if (['EN CURSO', 'FINALIZADO'].includes(evento.estado)) {
-      return;
-    }
+    // Si ya está finalizado o en curso, no actualizar automáticamente
+    if (['EN CURSO', 'FINALIZADO'].includes(evento.estado)) return;
 
     let nuevoEstado = evento.estado;
 
-    if (now >= fechaFin) {
-      const horasDesdeFin = (now.getTime() - fechaFin.getTime()) / (1000 * 60 * 60);
-      if (horasDesdeFin >= 24) {
-        console.log('⏱ Este evento ya finalizó hace más de 24 horas. No se mostrará más.');
-        return;
-      }
-      nuevoEstado = 'FINALIZADO';
-    } else if (evento.cupos <= 0) {
+    // Solo actualizar si no hay cupos
+    if (evento.cupos <= 0) {
       nuevoEstado = 'SIN CUPOS';
-    } else if (now >= fechaInicio) {
-      nuevoEstado = 'EN CURSO';
     } else {
       nuevoEstado = 'DISPONIBLE';
     }
@@ -127,10 +115,7 @@ export class EventoService {
     }
   }
 
-
-
-
-
+  // ✅ Obtener eventos creados por un usuario
   async obtenerEventosPorCreador(idUsuario: string): Promise<(Evento & { id: string })[]> {
     const q = query(this.eventosRef, where('id_creador', '==', idUsuario));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
@@ -139,7 +124,8 @@ export class EventoService {
     querySnapshot.forEach(docSnap => {
       eventos.push({
         id: docSnap.id,
-        ...docSnap.data()
+        ...docSnap.data(),
+        fechaInicio: docSnap.data()['fechaInicio']?.toDate?.() ?? new Date()
       } as Evento & { id: string });
     });
 

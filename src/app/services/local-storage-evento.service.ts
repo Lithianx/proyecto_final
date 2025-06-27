@@ -7,10 +7,13 @@ export class LocalStorageEventoService {
 
   constructor() {}
 
-  // Guardar datos del evento actual
+  /**
+   * Guarda los datos del evento actual en el LocalStorage
+   * @param evento Objeto con los datos del evento
+   */
   async guardarDatosEvento(evento: {
     id: string;
-    nombre_evento: string;
+    nombre_evento: string; // ahora corresponde al juego seleccionado
     id_creador: string;
     jugadores?: string[];
     es_anfitrion?: boolean;
@@ -29,7 +32,7 @@ export class LocalStorageEventoService {
     }
   }
 
-  // Obtener valores individuales
+  // --- Obtener valores individuales ---
   async getIdEvento(): Promise<string | null> {
     return localStorage.getItem('id_evento');
   }
@@ -51,7 +54,7 @@ export class LocalStorageEventoService {
     return (await localStorage.getItem('es_anfitrion')) === 'true';
   }
 
-  // Eliminar todo (por ejemplo, al salir del evento)
+  // --- Limpiar datos almacenados ---
   async limpiarDatosEvento(): Promise<void> {
     try {
       await localStorage.removeItem('id_evento');
@@ -64,9 +67,9 @@ export class LocalStorageEventoService {
     }
   }
 
-
+  // --- Acceso genérico por clave ---
   async getItem<T>(clave: string): Promise<T | null> {
-  const dato = localStorage.getItem(clave);
-  return dato ? JSON.parse(dato) : null;
-}
+    const dato = localStorage.getItem(clave);
+    return dato ? JSON.parse(dato) : null;
+  }
 }
