@@ -65,8 +65,14 @@ export class LocalStorageEventoService {
   }
 
 
-  async getItem<T>(clave: string): Promise<T | null> {
+
+async getItem<T>(clave: string): Promise<T | null> {
   const dato = localStorage.getItem(clave);
-  return dato ? JSON.parse(dato) : null;
+  if (!dato) return null;
+  // Si es JSON válido (objeto o array), parsea, si no, retorna como string
+  if ((dato.startsWith('{') && dato.endsWith('}')) || (dato.startsWith('[') && dato.endsWith(']'))) {
+    return JSON.parse(dato);
+  }
+  return dato as unknown as T;
 }
 }

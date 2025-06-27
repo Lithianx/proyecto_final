@@ -332,7 +332,7 @@ async ionViewWillEnter() {
 
 async cargarEventosCreados() {
   const id_usuario = this.usuarioActual.id_usuario;
-  console.log('ID del usuario para buscar eventos creados:', id_usuario); // ← Verifica este valor
+  console.log('ID del usuario para buscar eventos creados:', id_usuario);
 
   if (!id_usuario) {
     console.warn('No hay id_usuario para cargar eventos creados');
@@ -340,11 +340,20 @@ async cargarEventosCreados() {
   }
 
   try {
-    this.eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-    console.log('Eventos creados cargados:', this.eventos); // ← Verifica si devuelve eventos
+    const eventosRaw = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+
+    // ✅ Convertir fechas Timestamp a Date
+    this.eventos = eventosRaw.map(evento => ({
+      ...evento,
+      fechaInicio: (evento.fechaInicio as any)?.toDate?.() ?? new Date(),
+      fechaFin: (evento.fechaFin as any)?.toDate?.() ?? new Date(),
+    }));
+
+    console.log('Eventos creados cargados:', this.eventos);
   } catch (error) {
     console.error('Error al cargar eventos creados:', error);
   }
 }
+
 
 }
