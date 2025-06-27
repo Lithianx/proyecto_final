@@ -43,6 +43,7 @@ export class CrearPublicacionPage implements OnInit {
   contenido: string = '';
   imagenBase64: string | null = null;
   mostrarDescripcion: boolean = false;
+  cargandoImagen: boolean = false;
 
   publicaciones: Publicacion[] = []; // Lista de publicaciones creadas
 
@@ -93,9 +94,9 @@ export class CrearPublicacionPage implements OnInit {
 
 async seleccionarImagen() {
   const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.() || !!(window as any).Capacitor?.isNative;
-
   if (isCapacitor) {
     try {
+      this.cargandoImagen = true; // Mostrar spinner
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: false,
@@ -109,7 +110,6 @@ async seleccionarImagen() {
       });
       this.imagenBase64 = image.dataUrl || null;
     } catch (error: any) {
-      // Muestra un toast si hay error (por ejemplo, permisos)
       const toast = await this.toastCtrl.create({
         message: 'No se pudo acceder a la cámara o galería. Revisa los permisos de la app.',
         duration: 2500,
@@ -117,23 +117,28 @@ async seleccionarImagen() {
         position: 'top'
       });
       toast.present();
+    } finally {
+      this.cargandoImagen = false; // Ocultar spinner siempre
     }
   } else {
-    // Web: dispara el input file
     this.fileInput.nativeElement.click();
   }
 }
 
 async onArchivoSeleccionado(event: any) {
   const file = event.target.files[0];
-  if (file && file.type.startsWith('image/')) { // Solo imágenes
+  if (file && file.type.startsWith('image/')) {
+    this.cargandoImagen = true; // Mostrar spinner
     const reader = new FileReader();
     reader.onload = () => {
       this.imagenBase64 = reader.result as string;
+      this.cargandoImagen = false; // Ocultar spinner
+    };
+    reader.onerror = () => {
+      this.cargandoImagen = false;
     };
     reader.readAsDataURL(file);
   } else {
-    // Muestra un toast si no es imagen
     const toast = await this.toastCtrl.create({
       message: 'Por favor selecciona solo archivos de imagen.',
       duration: 2500,

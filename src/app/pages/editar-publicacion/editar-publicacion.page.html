@@ -25,9 +25,10 @@
         </ion-textarea>
 
         <!-- Mostrar imagen actual si existe -->
-        <ng-container *ngIf="imagenBase64">
+        <ion-spinner *ngIf="cargandoImagen" name="crescent" color="primary"
+            style="display:block; margin: 0 auto;"></ion-spinner>
+        <ng-container *ngIf="imagenBase64 && !cargandoImagen">
             <img [src]="imagenBase64" class="media-item" />
-
         </ng-container>
 
         <ion-row class="acciones-publicacion">
