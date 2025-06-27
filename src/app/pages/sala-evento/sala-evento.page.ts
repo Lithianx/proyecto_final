@@ -74,8 +74,9 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         // ✅ Agregar usuario si no está registrado aún
         const yaRegistrado = eventoData["jugadores"]?.includes(this.usuarioActual);
         const eventoFinalizado = eventoData["estado"] === 'FINALIZADO';
+        const soyCreador = this.usuarioActual === eventoData["creado_por"];
 
-        if (!yaRegistrado && !eventoFinalizado) {
+        if (!yaRegistrado && !eventoFinalizado && !soyCreador) {
           await updateDoc(eventoRef, {
             jugadores: arrayUnion(this.usuarioActual),
           });
@@ -111,10 +112,10 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       // ⏱️ Iniciar temporizador y actualizar estado
       setTimeout(async () => {
         try {
-          await updateDoc(eventoRef, { estado: 'EN_CURSO' });
-          console.log('🟡 Estado actualizado a EN_CURSO');
+          await updateDoc(eventoRef, { estado: 'EN CURSO' });
+          console.log('🟡 Estado actualizado a EN CURSO');
         } catch (error) {
-          console.error('❌ Error al actualizar estado a EN_CURSO:', error);
+          console.error('❌ Error al actualizar estado a EN CURSO:', error);
         }
 
         this.cargandoEvento = false;

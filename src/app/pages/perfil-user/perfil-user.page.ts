@@ -38,14 +38,15 @@ export class PerfilUserPage implements OnInit {
         rol: ''
   };
 
+ 
   siguiendo: boolean = false;
-  idUsuario: string = '';
-  idUsuarioLogueado: string = '';
+  idUsuario: string = '';  // Usuario del perfil visto
+  idUsuarioLogueado: string = ''; // Usuario que está viendo el perfil
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
-  descripcionBio: string = 'No hay descripcion';
-  subname: string = '';
+  descripcionBio: string = `No hay descripcion`;
+  subname: string = ``;
 
   estadisticas = {
     publicaciones: 0,
@@ -58,7 +59,7 @@ export class PerfilUserPage implements OnInit {
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
-  eventosCreados: Evento[] = [];
+  eventosCreados: Evento[] = []; // Aquí almacenamos los eventos creados
 
   private _vistaSeleccionada: string = 'publicaciones';
   get vistaSeleccionada(): string {
@@ -139,6 +140,8 @@ export class PerfilUserPage implements OnInit {
         this.nombreUsuario = usuario.nombre_usuario || this.nombreUsuario;
         this.descripcionBio = usuario.descripcion || this.descripcionBio;
         this.subname = usuario.sub_name || this.subname;
+        console.log('Datos del usuario:', usuario);
+
       } else {
         console.warn('Usuario no encontrado para id:', id_usuario);
       }

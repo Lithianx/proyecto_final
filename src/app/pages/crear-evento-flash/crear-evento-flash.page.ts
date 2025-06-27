@@ -98,7 +98,8 @@ export class CrearEventoFlashPage implements OnInit {
       fechaFin: new Date(formValues.fecha_termino),
       cupos: formValues.cupos,
       creado_por: nombreUsuario,
-      estado: 'DISPONIBLE'
+      estado: 'DISPONIBLE',
+      jugadores: [nombreUsuario]
     };
 
     try {

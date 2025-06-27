@@ -10,5 +10,5 @@ export interface Evento {
   cupos: number;
   creado_por: string;
   jugadores?: string[];
-  estado: 'DISPONIBLE' | 'EN_CURSO' | 'FINALIZADO' | 'SIN_CUPOS';
+  estado: 'DISPONIBLE' | 'EN CURSO' | 'FINALIZADO' | 'SIN CUPOS';
 }

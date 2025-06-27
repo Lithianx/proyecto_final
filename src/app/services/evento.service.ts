@@ -99,8 +99,8 @@ export class EventoService {
     const fechaInicio = evento.fechaInicio.toDate ? evento.fechaInicio.toDate() : new Date(evento.fechaInicio);
     const fechaFin = evento.fechaFin.toDate ? evento.fechaFin.toDate() : new Date(evento.fechaFin);
 
-    if (evento.estado === 'FINALIZADO') {
-      // No modificar estado si ya está finalizado manualmente
+    // 🚫 No modificar si ya está en curso o finalizado
+    if (['EN CURSO', 'FINALIZADO'].includes(evento.estado)) {
       return;
     }
 
@@ -109,14 +109,14 @@ export class EventoService {
     if (now >= fechaFin) {
       const horasDesdeFin = (now.getTime() - fechaFin.getTime()) / (1000 * 60 * 60);
       if (horasDesdeFin >= 24) {
-        console.log('⏱ Este evento se ocultará porque ya pasaron más de 24h desde que finalizó.');
+        console.log('⏱ Este evento ya finalizó hace más de 24 horas. No se mostrará más.');
         return;
       }
       nuevoEstado = 'FINALIZADO';
     } else if (evento.cupos <= 0) {
-      nuevoEstado = 'SIN_CUPOS';
+      nuevoEstado = 'SIN CUPOS';
     } else if (now >= fechaInicio) {
-      nuevoEstado = 'EN_CURSO';
+      nuevoEstado = 'EN CURSO';
     } else {
       nuevoEstado = 'DISPONIBLE';
     }
@@ -126,6 +126,7 @@ export class EventoService {
       console.log(`🔁 Estado actualizado a: ${nuevoEstado}`);
     }
   }
+
 
 
 
