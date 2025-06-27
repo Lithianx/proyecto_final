@@ -1,10 +1,10 @@
 import { Component, OnInit, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController, GestureController, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { EventoService } from 'src/app/services/evento.service';
 import { Evento } from 'src/app/models/evento.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -23,7 +23,6 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
   public gestureEjecutado = false;
   private swipeInicializado = false;
 
-
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
@@ -31,8 +30,12 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
     private router: Router,
     private eventoService: EventoService,
     private toastCtrl: ToastController,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private localStorageEventoService: LocalStorageEventoService
   ) { }
+
+  public mostrarSwipe: boolean = false;
+
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -41,29 +44,52 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
         const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
         this.evento = eventoObtenido as Evento & { id: string };
 
-        // Verificar estado del evento y bloquear swipe si corresponde
-        if (this.evento.estado === 'FINALIZADO') {
-          this.gestureEjecutado = true;
-          this.mostrarToast('Este evento ya finalizó ⛔', 'danger');
+        const usuario = await this.usuarioService.getUsuarioActualConectado();
+        this.usuarioEmailActual = usuario?.correo_electronico ?? '';
+
+        const soyCreador = this.evento.id_creador === usuario?.id_usuario;
+
+        if (soyCreador) {
+          await this.localStorageEventoService.guardarDatosEvento({
+            id: this.evento.id,
+            nombre_evento: this.evento.nombre_evento,
+            id_creador: this.evento.id_creador,
+            jugadores: this.evento.jugadores || [],
+            es_anfitrion: true
+          });
+
+          const toast = await this.toastCtrl.create({
+            message: 'Eres el anfitrión de este evento 👑',
+            duration: 1500,
+            position: 'top',
+            color: 'success',
+          });
+          await toast.present();
+
+          setTimeout(() => {
+            this.router.navigate(['/sala-evento', this.evento.id]);
+          }, 1600);
+          return;
         }
 
-        if (this.evento.estado === 'EN_CURSO') {
+        if (this.evento.estado === 'FINALIZADO') {
+          this.gestureEjecutado = true;
+          this.mostrarToast('Este evento ya finalizó ⛔️', 'danger');
+        }
+
+        if (this.evento.estado === 'EN CURSO') {
           this.gestureEjecutado = true;
           this.mostrarToast('Este evento ya está en curso 🚫', 'warning');
         }
-        if (this.evento.estado === 'SIN_CUPOS') {
+
+        if (this.evento.estado === 'SIN CUPOS') {
           this.gestureEjecutado = true;
           this.mostrarToast('Este evento ya está lleno 🚫', 'danger');
           return;
         }
 
-
-
-        const usuario = await this.usuarioService.getUsuarioActualConectado();
-        this.usuarioEmailActual = usuario?.correo_electronico ?? '';
-
         if (this.evento.jugadores?.includes(this.usuarioEmailActual)) {
-          this.gestureEjecutado = true; // Desactiva swipe
+          this.gestureEjecutado = true;
           this.mostrarToast('Ya estás inscrito en este evento 👍', 'warning');
           return;
         }
@@ -73,6 +99,7 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
           this.mostrarToast('No hay cupos disponibles ❌', 'danger');
           return;
         }
+        this.mostrarSwipe = true;
 
       } catch (error) {
         console.error('❌ Error al cargar evento:', error);
