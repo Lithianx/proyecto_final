@@ -46,6 +46,19 @@ export class ListaChatPage implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit() {
+    await this.cargarDatosChat();
+  }
+
+  async ionViewWillEnter() {
+    await this.cargarDatosChat();
+  }
+
+  ngOnDestroy() {
+    this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
+  }
+
+  private async cargarDatosChat() {
     // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
@@ -61,32 +74,29 @@ export class ListaChatPage implements OnInit, OnDestroy {
     await this.seguirService.cargarSeguimientos();
     this.usuariosSeguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
 
-  // Verifica conexión y carga local si no hay internet
-  const online = await this.utilsService.checkInternetConnection();
-  if (!online) {
-    this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
-    this.conversacionesOriginal = this.conversaciones;
-    this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
-    await this.cargarUltimosMensajesDescifrados();
-    return;
-  }
+    // Verifica conexión y carga local si no hay internet
+    const online = await this.utilsService.checkInternetConnection();
+    if (!online) {
+      this.conversaciones = await this.localStorage.getList<Conversacion>('conversaciones') || [];
+      this.conversacionesOriginal = this.conversaciones;
+      this.mensajes = await this.localStorage.getList<Mensaje>('mensajes') || [];
+      await this.cargarUltimosMensajesDescifrados();
+      return;
+    }
 
-  // Suscribirse a los mensajes y conversaciones en tiempo real
-  this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
-    this.mensajes = mensajes;
-    await this.cargarUltimosMensajesDescifrados();
-  });
-  this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
-    this.conversaciones = convs;
-    this.conversacionesOriginal = convs;
-    await this.localStorage.setItem('conversaciones', convs);
-    await this.cargarUltimosMensajesDescifrados();
-  });
-  }
-
-  ngOnDestroy() {
+    // Suscribirse a los mensajes y conversaciones en tiempo real
     this.mensajesSub?.unsubscribe();
     this.conversacionesSub?.unsubscribe();
+    this.mensajesSub = this.comunicacionService.mensajes$.subscribe(async mensajes => {
+      this.mensajes = mensajes;
+      await this.cargarUltimosMensajesDescifrados();
+    });
+    this.conversacionesSub = this.comunicacionService.conversaciones$.subscribe(async convs => {
+      this.conversaciones = convs;
+      this.conversacionesOriginal = convs;
+      await this.localStorage.setItem('conversaciones', convs);
+      await this.cargarUltimosMensajesDescifrados();
+    });
   }
 
   doRefresh(event: any) {
@@ -99,14 +109,18 @@ export class ListaChatPage implements OnInit, OnDestroy {
     }, 1500);
   }
 
-  // Buscador SOLO entre usuarios seguidos
   handleInput(event: any): void {
     const query = event.target.value?.toLowerCase() || '';
     if (!query) {
       this.resultadosBusqueda = [];
       this.buscando = false;
     } else {
-      this.resultadosBusqueda = this.usuariosSeguidos.filter(u =>
+      // Usuarios seguidos + usuarios con conversación (sin duplicados)
+      const usuariosConConversacion = this.getUsuariosConConversacion();
+      const todos = [...this.usuariosSeguidos, ...usuariosConConversacion]
+        .filter((u, i, arr) => arr.findIndex(x => x.id_usuario === u.id_usuario) === i);
+
+      this.resultadosBusqueda = todos.filter(u =>
         u.nombre_usuario.toLowerCase().includes(query)
       );
       this.buscando = true;
@@ -126,14 +140,13 @@ export class ListaChatPage implements OnInit, OnDestroy {
     }
   }
 
-
-get conversacionesFiltradas(): Conversacion[] {
-  if (!this.usuarioActual) return [];
-  return this.comunicacionService.filtrarConversacionesPorUsuario(
-    this.conversaciones,
-    this.usuarioActual.id_usuario
-  );
-}
+  get conversacionesFiltradas(): Conversacion[] {
+    if (!this.usuarioActual) return [];
+    return this.comunicacionService.filtrarConversacionesPorUsuario(
+      this.conversaciones,
+      this.usuarioActual.id_usuario
+    );
+  }
 
   getUsuario(id_usuario: string) {
     return this.usuarios.find(u => u.id_usuario === id_usuario);
@@ -143,34 +156,32 @@ get conversacionesFiltradas(): Conversacion[] {
     return this.comunicacionService.getUltimoMensajeDeConversacion(this.mensajes, id_conversacion);
   }
 
-ultimoMensajeDescifrado: { [id_conversacion: string]: Mensaje } = {};
+  ultimoMensajeDescifrado: { [id_conversacion: string]: Mensaje } = {};
 
-async getUltimoMensajeDescifrado(id_conversacion: string): Promise<Mensaje | undefined> {
-  const mensaje = this.getUltimoMensaje(id_conversacion);
-  if (mensaje) {
-    return {
-      ...mensaje,
-      contenido: await this.cryptoService.descifrar(mensaje.contenido)
-    };
-  }
-  return undefined;
-}
-
-async cargarUltimosMensajesDescifrados() {
-  this.ultimoMensajeDescifrado = {};
-  for (const conv of this.conversaciones) {
-    const mensaje = this.getUltimoMensaje(conv.id_conversacion);
+  async getUltimoMensajeDescifrado(id_conversacion: string): Promise<Mensaje | undefined> {
+    const mensaje = this.getUltimoMensaje(id_conversacion);
     if (mensaje) {
-      this.ultimoMensajeDescifrado[conv.id_conversacion] = {
+      return {
         ...mensaje,
         contenido: await this.cryptoService.descifrar(mensaje.contenido)
       };
     }
+    return undefined;
   }
-}
 
+  async cargarUltimosMensajesDescifrados() {
+    this.ultimoMensajeDescifrado = {};
+    for (const conv of this.conversaciones) {
+      const mensaje = this.getUltimoMensaje(conv.id_conversacion);
+      if (mensaje) {
+        this.ultimoMensajeDescifrado[conv.id_conversacion] = {
+          ...mensaje,
+          contenido: await this.cryptoService.descifrar(mensaje.contenido)
+        };
+      }
+    }
+  }
 
-  
   async marcarUltimoMensajeComoVisto(id_conversacion: string): Promise<void> {
     const ultimoMensaje = this.getUltimoMensaje(id_conversacion);
     if (

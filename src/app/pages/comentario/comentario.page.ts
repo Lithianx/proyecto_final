@@ -17,9 +17,8 @@ import { SeguirService } from 'src/app/services/seguir.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ComentarioService } from 'src/app/services/comentario.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
-import { AlertController, } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-
 import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
 
 @Component({
@@ -34,9 +33,9 @@ export class ComentarioPage implements OnInit, OnDestroy {
 
   postId: string | null = '';
   publicacion!: Publicacion;
-  comentarios: Comentario[] = []; // Solo online
-  comentariosOffline: any[] = []; // Solo offline (local, con __offline)
-  comentariosCombinados: any[] = []; // Para mostrar en la vista
+  comentarios: Comentario[] = [];
+  comentariosOffline: any[] = [];
+  comentariosCombinados: any[] = [];
   nuevoComentario = '';
 
   mostrarDescripcion: boolean = false;
@@ -122,85 +121,99 @@ export class ComentarioPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-  const usuario = await this.usuarioService.getUsuarioActualConectado();
-  if (usuario) {
-    this.usuarioActual = usuario;
-    await this.localStorage.setItem('usuarioActual', usuario);
-  } else {
-    return;
+    await this.cargarUsuarioYDatos();
+    this.suscribirLikesYComentarios();
   }
 
-  await this.cargarDatos();
+  async ionViewWillEnter() {
+    await this.cargarUsuarioYDatos();
+  }
 
-  this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
-    this.publicacionesLikes = likes;
-  });
+  private async cargarUsuarioYDatos() {
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    if (usuario) {
+      this.usuarioActual = usuario;
+      await this.localStorage.setItem('usuarioActual', usuario);
+    } else {
+      return;
+    }
+    await this.cargarDatos();
+  }
 
-  this.likesComentariosSub = this.likeService.likesComentarios$.subscribe(likes => {
-    this.likesComentarios = likes;
-  });
-
-  const online = await this.UtilsService.checkInternetConnection();
-
-  if (online) {
-    this.comentariosSub = this.comentarioService.comentarios$.subscribe(async comentariosOnline => {
-      this.comentarios = comentariosOnline
-        .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
-        .map(c => ({
-          ...c,
-          fecha_comentario: c.fecha_comentario instanceof Date
-            ? c.fecha_comentario
-            : (c.fecha_comentario && typeof (c.fecha_comentario as any).toDate === 'function'
-              ? (c.fecha_comentario as any).toDate()
-              : new Date(c.fecha_comentario))
-        }));
-
-      this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
-        c => c.id_publicacion === this.publicacion.id_publicacion &&
-          c.id_usuario === this.usuarioActual.id_usuario
-      ) || [];
-
-      this.comentariosCombinados = [
-        ...this.comentarios,
-        ...this.comentariosOffline
-      ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+  private suscribirLikesYComentarios() {
+    this.likesPublicacionesSub = this.likeService.likesPublicaciones$.subscribe(likes => {
+      this.publicacionesLikes = likes;
     });
-  } else {
-    // SIN internet: carga los comentarios online guardados en local
-    this.comentarios = (await this.comentarioService.getComentariosOnlineLocal())
-      .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
-      .map(c => ({
-        ...c,
-        fecha_comentario: c.fecha_comentario instanceof Date
-          ? c.fecha_comentario
-          : (c.fecha_comentario && typeof (c.fecha_comentario as any).toDate === 'function'
-            ? (c.fecha_comentario as any).toDate()
-            : new Date(c.fecha_comentario))
-      }));
 
-    this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
-      c => c.id_publicacion === this.publicacion.id_publicacion &&
-        c.id_usuario === this.usuarioActual.id_usuario
-    ) || [];
+    this.likesComentariosSub = this.likeService.likesComentarios$.subscribe(likes => {
+      this.likesComentarios = likes;
+    });
 
-this.comentariosCombinados = [
-  ...this.comentarios,
-  ...this.comentariosOffline
-].sort((a, b) => {
-  const fechaA = a.fecha_comentario instanceof Date
-    ? a.fecha_comentario
-    : (a.fecha_comentario && typeof a.fecha_comentario.toDate === 'function'
-        ? a.fecha_comentario.toDate()
-        : new Date(a.fecha_comentario));
-  const fechaB = b.fecha_comentario instanceof Date
-    ? b.fecha_comentario
-    : (b.fecha_comentario && typeof b.fecha_comentario.toDate === 'function'
-        ? b.fecha_comentario.toDate()
-        : new Date(b.fecha_comentario));
-  return fechaB.getTime() - fechaA.getTime();
-});
+    this.UtilsService.checkInternetConnection().then(online => {
+      if (online) {
+        this.comentariosSub = this.comentarioService.comentarios$.subscribe(async comentariosOnline => {
+          this.comentarios = comentariosOnline
+            .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
+            .map(c => ({
+              ...c,
+              fecha_comentario: c.fecha_comentario instanceof Date
+                ? c.fecha_comentario
+                : (c.fecha_comentario && typeof (c.fecha_comentario as any).toDate === 'function'
+                  ? (c.fecha_comentario as any).toDate()
+                  : new Date(c.fecha_comentario))
+            }));
+
+          this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
+            c => c.id_publicacion === this.publicacion.id_publicacion &&
+              c.id_usuario === this.usuarioActual.id_usuario
+          ) || [];
+
+          this.comentariosCombinados = [
+            ...this.comentarios,
+            ...this.comentariosOffline
+          ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+        });
+      } else {
+        // SIN internet: carga los comentarios online guardados en local
+        this.comentarioService.getComentariosOnlineLocal().then(comentariosLocal => {
+          this.comentarios = comentariosLocal
+            .filter(c => c.id_publicacion === this.publicacion.id_publicacion)
+            .map(c => ({
+              ...c,
+              fecha_comentario: c.fecha_comentario instanceof Date
+                ? c.fecha_comentario
+                : (c.fecha_comentario && typeof (c.fecha_comentario as any).toDate === 'function'
+                  ? (c.fecha_comentario as any).toDate()
+                  : new Date(c.fecha_comentario))
+            }));
+
+          this.comentarioService.getComentariosOffline().then(comentariosOffline => {
+            this.comentariosOffline = comentariosOffline.filter(
+              c => c.id_publicacion === this.publicacion.id_publicacion &&
+                c.id_usuario === this.usuarioActual.id_usuario
+            ) || [];
+
+            this.comentariosCombinados = [
+              ...this.comentarios,
+              ...this.comentariosOffline
+            ].sort((a, b) => {
+              const fechaA = a.fecha_comentario instanceof Date
+                ? a.fecha_comentario
+                : (a.fecha_comentario && typeof a.fecha_comentario.toDate === 'function'
+                  ? a.fecha_comentario.toDate()
+                  : new Date(a.fecha_comentario));
+              const fechaB = b.fecha_comentario instanceof Date
+                ? b.fecha_comentario
+                : (b.fecha_comentario && typeof b.fecha_comentario.toDate === 'function'
+                  ? b.fecha_comentario.toDate()
+                  : new Date(b.fecha_comentario));
+              return fechaB.getTime() - fechaA.getTime();
+            });
+          });
+        });
+      }
+    });
   }
-}
 
   ngOnDestroy() {
     this.likesPublicacionesSub?.unsubscribe();
@@ -234,53 +247,53 @@ this.comentariosCombinados = [
     return this.usuarioService.getUsuarioPorId(id_usuario);
   }
 
-async publicarComentario() {
-  const mensaje = this.nuevoComentario.trim();
-  if (!mensaje) return;
+  async publicarComentario() {
+    const mensaje = this.nuevoComentario.trim();
+    if (!mensaje) return;
 
-  // Filtro de palabras vetadas
-  if (this.filtroPalabra.contienePalabraVetada(mensaje)) {
-    const toast = await this.toastCtrl.create({
-      message: 'Tu comentario contiene palabras no permitidas.',
-      duration: 2500,
-      color: 'danger',
-      position: 'top'
-    });
-    toast.present();
-    return;
+    // Filtro de palabras vetadas
+    if (this.filtroPalabra.contienePalabraVetada(mensaje)) {
+      const toast = await this.toastCtrl.create({
+        message: 'Tu comentario contiene palabras no permitidas.',
+        duration: 2500,
+        color: 'danger',
+        position: 'top'
+      });
+      toast.present();
+      return;
+    }
+
+    const nuevo: Comentario = {
+      id_comentario: Date.now().toString(),
+      id_publicacion: this.publicacion.id_publicacion,
+      id_usuario: this.usuarioActual.id_usuario,
+      contenido_comentario: mensaje,
+      fecha_comentario: new Date(),
+    };
+    await this.comentarioService.agregarComentario(nuevo);
+    this.nuevoComentario = '';
+
+    const online = await this.UtilsService.checkInternetConnection();
+
+    await this.toastCtrl.create({
+      message: online
+        ? '¡Comentario publicado exitosamente!'
+        : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
+      duration: 1000,
+      position: 'top',
+      color: online ? 'success' : 'warning'
+    }).then(toast => toast.present());
+
+    // Recarga solo la offline y la combinada
+    this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
+      c => c.id_publicacion === this.publicacion.id_publicacion &&
+        c.id_usuario === this.usuarioActual.id_usuario
+    ) || [];
+    this.comentariosCombinados = [
+      ...this.comentarios,
+      ...this.comentariosOffline
+    ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
   }
-
-  const nuevo: Comentario = {
-    id_comentario: Date.now().toString(),
-    id_publicacion: this.publicacion.id_publicacion,
-    id_usuario: this.usuarioActual.id_usuario,
-    contenido_comentario: mensaje,
-    fecha_comentario: new Date(),
-  };
-  await this.comentarioService.agregarComentario(nuevo);
-  this.nuevoComentario = '';
-
-  const online = await this.UtilsService.checkInternetConnection();
-
-  await this.toastCtrl.create({
-    message: online
-      ? '¡Comentario publicado exitosamente!'
-      : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
-    duration: 1000,
-    position: 'top',
-    color: online ? 'success' : 'warning'
-  }).then(toast => toast.present());
-
-  // Recarga solo la offline y la combinada
-  this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
-    c => c.id_publicacion === this.publicacion.id_publicacion &&
-      c.id_usuario === this.usuarioActual.id_usuario
-  ) || [];
-  this.comentariosCombinados = [
-    ...this.comentarios,
-    ...this.comentariosOffline
-  ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
-}
 
   getLikesComentario(id_comentario: string): number {
     return this.likesComentarios.filter(l => l.id_comentario === id_comentario && l.estado_like).length;
@@ -305,8 +318,8 @@ async publicarComentario() {
   }
 
   esComentarioOffline(id_comentario: string): boolean {
-  return this.comentariosOffline.some(c => c.id_comentario === id_comentario);
-}
+    return this.comentariosOffline.some(c => c.id_comentario === id_comentario);
+  }
 
   usuarioLikeoPublicacion(id_publicacion: string): boolean {
     return !!this.publicacionesLikes.find(
@@ -442,14 +455,14 @@ async publicarComentario() {
     });
   }
 
-verPerfil(usuario: Usuario | undefined) {
-  if (!usuario) return;
-  if (usuario.id_usuario === this.usuarioActual.id_usuario) {
-    this.router.navigate(['/perfil']);
-  } else {
-    this.router.navigate(['/perfil-user', usuario.id_usuario]);
+  verPerfil(usuario: Usuario | undefined) {
+    if (!usuario) return;
+    if (usuario.id_usuario === this.usuarioActual.id_usuario) {
+      this.router.navigate(['/perfil']);
+    } else {
+      this.router.navigate(['/perfil-user', usuario.id_usuario]);
+    }
   }
-}
 
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);
@@ -510,7 +523,7 @@ verPerfil(usuario: Usuario | undefined) {
           cssClass: 'alert-button-delete',
           handler: async () => {
             await this.seguir(usuario);
-                      }
+          }
         }
       ]
     });
