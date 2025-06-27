@@ -203,6 +203,8 @@ export class UsuarioService {
     }
   }
 
+  
+
   async setUsuarioOnline(id_usuario: string, online: boolean) {
     const userRef = doc(this.firestore, 'Usuario', id_usuario);
     await updateDoc(userRef, { estado_online: online });
@@ -355,6 +357,7 @@ export class UsuarioService {
       await this.auth.signOut();
     }
     await this.localStorage.removeItem('usuarioActual');
+    await this.localStorage.removeItem('id_usuario');
   }
 
   async desactivarCuentaUsuario(id_usuario: string): Promise<void> {

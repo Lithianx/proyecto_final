@@ -7,6 +7,7 @@ import { LocalStorageService } from './local-storage-social.service';
 import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
 import { CryptoService } from './crypto.service';
+import { UsuarioService } from './usuario.service';
 
 import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
@@ -23,7 +24,8 @@ export class ComunicacionService {
     private firebaseService: FirebaseService,
     private firestore: Firestore,
     private utilsService: UtilsService,
-    private cryptoService: CryptoService
+    private cryptoService: CryptoService,
+    private usuarioService: UsuarioService
   ) {
     const mensajesRef = collection(this.firestore, 'Mensaje');
     this.mensajes$ = collectionData(mensajesRef, { idField: 'id_mensaje' }) as Observable<Mensaje[]>;
@@ -31,17 +33,29 @@ export class ComunicacionService {
     const conversacionesRef = collection(this.firestore, 'Conversacion');
     this.conversaciones$ = collectionData(conversacionesRef, { idField: 'id_conversacion' }) as Observable<Conversacion[]>;
 
-    // Guardar mensajes online en local para visualización offline
-    this.mensajes$.subscribe(async mensajesOnline => {
-      if (mensajesOnline && mensajesOnline.length > 0) {
-        await this.localStorage.setItem('mensajes', mensajesOnline);
-      }
-    });
-
-    // Guardar conversaciones online en local para visualización offline
+    // Guardar conversaciones online en local para visualización offline (solo las del usuario actual)
     this.conversaciones$.subscribe(async conversacionesOnline => {
-      if (conversacionesOnline && conversacionesOnline.length > 0) {
-        await this.localStorage.setItem('conversaciones', conversacionesOnline);
+      const usuarioActual = await this.usuarioService.getUsuarioActualConectado();
+      if (conversacionesOnline && conversacionesOnline.length > 0 && usuarioActual && usuarioActual.id_usuario) {
+        const conversacionesFiltradas = conversacionesOnline.filter(
+          c =>
+            c.id_usuario_emisor === usuarioActual.id_usuario ||
+            c.id_usuario_receptor === usuarioActual.id_usuario
+        );
+        await this.localStorage.setItem('conversaciones', conversacionesFiltradas);
+
+        // Guarda los ids de esas conversaciones para filtrar mensajes
+        const idsConversaciones = conversacionesFiltradas.map(c => c.id_conversacion);
+
+        // Guardar mensajes online en local para visualización offline (solo los de las conversaciones del usuario actual)
+        this.mensajes$.subscribe(async mensajesOnline => {
+          if (mensajesOnline && mensajesOnline.length > 0) {
+            const mensajesFiltrados = mensajesOnline.filter(
+              m => idsConversaciones.includes(m.id_conversacion)
+            );
+            await this.localStorage.setItem('mensajes', mensajesFiltrados);
+          }
+        });
       }
     });
   }
@@ -81,55 +95,18 @@ export class ComunicacionService {
       })[0];
   }
 
-  // ===========================
-  // MÉTODO ORIGINAL (PERMITE TODO TIPO DE MENSAJE)
-  // ===========================
-  /*
-  async enviarMensaje(mensaje: Mensaje) {
-    const online = await this.utilsService.checkInternetConnection();
-    // Cifrar el contenido antes de guardar/enviar
-    const mensajeCifrado = {
-      ...mensaje,
-      contenido: await this.cryptoService.cifrar(mensaje.contenido)
-    };
-    if (online) {
-      try {
-        const mensajesRef = collection(this.firestore, 'Mensaje');
-        const docRef = await addDoc(mensajesRef, { ...mensajeCifrado, id_mensaje: '', fecha_envio: serverTimestamp() });
-        await updateDoc(docRef, { id_mensaje: docRef.id });
-      } catch (error) {
-        console.error('Error al enviar mensaje a Firestore:', error);
-      }
-    } else {
-      const id = Date.now().toString();
-      const mensajeOffline = {
-        ...mensajeCifrado,
-        id_mensaje: id,
-        fecha_envio: new Date()
-      };
-      await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
-    }
-  }
-  */
-
-  // ===========================
-  // MÉTODO MODIFICADO (NO PERMITE VIDEOS)
-  // ===========================
   async enviarMensaje(mensaje: Mensaje): Promise<boolean> {
-    // Si el mensaje es video, NO lo envía
     if (
       mensaje.contenido.startsWith('[video]') ||
       mensaje.contenido.endsWith('.mp4') ||
       mensaje.contenido.endsWith('.webm') ||
       mensaje.contenido.endsWith('.mov')
     ) {
-      // Puedes mostrar un toast/alerta aquí si lo deseas
       alert('No se pueden enviar videos por este chat.');
       return false;
     }
 
     const online = await this.utilsService.checkInternetConnection();
-    // Cifrar el contenido antes de guardar/enviar
     const mensajeCifrado = {
       ...mensaje,
       contenido: await this.cryptoService.cifrar(mensaje.contenido)
@@ -169,24 +146,20 @@ export class ComunicacionService {
     })));
   }
 
-  // Obtener mensajes offline (pendientes de sincronizar)
   async getMensajesOffline(): Promise<Mensaje[]> {
     return await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
   }
 
-  // Obtener mensajes online desde local (para visualizar offline)
   async getMensajesLocales(): Promise<Mensaje[]> {
     return await this.localStorage.getList<Mensaje>('mensajes') || [];
   }
 
-  // Marcar mensajes como vistos (actualiza en Firestore)
   async marcarMensajesComoVistos(mensajes: Mensaje[], _id_conversacion: string, _idUsuarioActual: string) {
     for (const m of mensajes) {
       await this.firebaseService.updateMensaje({ ...m, estado_visto: true });
     }
   }
 
-  // Agregar conversación (guarda offline si no hay internet)
   async agregarConversacion(conversacion: Conversacion) {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
@@ -204,41 +177,14 @@ export class ComunicacionService {
     }
   }
 
-  // Obtener conversaciones offline
   async getConversacionesOffline(): Promise<Conversacion[]> {
     return await this.localStorage.getList<Conversacion>('conversaciones_offline') || [];
   }
 
-  // Obtener conversaciones desde localStorage (para modo offline)
   async getConversacionesLocales(): Promise<Conversacion[]> {
     return await this.localStorage.getList<Conversacion>('conversaciones') || [];
   }
 
-  // ===========================
-  // MÉTODO ORIGINAL (PERMITE VIDEO EN MULTIMEDIA)
-  // ===========================
-  /*
-  async enviarMensajeMultimedia(
-    tipo: 'imagen' | 'video' | 'audio',
-    base64: string,
-    idConversacion: string,
-    idUsuario: string
-  ) {
-    const mensaje: Mensaje = {
-      id_mensaje: new Date().getTime().toString(),
-      id_conversacion: idConversacion,
-      id_usuario_emisor: idUsuario,
-      contenido: `[${tipo}] ${base64}`,
-      estado_visto: false,
-      fecha_envio: new Date()
-    };
-    await this.enviarMensaje(mensaje);
-  }
-  */
-
-  // ===========================
-  // MÉTODO SIN VIDEO (ACTIVO)
-  // ===========================
   async enviarMensajeMultimedia(
     tipo: 'imagen' | 'video' | 'audio',
     base64: string,
@@ -258,6 +204,14 @@ export class ComunicacionService {
       fecha_envio: new Date()
     };
     await this.enviarMensaje(mensaje);
+  }
+
+  filtrarConversacionesPorUsuario(conversaciones: Conversacion[], idUsuario: string): Conversacion[] {
+    return conversaciones.filter(
+      c =>
+        String(c.id_usuario_emisor) === String(idUsuario) ||
+        String(c.id_usuario_receptor) === String(idUsuario)
+    );
   }
 
   async obtenerOcrearConversacionPrivada(idUsuario1: string, idUsuario2: string): Promise<string> {

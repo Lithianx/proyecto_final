@@ -126,6 +126,15 @@ export class ListaChatPage implements OnInit, OnDestroy {
     }
   }
 
+
+get conversacionesFiltradas(): Conversacion[] {
+  if (!this.usuarioActual) return [];
+  return this.comunicacionService.filtrarConversacionesPorUsuario(
+    this.conversaciones,
+    this.usuarioActual.id_usuario
+  );
+}
+
   getUsuario(id_usuario: string) {
     return this.usuarios.find(u => u.id_usuario === id_usuario);
   }

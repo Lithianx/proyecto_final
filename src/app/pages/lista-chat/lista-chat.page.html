@@ -47,7 +47,7 @@
         </ion-text>
       </div>
     </ion-list>
-    <ion-item *ngFor="let conv of conversaciones" class="chat-item"
+    <ion-item *ngFor="let conv of conversacionesFiltradas" class="chat-item"
       [routerLink]="['/chat-privado', conv.id_conversacion]"
       (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
       <div class="chat-avatar-icon">
