@@ -117,8 +117,9 @@
           <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar" />
         </ion-avatar>
 
-        <ion-label>
+        <ion-label (click)="verPerfil(getUsuarioComentario(comentario.id_usuario))">
           <h3>{{ getUsuarioComentario(comentario.id_usuario)?.nombre_usuario }}</h3>
+          
           <p>
             {{ comentario.contenido_comentario }}
             <!-- Ícono de reloj si el comentario está en comentariosOffline -->

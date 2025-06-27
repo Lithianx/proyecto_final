@@ -442,11 +442,14 @@ async publicarComentario() {
     });
   }
 
-  verPerfil(usuario: Usuario | undefined) {
-    if (usuario) {
-      this.router.navigate(['/perfil-user', usuario.id_usuario]);
-    }
+verPerfil(usuario: Usuario | undefined) {
+  if (!usuario) return;
+  if (usuario.id_usuario === this.usuarioActual.id_usuario) {
+    this.router.navigate(['/perfil']);
+  } else {
+    this.router.navigate(['/perfil-user', usuario.id_usuario]);
   }
+}
 
   async compartir(publicacion: Publicacion) {
     await this.UtilsService.compartirPublicacion(publicacion);
