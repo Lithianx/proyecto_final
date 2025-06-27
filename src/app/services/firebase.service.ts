@@ -296,7 +296,10 @@ async removeComentarioLikesByPublicacion(id_publicacion: string): Promise<void> 
 }
 
 
-// Dar o quitar like a un comentario
+ /* codigo antes de eliminar likes de la base de datos*/
+
+/*
+ // Dar o quitar like a un comentario
 async toggleLikeComentario(idUsuario: string, idComentario: string): Promise<void> {
   const ref = collection(this.firestore, 'Like');
   const snapshot = await getDocs(ref);
@@ -341,6 +344,55 @@ async toggleLikePublicacion(idUsuario: string, idPublicacion: string): Promise<v
     });
   }
 }
+*/
+
+
+async toggleLikeComentario(idUsuario: string, idComentario: string): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === idUsuario &&
+    doc.data()["id_comentario"] === idComentario
+  );
+  if (docSnap) {
+    // Si ya existe, elimina el like (quita el like)
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    await deleteDoc(docRef);
+  } else {
+    // Si no existe, crea el like
+    await addDoc(ref, {
+      id_usuario: idUsuario,
+      id_comentario: idComentario,
+      estado_like: true
+    });
+  }
+}
+
+
+async toggleLikePublicacion(idUsuario: string, idPublicacion: string): Promise<void> {
+  const ref = collection(this.firestore, 'Like');
+  const snapshot = await getDocs(ref);
+  const docSnap = snapshot.docs.find(doc =>
+    doc.data()["id_usuario"] === idUsuario &&
+    doc.data()["id_publicacion"] === idPublicacion
+  );
+  if (docSnap) {
+    // Si ya existe, elimina el like (quita el like)
+    const docRef = doc(this.firestore, 'Like', docSnap.id);
+    await deleteDoc(docRef);
+  } else {
+    // Si no existe, crea el like
+    await addDoc(ref, {
+      id_usuario: idUsuario,
+      id_publicacion: idPublicacion,
+      estado_like: true
+    });
+  }
+}
+
+
+
+
 
 
 //COMENTARIOS///
