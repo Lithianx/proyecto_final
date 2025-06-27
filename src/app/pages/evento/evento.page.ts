@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
+import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
 
 @Component({
   selector: 'app-evento',
@@ -18,36 +19,48 @@ export class EventoPage implements OnInit {
   constructor(
     private router: Router,
     private navCtrl: NavController,
-    private eventoService: EventoService
+    private eventoService: EventoService,
+    private localStorageEventoService: LocalStorageEventoService
   ) { }
 
-  ngOnInit() {
-    this.cargarEventos();
 
-    // Refrescar cada 10 segundos
-    setInterval(() => {
-      this.cargarEventos();
-    }, 10000); // 10 segundos
+  idUsuarioActual: string = '';
+  public datosCargados = false;
+
+  ngOnInit() {
+    this.localStorageEventoService.getItem<string>('id_usuario').then(id => {
+      this.idUsuarioActual = id ?? '';
+      this.cargarEventos().then(() => {
+        this.datosCargados = true; // ⬅️ ya están listos los datos para mostrar
+      });
+    });
   }
 
-  cargarEventos() {
-    this.eventoService.obtenerEventos().subscribe(async (eventos) => {
-      const ahora = new Date();
 
-      // Actualizar estado de cada evento antes de mostrar
-      for (const evento of eventos) {
-        await this.eventoService.actualizarEstadoEvento(evento.id);
-      }
+  // Refrescar cada 10 segundos
+  /* setInterval(() => {
+    this.cargarEventos();
+  }, 10000); */
 
-      // Volver a obtener los eventos ya con estado actualizado
-      this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
-        this.eventos = eventosActualizados;
-        this.eventosFiltrados = eventosActualizados.filter((e) => {
-          if (e.estado === 'FINALIZADO') {
-            const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
-            return horasPasadas < 24;
-          }
-          return true;
+  async cargarEventos(): Promise<void> {
+    return new Promise((resolve) => {
+      this.eventoService.obtenerEventos().subscribe(async (eventos) => {
+        const ahora = new Date();
+
+        for (const evento of eventos) {
+          await this.eventoService.actualizarEstadoEvento(evento.id);
+        }
+
+        this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
+          this.eventos = eventosActualizados;
+          this.eventosFiltrados = eventosActualizados.filter((e) => {
+            if (e.estado === 'FINALIZADO') {
+              const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
+              return horasPasadas < 24;
+            }
+            return true;
+          });
+          resolve(); // ⬅️ resolver cuando se cargue todo
         });
       });
     });
@@ -80,6 +93,13 @@ export class EventoPage implements OnInit {
   }
 
   irADetalleEvento(evento: Evento) {
-    this.router.navigate(['/detalle-evento', evento.id]);
+    if (String(evento.id_creador) === String(this.idUsuarioActual)) {
+      console.log('🎯 Es el anfitrión, redirigiendo a sala');
+      this.router.navigate(['/sala-evento', evento.id]);
+    } else {
+      console.log('👤 No es anfitrión, redirigiendo a detalle');
+      this.router.navigate(['/detalle-evento', evento.id]);
+    }
   }
+
 }

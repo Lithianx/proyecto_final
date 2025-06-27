@@ -16,13 +16,13 @@
         <div class="estado-luz-texto">
           <div class="estado-indicador" [ngClass]="{
       'verde': evento.estado === 'DISPONIBLE',
-      'amarillo': evento.estado === 'EN_CURSO',
+      'amarillo': evento.estado === 'EN CURSO',
       'rojo': evento.estado === 'FINALIZADO'
     }"></div>
 
           <div class="estado-texto" [ngClass]="{
       'texto-verde': evento.estado === 'DISPONIBLE',
-      'texto-amarillo': evento.estado === 'EN_CURSO',
+      'texto-amarillo': evento.estado === 'EN CURSO',
       'texto-rojo': evento.estado === 'FINALIZADO'
     }">
             Estado: {{ evento.estado }}
