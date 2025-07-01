@@ -12,49 +12,72 @@
 
     <form [formGroup]="eventoForm" (ngSubmit)="crearEvento()" class="form-content">
 
-      <!-- TIPO DE EVENTO -->
-      <ion-segment formControlName="tipo_evento" class="monster-segment">
-        <ion-segment-button value="DEPORTE">
-          <ion-label>DEPORTE</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="JUEGO DE MESA">
-          <ion-label>JUEGO DE <br> MESA</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="VIDEOJUEGO">
-          <ion-label>VIDEOJUEGO</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+      <!-- TIPO DE JUEGO (ION-SEGMENT) -->
+      <div class="segment-monster">
+        <ion-segment formControlName="id_tipo_juego" (ionChange)="filtrarJuegos()">
+          <ion-segment-button *ngFor="let tipo of tiposJuego" [value]="tipo.id_tipo_juego">
+            {{ tipo.nombre_tipo_juego }}
+          </ion-segment-button>
+        </ion-segment>
+      </div>
 
-      <!-- SELECTOR DE JUEGO SEGÚN TIPO -->
+      <!-- NOMBRE DEL EVENTO -->
+      <ion-input class="input-monster" fill="outline" label="Nombre del Evento" label-placement="floating"
+        formControlName="nombre_evento" placeholder="¿ A qué quieres jugar hoy ? "></ion-input>
+
+
+
+      <!-- SELECCIÓN DE JUEGO -->
       <ion-item class="input-monster">
         <ion-label position="floating">Juego</ion-label>
-        <ion-select formControlName="juego_seleccionado">
-          <ion-select-option *ngFor="let juego of juegosDisponibles" [value]="juego">{{ juego }}</ion-select-option>
+        <ion-select formControlName="id_juego">
+          <ion-select-option *ngFor="let juego of juegosFiltrados" [value]="juego.id_juego">
+            {{ juego.nombre_juego }}
+          </ion-select-option>
         </ion-select>
       </ion-item>
 
       <!-- LUGAR -->
       <ion-input class="input-monster" fill="outline" label="Lugar del Evento" label-placement="floating"
-        formControlName="lugar" placeholder="Ej: biblioteca">
-      </ion-input>
+        formControlName="lugar" placeholder="Ej: Biblioteca"></ion-input>
 
       <!-- DESCRIPCIÓN -->
       <ion-textarea class="input-monster" fill="outline" label="Descripción" label-placement="floating"
-        formControlName="descripcion" placeholder="Breve descripción del evento">
-      </ion-textarea>
+        formControlName="descripcion" placeholder="Reglas del evento"></ion-textarea>
+
 
       <!-- FECHA DE INICIO -->
       <ion-item class="input-monster">
         <ion-label>Fecha de Inicio:</ion-label>
         <ion-datetime-button datetime="fechaInicio"></ion-datetime-button>
       </ion-item>
+
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime id="fechaInicio" presentation="date-time" preferWheel="true" [min]="fechaMinima"
-            (ionChange)="eventoForm.get('fecha_inicio')?.setValue($event.detail.value)">
+          <ion-datetime id="fechaInicio" presentation="date-time" preferWheel="true" [min]="fechaMinima" locale="es-CL"
+            hour-cycle="h23" (ionChange)="eventoForm.get('fechaInicio')?.setValue($event.detail.value)">
           </ion-datetime>
         </ng-template>
       </ion-modal>
+
+
+      <!-- FECHA DE INICIO -->
+
+      <!-- <ion-item class="input-monster">
+        <ion-label>Fecha de Inicio:</ion-label>
+        <ion-datetime-button datetime="fechaInicio"></ion-datetime-button>
+      </ion-item>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="fechaInicio"
+            presentation="date-time"
+            preferWheel="true"
+            [min]="fechaMinima"
+            (ionChange)="eventoForm.get('fechaInicio')?.setValue($event.detail.value)"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal> -->
 
       <!-- CUPOS -->
       <div class="campo-cupos input-monster">

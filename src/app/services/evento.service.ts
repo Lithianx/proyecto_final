@@ -12,11 +12,16 @@ import {
   query,
   where,
   getDocs,
+  deleteDoc,
   QuerySnapshot
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Evento } from '../models/evento.model';
+import { EstadoEvento } from '../models/estado-evento.model';
+import { Juego } from '../models/juego.model';
+import { TipoJuego } from '../models/tipo-juego.model';
+import { Participante } from '../models/participante.model';
 import { Auth } from '@angular/fire/auth';
 
 @Injectable({
@@ -26,15 +31,15 @@ export class EventoService {
   private eventosRef: CollectionReference<DocumentData>;
 
   constructor(private firestore: Firestore, private auth: Auth) {
-    this.eventosRef = collection(this.firestore, 'eventos');
+    this.eventosRef = collection(this.firestore, 'Evento');
   }
 
-  // ✅ Crear un nuevo evento
+  // Crear un nuevo evento
   crearEvento(evento: Evento): Promise<any> {
     return addDoc(this.eventosRef, evento);
   }
 
-  // ✅ Obtener todos los eventos en tiempo real
+  // Obtener todos los eventos en tiempo real
   obtenerEventos(): Observable<(Evento & { id: string })[]> {
     return collectionData(this.eventosRef, { idField: 'id' }).pipe(
       map((eventos) =>
@@ -46,33 +51,27 @@ export class EventoService {
     );
   }
 
-  // ✅ Disminuir cupos en Firestore
+  // Disminuir cupos
   async tomarEvento(idEvento: string): Promise<void> {
-    const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
+    const eventoDoc = doc(this.firestore, `Evento/${idEvento}`);
     const eventoSnap = await getDoc(eventoDoc);
 
-    if (!eventoSnap.exists()) {
-      throw new Error('Evento no encontrado');
-    }
+    if (!eventoSnap.exists()) throw new Error('Evento no encontrado');
 
     const data = eventoSnap.data();
     const cupos = data['cupos'] || 0;
 
-    if (cupos <= 0) {
-      throw new Error('No hay cupos disponibles');
-    }
+    if (cupos <= 0) throw new Error('No hay cupos disponibles');
 
     await updateDoc(eventoDoc, { cupos: cupos - 1 });
   }
 
-  // ✅ Obtener evento por ID
+  // Obtener evento por ID
   async obtenerEventoPorId(id: string): Promise<Evento & { id: string }> {
-    const eventoDoc = doc(this.firestore, `eventos/${id}`);
+    const eventoDoc = doc(this.firestore, `Evento/${id}`);
     const eventoSnap = await getDoc(eventoDoc);
 
-    if (!eventoSnap.exists()) {
-      throw new Error('Evento no encontrado');
-    }
+    if (!eventoSnap.exists()) throw new Error('Evento no encontrado');
 
     const data = eventoSnap.data();
     return {
@@ -82,40 +81,7 @@ export class EventoService {
     } as Evento & { id: string };
   }
 
-  // ✅ Obtener nombre del usuario conectado (opcional)
-  async obtenerNombreUsuarioActual(): Promise<string> {
-    const user = await this.auth.currentUser;
-    return user?.displayName ?? user?.email ?? 'Anónimo';
-  }
-
-  // ⚠️ ACTUALIZACIÓN DEL ESTADO (ya no depende de fechas automáticas)
-  async actualizarEstadoEvento(idEvento: string): Promise<void> {
-    const eventoDoc = doc(this.firestore, `eventos/${idEvento}`);
-    const eventoSnap = await getDoc(eventoDoc);
-
-    if (!eventoSnap.exists()) return;
-
-    const evento = eventoSnap.data() as any;
-
-    // Si ya está finalizado o en curso, no actualizar automáticamente
-    if (['EN CURSO', 'FINALIZADO'].includes(evento.estado)) return;
-
-    let nuevoEstado = evento.estado;
-
-    // Solo actualizar si no hay cupos
-    if (evento.cupos <= 0) {
-      nuevoEstado = 'SIN CUPOS';
-    } else {
-      nuevoEstado = 'DISPONIBLE';
-    }
-
-    if (nuevoEstado !== evento.estado) {
-      await updateDoc(eventoDoc, { estado: nuevoEstado });
-      console.log(`🔁 Estado actualizado a: ${nuevoEstado}`);
-    }
-  }
-
-  // ✅ Obtener eventos creados por un usuario
+  // Obtener eventos creados por un usuario
   async obtenerEventosPorCreador(idUsuario: string): Promise<(Evento & { id: string })[]> {
     const q = query(this.eventosRef, where('id_creador', '==', idUsuario));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
@@ -131,4 +97,151 @@ export class EventoService {
 
     return eventos;
   }
+
+
+  // Obtener nombre de usuario por su UID (id_creador)
+async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
+  try {
+    const usuarioRef = doc(this.firestore, 'Usuario', idUsuario);
+    const docSnap = await getDoc(usuarioRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return data['nombre_usuario'] || 'sin nombre';
+      
+    }
+  } catch (error) {
+    console.warn(`Error al obtener nombre del usuario con ID ${idUsuario}`, error);
+    console.log('📥 Buscando nombre de usuario para:', idUsuario);
+  }
+  return 'desconocido';
+}
+
+  // Registrar participación en un evento
+  async registrarParticipante(participante: Participante): Promise<void> {
+    const participanteRef = collection(this.firestore, 'Participante');
+    await addDoc(participanteRef, participante);
+    console.log('Registrando participante:', participante);
+  }
+
+  // Obtener participantes de un evento
+  async obtenerParticipantesEvento(idEvento: string): Promise<Participante[]> {
+    const ref = collection(this.firestore, 'Participante');
+    const q = query(ref, where('id_evento', '==', idEvento));
+    const querySnapshot = await getDocs(q);
+    const participantes: Participante[] = [];
+
+    querySnapshot.forEach(docSnap => {
+      participantes.push({
+        id_participacion: docSnap.id,
+        ...docSnap.data()
+      } as Participante);
+      console.log('📋 Participantes obtenidos para evento:', idEvento);
+    });
+
+    return participantes;
+  }
+
+
+
+
+  async eliminarParticipante(idEvento: string, idUsuario: string): Promise<void> {
+    const participantesRef = collection(this.firestore, 'Participante');
+    const q = query(participantesRef,
+      where('id_evento', '==', idEvento),
+      where('id_usuario', '==', idUsuario));
+
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(async (docSnap) => {
+      const docRef = doc(this.firestore, 'Participante', docSnap.id);
+      await deleteDoc(docRef);
+    });
+  }
+
+  // Obtener juegos
+  getJuegos(): Observable<Juego[]> {
+    const juegosRef = collection(this.firestore, 'Juego');
+    return collectionData(juegosRef, { idField: 'id_juego' }) as Observable<Juego[]>;
+  }
+
+  // Obtener tipos de juego
+  getTiposJuego(): Observable<TipoJuego[]> {
+    const tiposRef = collection(this.firestore, 'TipoJuego');
+    return collectionData(tiposRef, { idField: 'id_tipo_juego' }) as Observable<TipoJuego[]>;
+  }
+
+  // Obtener estados de evento
+  getEstadosEvento(): Observable<EstadoEvento[]> {
+    const estadosRef = collection(this.firestore, 'EstadoEvento');
+    return collectionData(estadosRef, { idField: 'id_estado_evento' }) as Observable<EstadoEvento[]>;
+  }
+
+  // Obtener nombre del usuario conectado (opcional)
+  async obtenerNombreUsuarioActual(): Promise<string> {
+    const user = await this.auth.currentUser;
+    return user?.displayName ?? user?.email ?? 'Anónimo';
+  }
+
+  // Actualizar estado del evento según cupos disponibles
+  async actualizarEstadoEvento(idEvento: string): Promise<void> {
+  const eventoDoc = doc(this.firestore, `Evento/${idEvento}`);
+  const eventoSnap = await getDoc(eventoDoc);
+  if (!eventoSnap.exists()) return;
+
+  const evento = eventoSnap.data() as any;
+
+  // Obtener todos los estados
+  const estadosRef = collection(this.firestore, 'EstadoEvento');
+  const estadosSnapshot = await getDocs(estadosRef);
+  const estados = estadosSnapshot.docs.map(d => ({ id: d.id, ...(d.data() as { descripcion: string }) }));
+
+  const finalizadoID = estados.find(e => e.descripcion === 'FINALIZADO')?.id;
+  const enCursoID = estados.find(e => e.descripcion === 'EN CURSO')?.id;
+  const sinCuposID = estados.find(e => e.descripcion === 'SIN CUPOS')?.id;
+  const disponibleID = estados.find(e => e.descripcion === 'DISPONIBLE')?.id;
+
+  // Si ya está en estado final, no cambiar
+  if ([finalizadoID, enCursoID].includes(evento.id_estado_evento)) return;
+
+  const nuevoEstadoID = evento.cupos <= 0 ? sinCuposID : disponibleID;
+
+  if (nuevoEstadoID && nuevoEstadoID !== evento.id_estado_evento) {
+    await updateDoc(eventoDoc, { id_estado_evento: nuevoEstadoID });
+    console.log(`🔁 Estado actualizado a ID: ${nuevoEstadoID}`);
+  }
+}
+
+
+
+  // Obtener los eventos donde el usuario es participante (no necesariamente creador)
+  async obtenerParticipantesEventoPorUsuario(id_usuario: string): Promise<Participante[]> {
+    const participantesRef = collection(this.firestore, 'Participante');
+    const q = query(participantesRef, where('id_usuario', '==', id_usuario));
+
+    const querySnapshot = await getDocs(q);
+    const participantes: Participante[] = [];
+
+    querySnapshot.forEach(docSnap => {
+      participantes.push({
+        id_participacion: docSnap.id,
+        ...docSnap.data()
+      } as Participante);
+    });
+
+    return participantes;
+  }
+
+
+
+
+  async obtenerIdEstadoPorDescripcion(descripcion: string): Promise<string | null> {
+  const estadosRef = collection(this.firestore, 'EstadoEvento');
+  const q = query(estadosRef, where('descripcion', '==', descripcion));
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    return querySnapshot.docs[0].id; // ← este es el ID real
+  }
+
+  return null;
+}
 }

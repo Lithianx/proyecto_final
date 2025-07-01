@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
+import { Evento } from 'src/app/models/evento.model';
+import { Juego } from 'src/app/models/juego.model';
+import { TipoJuego } from 'src/app/models/tipo-juego.model';
+import { EstadoEvento } from 'src/app/models/estado-evento.model';
 
 @Component({
   selector: 'app-evento',
@@ -12,50 +15,77 @@ import { LocalStorageEventoService } from 'src/app/services/local-storage-evento
   standalone: false,
 })
 export class EventoPage implements OnInit {
-  eventos: Evento[] = [];
-  eventosFiltrados: Evento[] = [];
+  eventos: any[] = [];
+  eventosFiltrados: any[] = [];
   idUsuarioActual: string = '';
   datosCargados = false;
+
+  juegos: Juego[] = [];
+  tiposJuego: TipoJuego[] = [];
+  estados: EstadoEvento[] = [];
 
   constructor(
     private router: Router,
     private navCtrl: NavController,
     private eventoService: EventoService,
     private localStorageEventoService: LocalStorageEventoService
-  ) {}
+  ) { }
 
-  ngOnInit() {
-    this.localStorageEventoService.getItem<string>('id_usuario').then((id) => {
-      this.idUsuarioActual = id ?? '';
-      this.cargarEventos().then(() => {
-        this.datosCargados = true;
-      });
-    });
+  async ngOnInit() {
+    this.idUsuarioActual = await this.localStorageEventoService.getItem<string>('id_usuario') ?? '';
+    await this.cargarReferencias();
+    await this.cargarEventos();
+    this.datosCargados = true;
   }
 
-  async cargarEventos(): Promise<void> {
-    return new Promise((resolve) => {
-      this.eventoService.obtenerEventos().subscribe(async (eventos) => {
-        for (const evento of eventos) {
-          await this.eventoService.actualizarEstadoEvento(evento.id);
-        }
+  async cargarReferencias() {
+    this.juegos = await new Promise<Juego[]>((resolve) =>
+      this.eventoService.getJuegos().subscribe(resolve)
+    );
 
-        this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
-          // Ya no filtramos por fechaFin
-          this.eventos = eventosActualizados;
-          this.eventosFiltrados = [...eventosActualizados];
-          resolve();
+    this.tiposJuego = await new Promise<TipoJuego[]>((resolve) =>
+      this.eventoService.getTiposJuego().subscribe(resolve)
+    );
+
+    this.estados = await new Promise<EstadoEvento[]>((resolve) =>
+      this.eventoService.getEstadosEvento().subscribe(resolve)
+    );
+  }
+
+
+  async cargarEventos() {
+    this.eventoService.obtenerEventos().subscribe(async (eventos) => {
+      const eventosMapeados = [];
+
+      for (const evento of eventos) {
+        await this.eventoService.actualizarEstadoEvento(evento.id);
+
+        const juego = this.juegos.find(j => j.id_juego === evento.id_juego);
+        const tipo = this.tiposJuego.find(t => t.id_tipo_juego === juego?.id_tipo_juego);
+        const estado = this.estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+
+        // Obtener nombre del creador usando el nuevo método del servicio
+        const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+        eventosMapeados.push({
+          ...evento,
+          nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+          tipo_juego: tipo?.nombre_tipo_juego ?? 'Tipo desconocido',
+          estado_evento: estado?.descripcion ?? 'Estado desconocido',
+          creador_nombre: creadorNombre
         });
-      });
+      }
+
+      this.eventos = eventosMapeados;
+      this.eventosFiltrados = [...eventosMapeados];
     });
   }
 
-  doRefresh(event: any) {
-    this.cargarEventos();
-    setTimeout(() => {
-      event.target.complete();
-    }, 1000);
-  }
+  async doRefresh(event: any) {
+  await this.cargarEventos(); 
+  event.target.complete();   
+}
+
 
   volverAtras() {
     this.navCtrl.back();
@@ -70,19 +100,17 @@ export class EventoPage implements OnInit {
     }
 
     this.eventosFiltrados = this.eventos.filter((evento) =>
-      evento.nombre_evento.toLowerCase().includes(texto) ||
-      evento.lugar.toLowerCase().includes(texto) ||
-      evento.tipo_evento.toLowerCase().includes(texto) ||
-      evento.creado_por.toLowerCase().includes(texto)
+    (evento.nombre_juego?.toLowerCase()?.includes(texto) ||
+      evento.lugar?.toLowerCase()?.includes(texto) ||
+      evento.tipo_juego?.toLowerCase()?.includes(texto) ||
+      evento.creador_nombre?.toLowerCase()?.includes(texto))
     );
   }
 
-  irADetalleEvento(evento: Evento) {
+  irADetalleEvento(evento: Evento & { id: string }) {
     if (String(evento.id_creador) === String(this.idUsuarioActual)) {
-      console.log('🎯 Es el anfitrión, redirigiendo a sala');
       this.router.navigate(['/sala-evento', evento.id]);
     } else {
-      console.log('👤 No es anfitrión, redirigiendo a detalle');
       this.router.navigate(['/detalle-evento', evento.id]);
     }
   }

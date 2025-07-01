@@ -2,16 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Evento } from 'src/app/models/evento.model';
+
 import { EventoService } from 'src/app/services/evento.service';
-import { getAuth } from 'firebase/auth';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 
-interface UsuarioFirestore {
-  nombre_usuario: string;
-  [key: string]: any;
-}
+import { getAuth } from 'firebase/auth';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+
+import { TipoJuego } from 'src/app/models/tipo-juego.model';
+import { Juego } from 'src/app/models/juego.model';
+import { Evento } from 'src/app/models/evento.model';
 
 @Component({
   selector: 'app-crear-evento-flash',
@@ -22,13 +22,15 @@ interface UsuarioFirestore {
 export class CrearEventoFlashPage implements OnInit {
   eventoForm!: FormGroup;
   fechaMinima: string = new Date().toISOString();
-  juegosDisponibles: string[] = [];
+  fechaSeleccionada: string = '';
 
-  juegosPorTipo: { [key: string]: string[] } = {
-    DEPORTE: ['Fútbol', 'Básquetbol', 'Vóleibol', 'Tenis', 'Padel'],
-    'JUEGO DE MESA': ['UNO', 'Catan', 'Ajedrez', 'D&D', 'Pokémon TCG'],
-    VIDEOJUEGO: ['League of Legends', 'Valorant', 'Dota 2', 'Counter-Strike', 'Fortnite']
-  };
+  tiposJuego: TipoJuego[] = [];
+  juegos: Juego[] = [];
+  juegosFiltrados: Juego[] = [];
+
+  tipoSeleccionado: string = '';
+
+
 
   constructor(
     private fb: FormBuilder,
@@ -38,31 +40,54 @@ export class CrearEventoFlashPage implements OnInit {
     private eventoService: EventoService,
     private firestore: Firestore,
     private localStorageService: LocalStorageService
-  ) {}
+  ) { }
 
   ngOnInit() {
+
+
+    const ahora = new Date();
+    const offsetMs = ahora.getTimezoneOffset() * 60000;
+    const chileTime = new Date(ahora.getTime() - offsetMs);
+    this.fechaMinima = chileTime.toISOString();
+
     this.eventoForm = this.fb.group({
-      tipo_evento: ['DEPORTE', Validators.required],
-      juego_seleccionado: ['', Validators.required],
+      nombre_evento: ['', Validators.required],
+      id_juego: ['', Validators.required],
+      id_tipo_juego: ['', Validators.required],
       lugar: ['', Validators.required],
       descripcion: ['', Validators.required],
-      fecha_inicio: ['', Validators.required],
-      cupos: [1, [Validators.required, Validators.min(1)]]
+      fechaInicio: ['', Validators.required],
+      cupos: [1, [Validators.required, Validators.min(1)]],
     });
 
-    // Inicializar lista de juegos
-    this.actualizarJuegos('DEPORTE');
+    this.cargarTiposJuego();
+    this.cargarJuegos();
+  }
 
-    // Actualizar dinámicamente según tipo de evento
-    this.eventoForm.get('tipo_evento')?.valueChanges.subscribe((tipo) => {
-      this.actualizarJuegos(tipo);
+  cargarTiposJuego() {
+    this.eventoService.getTiposJuego().subscribe((tipos) => {
+      this.tiposJuego = tipos;
+      if (tipos.length > 0) {
+        this.eventoForm.get('id_tipo_juego')?.setValue(tipos[0].id_tipo_juego);
+        this.filtrarJuegos();
+      }
+
     });
   }
 
-  actualizarJuegos(tipo: string) {
-    this.juegosDisponibles = this.juegosPorTipo[tipo] || [];
-    this.eventoForm.get('juego_seleccionado')?.setValue('');
+  cargarJuegos() {
+    this.eventoService.getJuegos().subscribe((juegos) => {
+      this.juegos = juegos;
+      this.filtrarJuegos();
+    });
   }
+
+  filtrarJuegos() {
+    const idTipo = this.eventoForm.get('id_tipo_juego')?.value;
+    this.juegosFiltrados = this.juegos.filter(j => j.id_tipo_juego === idTipo);
+    this.eventoForm.get('id_juego')?.setValue('');
+  }
+
 
   async crearEvento() {
     if (!this.eventoForm.valid) {
@@ -78,14 +103,12 @@ export class CrearEventoFlashPage implements OnInit {
 
     const formValues = this.eventoForm.value;
 
-    // Obtener ID del usuario desde el servicio
     const idUsuario = await this.localStorageService.getItem<string>('id_usuario');
     if (!idUsuario || typeof idUsuario !== 'string') {
       console.warn('⚠️ id_usuario no encontrado en LocalStorageService');
       return;
     }
 
-    // Obtener nombre del usuario desde Firestore
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -94,46 +117,58 @@ export class CrearEventoFlashPage implements OnInit {
       try {
         const docRef = doc(this.firestore, 'Usuario', user.uid);
         const snapshot = await getDoc(docRef);
-
         if (snapshot.exists()) {
-          const data = snapshot.data() as UsuarioFirestore;
+          const data = snapshot.data() as any;
           nombreUsuario = data.nombre_usuario || 'sin nombre';
-          console.log('[DEBUG] Nombre obtenido:', nombreUsuario);
-        } else {
-          console.warn('⚠️ Documento del usuario no encontrado en Firestore');
         }
       } catch (error) {
-        console.error('⚠️ Error al obtener el nombre del usuario:', error);
+        console.error('❌ Error obteniendo usuario:', error);
       }
     }
 
-    const datos: Evento = {
+    const idEstado = await this.eventoService.obtenerIdEstadoPorDescripcion('DISPONIBLE');
+    if (!idEstado) {
+      console.error('❌ No se encontró el estado DISPONIBLE');
+      return;
+    }
+
+    if (!formValues.fechaInicio || isNaN(new Date(formValues.fechaInicio).getTime())) {
+      const toast = await this.toastCtrl.create({
+        message: 'Selecciona una fecha válida',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+      return;
+    }
+
+
+    const evento: Evento = {
       id_creador: idUsuario,
-      tipo_evento: formValues.tipo_evento,
-      nombre_evento: formValues.juego_seleccionado, // ✅ se usa el juego como nombre
+      nombre_evento: formValues.nombre_evento,
+      id_juego: formValues.id_juego,
+      id_estado_evento: idEstado, //  usar el ID real 
       lugar: formValues.lugar,
       descripcion: formValues.descripcion,
-      fechaInicio: new Date(formValues.fecha_inicio),
+      fechaInicio: new Date(formValues.fechaInicio),
       cupos: formValues.cupos,
-      creado_por: nombreUsuario,
-      estado: 'DISPONIBLE',
-      jugadores: [nombreUsuario]
     };
 
     try {
-      await this.eventoService.crearEvento(datos);
+      await this.eventoService.crearEvento(evento);
       const toast = await this.toastCtrl.create({
-        message: 'Evento creado exitosamente 🎉',
+        message: '✅ Evento creado exitosamente',
         duration: 2000,
         color: 'success',
         position: 'bottom',
       });
       await toast.present();
-      setTimeout(() => this.router.navigate(['/home']), 2000);
+      this.router.navigate(['/home']);
     } catch (error) {
-      console.error('❌ Error al guardar en Firestore', error);
+      console.error('❌ Error al guardar el evento:', error);
       const toast = await this.toastCtrl.create({
-        message: 'Error al guardar el evento',
+        message: '❌ Error al guardar el evento',
         duration: 2000,
         color: 'danger',
         position: 'bottom',
@@ -150,5 +185,14 @@ export class CrearEventoFlashPage implements OnInit {
 
   volverAtras() {
     this.navCtrl.back();
+  }
+
+
+  
+
+  setFecha(valor: string) {
+    if (valor) {
+      this.eventoForm.get('fechaInicio')?.setValue(valor);
+    }
   }
 }

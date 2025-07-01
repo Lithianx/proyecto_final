@@ -4,14 +4,9 @@ import { NavController, AlertController, ToastController } from '@ionic/angular'
 import { ChangeDetectorRef } from '@angular/core';
 import { EventoService } from 'src/app/services/evento.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import {
-  doc,
-  updateDoc,
-  arrayUnion,
-  deleteDoc,
-  onSnapshot
-} from '@angular/fire/firestore';
+import { doc, updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
+import { Participante } from 'src/app/models/participante.model';
 
 @Component({
   selector: 'app-sala-evento',
@@ -21,7 +16,7 @@ import { Firestore } from '@angular/fire/firestore';
 })
 export class SalaEventoPage implements OnInit, OnDestroy {
   evento: any;
-  jugadores: any[] = [];
+  jugadores: Participante[] = [];
   eventoId: string = '';
   chatAbierto = false;
   mensaje = '';
@@ -33,53 +28,57 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   private tiempoInicial = 0;
   private intervalId: any;
 
-  usuarioActual: string = '';
+  usuarioActualNombre: string = '';
+  usuarioActualID: string = '';
+  esAnfitrion = false;
   private unsubscribeSnapshot: any;
 
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
-    private alertController: AlertController,
+    private alertCtrl: AlertController,
     private cdr: ChangeDetectorRef,
     private toastCtrl: ToastController,
     private router: Router,
     private eventoService: EventoService,
     private firestore: Firestore,
     private usuarioService: UsuarioService
-  ) { }
+  ) {}
 
   async ngOnInit() {
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
-    const currentUser = await this.usuarioService.getUsuarioActualConectado();
-    this.usuarioActual = currentUser?.nombre_usuario ?? '';
+    const usuario = await this.usuarioService.getUsuarioActualConectado();
+    this.usuarioActualID = usuario?.id_usuario ?? '';
+    this.usuarioActualNombre = usuario?.nombre_usuario ?? '';
 
-    const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
+    const eventoCompleto = await this.eventoService.obtenerEventoPorId(this.eventoId);
+    this.evento = eventoCompleto;
+    this.esAnfitrion = this.evento.id_creador === this.usuarioActualID;
 
+    this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
+
+    if (!this.esAnfitrion && !this.jugadores.some(p => p.id_usuario === this.usuarioActualID)) {
+      await this.eventoService.registrarParticipante({
+        id_usuario: this.usuarioActualID,
+        id_evento: this.eventoId,
+        id_participacion: '', // Se autogenera en Firestore
+        estado_participante: 'ACTIVO', // O el valor por defecto que corresponda
+      });
+    }
+
+    this.suscribirseCambiosEvento();
+  }
+
+  private suscribirseCambiosEvento() {
+    const eventoRef = doc(this.firestore, 'Evento', this.eventoId);
     this.unsubscribeSnapshot = onSnapshot(eventoRef, async (snapshot) => {
       if (snapshot.exists()) {
-        const eventoData = snapshot.data();
+        const data = snapshot.data();
+        data["fechaInicio"] = data["fechaInicio"]?.toDate?.() ?? null;
+        this.evento = data;
 
-        // ✅ Convertir fechaInicio a tipo Date
-        eventoData["fechaInicio"] = eventoData["fechaInicio"]?.toDate?.() ?? null;
-
-        this.evento = eventoData;
-
-        // Opcional: Descomentar si quieres mantener lógica adicional por tiempo
-        // await this.eventoService.actualizarEstadoEvento(this.eventoId);
-
-        // ✅ Lista de jugadores actualizada
-        this.jugadores = (eventoData["jugadores"] || []).map((nombre: string) => ({ nombre }));
-
-        // ✅ Agregar jugador si no está, y si no es el creador ni está finalizado
-        const yaRegistrado = eventoData["jugadores"]?.includes(this.usuarioActual);
-        const eventoFinalizado = eventoData["estado"] === 'FINALIZADO';
-        const soyCreador = this.usuarioActual === eventoData["creado_por"];
-
-        if (!yaRegistrado && !eventoFinalizado && !soyCreador) {
-          await updateDoc(eventoRef, {
-            jugadores: arrayUnion(this.usuarioActual),
-          });
-        }
+        this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -97,7 +96,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   enviarMensaje() {
     if (this.mensaje.trim()) {
-      this.mensajes.push({ usuario: this.usuarioActual, texto: this.mensaje });
+      this.mensajes.push({ usuario: this.usuarioActualNombre, texto: this.mensaje });
       this.mensaje = '';
     }
   }
@@ -105,24 +104,16 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   async iniciarEvento() {
     if (!this.eventoEnCurso) {
       this.cargandoEvento = true;
+      await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+        estado: 'EN CURSO',
+      });
 
-      const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
-
-      setTimeout(async () => {
-        try {
-          await updateDoc(eventoRef, { estado: 'EN CURSO' });
-          console.log('🟡 Estado actualizado a EN CURSO');
-        } catch (error) {
-          console.error('❌ Error al actualizar estado:', error);
-        }
-
-        this.cargandoEvento = false;
-        this.eventoEnCurso = true;
-        this.tiempoInicial = Date.now();
-        this.iniciarTemporizador();
-      }, 2000);
+      this.cargandoEvento = false;
+      this.eventoEnCurso = true;
+      this.tiempoInicial = Date.now();
+      this.iniciarTemporizador();
     } else {
-      const alerta = await this.alertController.create({
+      const alerta = await this.alertCtrl.create({
         header: 'Finalizar Evento',
         message: '¿Estás seguro que deseas finalizar este evento?',
         buttons: [
@@ -154,8 +145,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   iniciarTemporizador() {
     this.intervalId = setInterval(() => {
-      const ahora = Date.now();
-      const diff = ahora - this.tiempoInicial;
+      const diff = Date.now() - this.tiempoInicial;
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -169,13 +159,11 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     clearInterval(this.intervalId);
     this.tiempoTranscurrido = '00:00:00';
 
-    if (this.usuarioActual === this.evento.creado_por) {
+    if (this.esAnfitrion) {
       try {
-        const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
-        await updateDoc(eventoRef, {
-          estado: 'FINALIZADO'
+        await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+          estado: 'FINALIZADO',
         });
-        console.log('✅ Evento marcado como FINALIZADO');
       } catch (error) {
         console.error('❌ Error al finalizar evento:', error);
       }
@@ -187,24 +175,19 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   }
 
   async confirmarSalida() {
-    const alert = await this.alertController.create({
-      header: 'Confirmar salida',
-      message: '¿Estás seguro que quieres salir del evento?',
+    const alerta = await this.alertCtrl.create({
+      header: '¿Salir del evento?',
+      message: '¿Deseas salir del evento?',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Sí, salir',
+          text: 'Salir',
           handler: async () => {
             try {
-              const eventoRef = doc(this.firestore, 'eventos', this.eventoId);
-              const eventoData = this.evento;
-
-              const jugadoresActualizados = eventoData.jugadores.filter((j: string) => j !== this.usuarioActual);
-              const nuevosCupos = (eventoData.cupos || 0) + 1;
-
-              await updateDoc(eventoRef, {
-                jugadores: jugadoresActualizados,
-                cupos: nuevosCupos,
+              const nuevosParticipantes = this.jugadores.filter(p => p.id_usuario !== this.usuarioActualID);
+              await this.eventoService.eliminarParticipante(this.eventoId, this.usuarioActualID);
+              await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+                cupos: (this.evento.cupos ?? 0) + 1
               });
 
               const toast = await this.toastCtrl.create({
@@ -230,14 +213,10 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       ],
     });
 
-    await alert.present();
+    await alerta.present();
   }
 
   doRefresh(event: any) {
     this.ngOnInit().then(() => event.target.complete());
-  }
-
-  filtrarEventos(event: any) {
-    // lógica futura
   }
 }

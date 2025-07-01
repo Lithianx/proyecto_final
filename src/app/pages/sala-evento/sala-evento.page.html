@@ -8,10 +8,12 @@
   <div class="espera-contenedor">
     <ion-card class="espera-card">
       <ion-card-header>
-        <ion-card-title class="text-center">{{ evento?.nombre_evento }}</ion-card-title>
+        <ion-card-title class="text-center">
+          {{ evento?.nombre_evento }}
+        </ion-card-title>
         <ion-card-subtitle class="text-center">
           Organizado por:
-          <span style="color: rgb(15, 209, 167);">[ {{ evento?.creado_por }} ]</span>
+          <span style="color: rgb(15, 209, 167);">[ {{ evento?.creado_por_nombre }} ]</span>
         </ion-card-subtitle>
       </ion-card-header>
 
@@ -20,8 +22,8 @@
         <div class="info-horizontal">
           <ion-item lines="none" class="info-item">
             <ion-label>
-              <h2>Tipo de Evento</h2>
-              <p>{{ evento?.tipo_evento }}</p>
+              <h2>Juego</h2>
+              <p>{{ evento?.nombre_juego }}</p>
             </ion-label>
           </ion-item>
 
@@ -39,8 +41,6 @@
             </ion-label>
           </ion-item>
 
-          <!-- ❌ Eliminado: Fecha de término -->
-
           <ion-item lines="none" class="info-item info-item-horizontal">
             <ion-label class="label-inline">
               <h2>Cupos disponibles:</h2>
@@ -54,13 +54,13 @@
         <ion-list>
           <ion-item *ngFor="let jugador of jugadores">
             <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-            <ion-label>{{ jugador.nombre }}</ion-label>
+            <ion-label>{{ jugador.nombre_usuario }}</ion-label>
           </ion-item>
         </ion-list>
 
         <!-- Acciones -->
         <div class="acciones">
-          <ion-button *ngIf="usuarioActual === evento?.creado_por" expand="block" color="success"
+          <ion-button *ngIf="esAnfitrion" expand="block" color="success"
             (click)="iniciarEvento()" [disabled]="cargandoEvento">
             <ion-spinner *ngIf="cargandoEvento" name="dots" slot="start"></ion-spinner>
             <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">
@@ -100,7 +100,7 @@
 
     <div class="chat-cuerpo">
       <div *ngFor="let msg of mensajes"
-        [ngClass]="{ 'msg-yo': msg.usuario === 'Tú', 'msg-otro': msg.usuario !== 'Tú' }">
+        [ngClass]="{ 'msg-yo': msg.usuario === usuarioActualNombre, 'msg-otro': msg.usuario !== usuarioActualNombre }">
         <strong>{{ msg.usuario }}:</strong>
         <span>{{ msg.texto }}</span>
       </div>
