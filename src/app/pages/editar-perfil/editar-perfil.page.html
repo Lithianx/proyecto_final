@@ -4,19 +4,21 @@
   <div class="edit-profile-container">
     <div class="profile-form-box">
 
+      <!-- Encabezado -->
       <div class="header-row">
-        <ion-button fill="buttonclear" class="back-button" [routerLink]="['/perfil']">
+        <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']">
           <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
         </ion-button>
         <h1 class="app-title">Edición de perfil</h1>
       </div>
 
+      <!-- Foto de perfil -->
       <div class="profile-picture-edit-section">
         <div class="profile-picture-container">
           <ion-avatar class="profile-avatar">
             <img [src]="usuario.avatar || 'https://ionicframework.com/docs/img/demos/card-media.png'" alt="Foto de perfil actual">
           </ion-avatar>
-          <div class="edit-overlay">
+          <div class="edit-overlay" (click)="seleccionarImagen()">
             <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
           </div>
         </div>
@@ -34,10 +36,11 @@
         </ion-input>
       </ion-item>
 
-      <!-- Correo electrónico -->
+      <!-- Correo electrónico (solo lectura) -->
       <ion-item lines="none" class="input-item">
         <ion-icon class="color-verde" name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-input
+          class="texto-gris"
           type="email"
           placeholder="Correo electrónico"
           [(ngModel)]="usuario.correo_electronico"
@@ -45,15 +48,16 @@
           readonly>
         </ion-input>
       </ion-item>
-      <!-- Nombre de usuario -->
+
+      <!-- Sub nombre -->
       <ion-item lines="none" class="input-item">
-        <ion-icon class="color-verde" name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-icon class="color-verde" name="person-circle-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-input
           type="text"
-          placeholder="Sub nombre "
+          placeholder="Sub nombre"
           [(ngModel)]="usuario.sub_name"
           class="custom-input"
-          aria-label="Sub nombre ">
+          aria-label="Sub nombre">
         </ion-input>
       </ion-item>
 
@@ -77,6 +81,9 @@
 
     </div>
   </div>
+
+  <!-- Input oculto para seleccionar imagen desde archivos -->
+  <input #fileInput type="file" accept="image/*" style="display: none" (change)="onArchivoSeleccionado($event)">
 </ion-content>
 
 <app-navbar></app-navbar>

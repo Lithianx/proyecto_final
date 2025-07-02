@@ -23,6 +23,9 @@ export class CrearUsuarioPage implements OnInit {
   mostrarContrasena = false;
   mostrarConfirmacion = false;
 
+  aceptaTerminos = false;
+  mostrarTerminos = false;
+
   constructor(
     private toastController: ToastController,
     private router: Router,
@@ -51,6 +54,12 @@ export class CrearUsuarioPage implements OnInit {
   }
 
   async crearCuenta() {
+    // Validar si aceptó términos
+    if (!this.aceptaTerminos) {
+      await this.mostrarToast('Debes aceptar los términos y condiciones para continuar.');
+      return;
+    }
+
     // Resetear errores visuales
     this.nombreInvalid = false;
     this.correoInvalid = false;
@@ -58,7 +67,12 @@ export class CrearUsuarioPage implements OnInit {
     this.confirmaContrasenaInvalid = false;
 
     // Validar campos vacíos
-    if (!this.nombre.trim() || !this.correo.trim() || !this.contrasena.trim() || !this.confirmaContrasena.trim()) {
+    if (
+      !this.nombre.trim() ||
+      !this.correo.trim() ||
+      !this.contrasena.trim() ||
+      !this.confirmaContrasena.trim()
+    ) {
       if (!this.nombre.trim()) this.nombreInvalid = true;
       if (!this.correo.trim()) this.correoInvalid = true;
       if (!this.contrasena.trim()) this.contrasenaInvalid = true;
@@ -68,14 +82,13 @@ export class CrearUsuarioPage implements OnInit {
       return;
     }
 
-// Validar correo institucional @duocuc.cl
-const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@duocuc\.cl$/;
-if (!correoInstitucionalRegex.test(this.correo)) {
-  this.correoInvalid = true;
-  await this.mostrarToast('Solo se permiten correos institucionales @duocuc.cl');
-  return;
-}
-
+    // Validar correo institucional @duocuc.cl
+    const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@duocuc\.cl$/;
+    if (!correoInstitucionalRegex.test(this.correo)) {
+      this.correoInvalid = true;
+      await this.mostrarToast('Solo se permiten correos institucionales @duocuc.cl');
+      return;
+    }
 
     // Validar longitud de contraseña
     if (this.contrasena.length < 6) {
@@ -103,6 +116,8 @@ if (!correoInstitucionalRegex.test(this.correo)) {
       this.correo = '';
       this.contrasena = '';
       this.confirmaContrasena = '';
+      this.aceptaTerminos = false;
+      this.mostrarTerminos = false;
     } catch (error) {
       this.correoInvalid = true;
       await this.mostrarToast('No se pudo crear la cuenta. El correo ya está en uso.');

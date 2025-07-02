@@ -10,4 +10,5 @@ export interface Usuario {
     sub_name: string;
     descripcion:string;
     rol: string; // 'admin' o 'usuario'
+    fotoPerfil?: string;
 }

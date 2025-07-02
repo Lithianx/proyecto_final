@@ -64,4 +64,11 @@ export class LocalStorageService {
     await this.storage.clear();
   }
 
+async guardarIdUsuarioReporte(idUsuario: string): Promise<void> {
+  const lista = (await this.getItem<string[]>('id_usuario_reporte')) || [];
+  if (!lista.includes(idUsuario)) {
+    lista.push(idUsuario);
+    await this.setItem('id_usuario_reporte', lista);
+  }
+}
 }

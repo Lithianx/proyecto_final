@@ -72,8 +72,78 @@
         ></ion-icon>
       </ion-item>
 
+      <!-- Checkbox aceptar términos -->
+      <ion-item lines="none">
+        <ion-checkbox slot="start" [(ngModel)]="aceptaTerminos" name="aceptaTerminos"></ion-checkbox>
+        <ion-label>
+          Acepto los
+          <a href="#" (click)="mostrarTerminos = !mostrarTerminos; $event.preventDefault();">
+            Términos y Condiciones
+          </a>
+        </ion-label>
+      </ion-item>
+
+      <!-- Mostrar términos y condiciones -->
+      <div *ngIf="mostrarTerminos" class="terminos-box" style="margin: 16px 0;">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Términos de Uso</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p style="text-align: justify;">
+              Esta plataforma es una red social que permite a los usuarios crear perfiles, compartir publicaciones, organizar eventos y permitir la inscripción a dichos eventos a través de la aplicación. El objetivo principal es fomentar la interacción y participación entre usuarios con intereses comunes.
+            </p>
+            <ion-accordion-group expand="inset">
+              <ion-accordion value="alcance">
+                <ion-item slot="header" color="light">
+                  <ion-label>Alcance legal de la aplicación</ion-label>
+                </ion-item>
+                <div class="ion-padding" slot="content">
+                  <p>
+                    La plataforma actúa únicamente como un medio digital para la difusión, organización e inscripción a eventos. Una vez que un evento ha sido confirmado, <strong>la aplicación no se hace responsable de su ejecución</strong>, ni de cualquier situación que ocurra antes, durante o después del evento.
+                  </p>
+                  <p>
+                    La responsabilidad total recae en los usuarios que organizan y participan en dichos eventos. Los usuarios aceptan eximir a la aplicación de cualquier tipo de reclamo legal derivado de incidentes ocurridos fuera del entorno digital de la plataforma.
+                  </p>
+                </div>
+              </ion-accordion>
+
+              <ion-accordion value="privacidad">
+                <ion-item slot="header" color="light">
+                  <ion-label>Privacidad del chat y uso del contenido</ion-label>
+                </ion-item>
+                <div class="ion-padding" slot="content">
+                  <p>
+                    Los mensajes enviados a través del sistema de chat de la aplicación son privados entre las partes involucradas. No obstante, la plataforma se reserva el derecho de intervenir en caso de reportes por conductas inapropiadas, acoso, spam o cualquier otro incumplimiento de las normas de convivencia.
+                  </p>
+                  <p>
+                    El contenido compartido en publicaciones, comentarios y eventos debe respetar las normativas comunitarias y no debe incluir material ofensivo, ilegal o que infrinja derechos de terceros. El incumplimiento puede conllevar sanciones o la eliminación de la cuenta.
+                  </p>
+                </div>
+              </ion-accordion>
+
+              <ion-accordion value="modificaciones">
+                <ion-item slot="header" color="light">
+                  <ion-label>Modificaciones y aceptación</ion-label>
+                </ion-item>
+                <div class="ion-padding" slot="content">
+                  <p>
+                    El uso continuo de esta aplicación implica la aceptación total de estos términos. La plataforma se reserva el derecho de modificar estos términos en cualquier momento. Se recomienda revisar periódicamente esta sección.
+                  </p>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
       <!-- Botón de creación -->
-      <ion-button expand="block" class="login-button" (click)="crearCuenta()">
+      <ion-button
+        expand="block"
+        class="login-button"
+        (click)="crearCuenta()"
+        [disabled]="!aceptaTerminos"
+      >
         Crear cuenta
       </ion-button>
     </div>

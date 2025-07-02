@@ -6,6 +6,9 @@
     <!-- Cabecera del perfil -->
     <div class="perfil-header-section">
       <div class="perfil-top">
+      <ion-button class="back-button" fill="clear" (click)="volver()" >
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
         <ion-avatar class="foto-perfil">
           <img [src]="fotoPerfil" [alt]="'Foto de perfil de ' + nombreUsuario">
         </ion-avatar>

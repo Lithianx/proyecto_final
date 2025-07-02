@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, NavController } from '@ionic/angular';  // <-- Importar NavController
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { Usuario } from 'src/app/models/usuario.model';
 import { PublicacionService } from 'src/app/services/publicacion.service';
@@ -9,7 +9,8 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
-import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // <--- Importa el servicio
+import { LocalStorageService } from 'src/app/services/local-storage-social.service'; 
+import { ComunicacionService } from 'src/app/services/comunicacion.service';  // <-- Importar ComunicacionService
 
 @Component({
   selector: 'app-perfil-user',
@@ -35,10 +36,9 @@ export class PerfilUserPage implements OnInit {
     estado_online: true,
     sub_name: '',
     descripcion: '',
-        rol: ''
+    rol: ''
   };
 
- 
   siguiendo: boolean = false;
   idUsuario: string = '';  // Usuario del perfil visto
   idUsuarioLogueado: string = ''; // Usuario que está viendo el perfil
@@ -59,7 +59,7 @@ export class PerfilUserPage implements OnInit {
     { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
   ];
 
-  eventosCreados: Evento[] = []; // Aquí almacenamos los eventos creados
+  eventosCreados: Evento[] = [];
 
   private _vistaSeleccionada: string = 'publicaciones';
   get vistaSeleccionada(): string {
@@ -84,11 +84,12 @@ export class PerfilUserPage implements OnInit {
     private utilsService: UtilsService,
     private seguirService: SeguirService,
     private eventoService: EventoService,
-    private localStorageService: LocalStorageService // <--- Inyectar aquí
+    private localStorageService: LocalStorageService,
+    private comunicacionService: ComunicacionService,  // <-- Inyectar el servicio
+    private navCtrl: NavController                            // <-- Inyectar NavController
   ) {}
 
   async ngOnInit() {
-    // Obtener el id usuario logueado de forma asíncrona
     this.idUsuarioLogueado = await this.localStorageService.getItem('id_usuario') || '';
     console.log('ID usuario logueado en perfil:', this.idUsuarioLogueado);
 
@@ -97,7 +98,6 @@ export class PerfilUserPage implements OnInit {
       if (id) {
         this.idUsuario = id;
 
-        // Cargar datos necesarios
         await this.seguirService.cargarSeguimientos();
         await this.cargarDatosUsuario(id);
         await this.cargarPublicaciones(id);
@@ -141,7 +141,6 @@ export class PerfilUserPage implements OnInit {
         this.descripcionBio = usuario.descripcion || this.descripcionBio;
         this.subname = usuario.sub_name || this.subname;
         console.log('Datos del usuario:', usuario);
-
       } else {
         console.warn('Usuario no encontrado para id:', id_usuario);
       }
@@ -210,24 +209,30 @@ export class PerfilUserPage implements OnInit {
           text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
           icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
           handler: async () => {
-            console.log('Intentando toggle seguir:');
-            console.log('ID usuario logueado (seguidor):', this.idUsuarioLogueado);
-            console.log('ID usuario perfil (seguido):', this.idUsuario);
-
             await this.seguirService.toggleSeguir(this.idUsuarioLogueado, this.idUsuario);
-
             await this.seguirService.cargarSeguimientos();
-
             this.siguiendo = this.seguirService.sigue(this.idUsuarioLogueado, this.idUsuario);
-            console.log('Estado siguiente tras toggle:', this.siguiendo);
-
             this.actualizarEstadisticasSeguir(this.idUsuario);
           }
         },
         {
           text: 'Mandar mensaje',
           icon: 'chatbubble-ellipses-outline',
-          handler: () => this.router.navigate(['/chat-privado', this.idUsuario])
+          handler: async () => {
+            if (!this.idUsuarioLogueado || !this.idUsuario) {
+              console.warn('Falta idUsuarioLogueado o idUsuario para abrir chat');
+              return;
+            }
+            try {
+              const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
+                this.idUsuarioLogueado,
+                this.idUsuario
+              );
+              this.navCtrl.navigateForward(['/chat-privado', id_conversacion]);
+            } catch (error) {
+              console.error('Error al obtener o crear conversación privada:', error);
+            }
+          }
         },
         {
           text: 'Reportar',
@@ -283,5 +288,8 @@ export class PerfilUserPage implements OnInit {
 
   irAReportar(publicacion: Publicacion) {
     this.router.navigate(['/reportar', publicacion.id_publicacion]);
+  }
+    volver() {
+    this.navCtrl.back();
   }
 }

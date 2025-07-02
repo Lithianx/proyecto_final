@@ -23,7 +23,9 @@
     <ng-template #listaPublicaciones>
       <ion-list lines="none">
         <div class="bordes">
-          <ion-card *ngFor="let publicacion of publicacionesFiltradas; let i = index">
+          <ion-card *ngFor="let publicacion of publicacionesFiltradas; let i = index"
+          [class.solo-descripcion]="!publicacion.imagen">
+
             <!-- Encabezado de publicación -->
             <ion-item>
               <ion-avatar slot="start">
@@ -50,11 +52,13 @@
               </ng-container>
 
               <ng-template #soloDescripcion>
-                <ion-card-content (click)="comentario(publicacion)">
-                  <p class="descripcion-sola">
-                    {{ (publicacion.contenido | slice:0:150) + (publicacion.contenido.length > 150 ? '...' : '') }}
-                  </p>
-                </ion-card-content>
+                  <ion-card-content (click)="comentario(publicacion)">
+                    
+                    <p class="descripcion-sola">
+                      {{ (publicacion.contenido | slice:0:150) + (publicacion.contenido.length > 150 ? '...' : '') }}
+                    </p>
+                  </ion-card-content>
+
               </ng-template>
             </div>
           </ion-card>

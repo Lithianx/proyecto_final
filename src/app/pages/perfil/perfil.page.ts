@@ -140,23 +140,24 @@ async ionViewWillEnter() {
   }
 
   // Calcula cuántos usuarios sigue y cuántos lo siguen
-  private async cargarCantidadSeguidosYSeguidores() {
-    const id = this.usuarioActual.id_usuario;
-    if (!id) {
-      this.estadisticas.seguidos = 0;
-      this.estadisticas.seguidores = 0;
-      return;
-    }
-
-    try {
-      const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, id);
-      const seguidores = this.seguirService.getSeguidores(this.usuarios, id);
-      this.estadisticas.seguidos = seguidos.length;
-      this.estadisticas.seguidores = seguidores.length;
-    } catch (error) {
-      console.error('Error al obtener seguidos/seguidores:', error);
-    }
+ private async cargarCantidadSeguidosYSeguidores() {
+  const id = this.usuarioActual.id_usuario;
+  if (!id) {
+    this.estadisticas.seguidos = 0;
+    this.estadisticas.seguidores = 0;
+    return;
   }
+
+  try {
+    const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, id);
+    const seguidores = this.seguirService.getSeguidores(this.usuarios, id);
+    this.estadisticas.seguidos = seguidos.length;
+    this.estadisticas.seguidores = seguidores.length;
+  } catch (error) {
+    console.error('Error al obtener seguidos/seguidores:', error);
+  }
+}
+
 
   // Carga publicaciones del usuario actual
   private async cargarPublicaciones() {
@@ -287,48 +288,49 @@ async ionViewWillEnter() {
 
   // Muestra un menú con opciones generales del perfil
   async abrirOpciones() {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
+  const actionSheet = await this.actionSheetCtrl.create({
+    header: 'Opciones',
+    buttons: [
+      {
+        text: 'Editar perfil',
+        icon: 'person-outline',
+        cssClass: 'icono-verde',
+        handler: () => this.router.navigate(['/editar-perfil'])
+      },
+      {
+        text: 'Historial de eventos',
+        icon: 'time-outline',
+        cssClass: 'icono-verde',
+        handler: () => this.router.navigate(['/historial-eventos'])
+      },
+      {
+        text: 'Guardados',
+        icon: 'bookmark',
+        cssClass: 'icono-verde',
+        handler: () => this.router.navigate(['/publicaciones-guardadas'])
+      },
+      {
+        text: 'Términos y condiciones',
+        icon: 'school-outline',
+        cssClass: 'icono-verde',
+        handler: () => this.router.navigate(['/info-cuenta-institucional'])
+      },
         {
-          text: 'Editar perfil',
-          icon: 'person-outline',
-          cssClass: 'icono-verde',
-          handler: () => this.router.navigate(['/editar-perfil'])
-        },
-        {
-          text: 'Historial de eventos',
-          icon: 'time-outline',
-          cssClass: 'icono-verde',
-          handler: () => this.router.navigate(['/historial-eventos'])
-        },
-        {
-          text: 'Guardados',
-          icon: 'bookmark',
-          cssClass: 'icono-verde',
-          handler: () => this.router.navigate(['/publicaciones-guardadas'])
-        },
-        {
-          text: 'Términos y condiciones',
-          icon: 'school-outline',
-          cssClass: 'icono-verde',
-          handler: () => this.router.navigate(['/info-cuenta-institucional'])
-        },
-          {
-            text: 'Cerrar sesión',
-            icon: 'log-out-outline',
-            role: 'destructive',
-            cssClass: 'cerrar-sesion-btn',
-            handler: async () => {
-              await this.usuarioService.logout();
-              await this.localStorageService.clear(); 
-              this.router.navigate(['/login']);
-            }
+          text: 'Cerrar sesión',
+          icon: 'log-out-outline',
+          role: 'destructive',
+          cssClass: 'cerrar-sesion-btn',
+          handler: async () => {
+            await this.usuarioService.logout();
+            await this.localStorageService.clear(); 
+            this.router.navigate(['/login']);
           }
-      ]
-    });
-    await actionSheet.present();
-  }
+        }
+    ]
+  });
+  await actionSheet.present();
+}
+
 
 async cargarEventosCreados() {
   const id_usuario = this.usuarioActual.id_usuario;
