@@ -35,12 +35,19 @@ private palabrasVetadas = [
   // Venta ilegal / explotación
   'vendo droga', 'vendo armas', 'sexo por dinero', 'prostituta', 'prostitución',
   'putero', 'burdel', 'escort', 'camgirl', 'niños desnudos', 'pedo', 'zoofilia',
-  'necrofilia', 'abuso sexual', 'tráfico humano', 'porn infantil',
+  'necrofilia', 'abuso sexual', 'tráfico humano', 'porn infantil', 'yoLost', 'yoLos', 'aca manito',
+  'aca los', 'kien los', 'quien los dely', 'kien lost', 'dely', 'manito fina', 'aca los fino', 'kn mano',
+  'kn manito de', 'aca lost fino', 'aka lost finoly', 'aqui los', 'aki los', 'aki los',
 
   // Drogas / consumo ilegal
   'marihuana', 'weed', 'porro', 'cocaína', 'cocaina', 'pasta base', 'fumar pasta',
   'heroína', 'heroina', 'lsd', 'xtc', 'éxtasis', 'mdma', 'droga', 'dealer',
-  'fumarse un porro', 'pastillas', 'jalar', 'pasarse un pase', 'molly',
+  'fumarse un porro', 'pastillas', 'pastis', 'jalar', 'pasarse un pase', 'molly', 'fumar mota',
+  'fumar', 'tomar pastis', 'hielito', 'yelito', 'crack', 'paco', 'pasta base de cocaína', 'drogas duras',
+  'drogas blandas', 'drogadicto', 'adicto a las drogas', 'adicción', 'rehabilitación de drogas',
+  'rehab', 'drogas ilegales', 'tráfico de drogas', 'narco', 'narcomenudeo', 
+
+  
 
   // Inglés ofensivo
   'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'nude', 'porn',

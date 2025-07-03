@@ -10,13 +10,18 @@
     <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
       <ion-icon name="arrow-back"></ion-icon>
     </ion-button>
-    <h2 class="titulo">Eventos Disponibles</h2>
+    <h2 class="titulo">Eventos </h2>
   </div>
 
   <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar juego, tipo o creador">
   </ion-searchbar>
 
   <ng-container *ngIf="datosCargados">
+    <div *ngIf="eventosFiltrados.length === 0" class="no-eventos">
+      <ion-icon name="game-controller-outline" class="icono-vacio"></ion-icon>
+      <h3 class="texto-vacio">Aún no hay eventos disponibles</h3>
+      <p class="subtexto-vacio">¡Vuelve más tarde o crea el primero tú!</p>
+    </div>
     <ion-card *ngFor="let evento of eventosFiltrados" class="evento-card">
       <ion-card-header class="header-con-estado">
         <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>

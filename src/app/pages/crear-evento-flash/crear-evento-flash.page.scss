@@ -65,6 +65,7 @@ ion-label {
 .campo-cupos {
   display: flex;
   flex-direction: column;
+  align-items: center;
   margin: 16px 0;
 
   .label-cupos {
@@ -72,26 +73,38 @@ ion-label {
     color: #ffffff;
     font-size: 1.2rem;
     margin-bottom: 8px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .cupos-selector {
+  .icono-cupos {
+    color: #30ce14;
+    font-size: 20px;
+  }
+
+  .cupos-contenedor {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: 16px;
 
     ion-button {
       --border-color: #30ce14;
       --color: #30ce14;
+      min-width: 40px;
     }
 
-    .cupos-numero {
-      font-size: 1.5rem;
-      font-weight: bold;
-      width: 50px;
+    .input-cupos {
+      --background: #202020;
+      --color: #ffffff;
       text-align: center;
-      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+      width: 80px;
+      border: 1px solid #30ce14;
+      border-radius: 10px;
+      padding: 6px;
     }
   }
 }
@@ -123,4 +136,21 @@ ion-segment-button {
 
 ion-segment-button.ion-activated {
   box-shadow: 0 0 10px #2ed610;
+}
+
+ion-select {
+  --padding-end: 0px;
+  --placeholder-color: #ccc;
+  --color: white;
+}
+
+ion-select::part(icon) {
+  display: none;
+}
+
+.icono-en-label {
+  color: #30ce14;
+  font-size: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
 }

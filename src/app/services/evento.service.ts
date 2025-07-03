@@ -100,21 +100,21 @@ export class EventoService {
 
 
   // Obtener nombre de usuario por su UID (id_creador)
-async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
-  try {
-    const usuarioRef = doc(this.firestore, 'Usuario', idUsuario);
-    const docSnap = await getDoc(usuarioRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      return data['nombre_usuario'] || 'sin nombre';
-      
+  async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
+    try {
+      const usuarioRef = doc(this.firestore, 'Usuario', idUsuario);
+      const docSnap = await getDoc(usuarioRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return data['nombre_usuario'] || 'sin nombre';
+
+      }
+    } catch (error) {
+      console.warn(`Error al obtener nombre del usuario con ID ${idUsuario}`, error);
+      console.log('📥 Buscando nombre de usuario para:', idUsuario);
     }
-  } catch (error) {
-    console.warn(`Error al obtener nombre del usuario con ID ${idUsuario}`, error);
-    console.log('📥 Buscando nombre de usuario para:', idUsuario);
+    return 'desconocido';
   }
-  return 'desconocido';
-}
 
   // Registrar participación en un evento
   async registrarParticipante(participante: Participante): Promise<void> {
@@ -130,13 +130,30 @@ async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
     const querySnapshot = await getDocs(q);
     const participantes: Participante[] = [];
 
-    querySnapshot.forEach(docSnap => {
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data() as Participante;
+
+      // 🔍 Buscar nombre del usuario desde colección Usuario
+      let nombreUsuario = data.nombre_usuario; // Si ya viene, lo usamos
+      if (!nombreUsuario) {
+        try {
+          const usuarioRef = doc(this.firestore, 'Usuario', data.id_usuario);
+          const usuarioSnap = await getDoc(usuarioRef);
+          if (usuarioSnap.exists()) {
+            nombreUsuario = usuarioSnap.data()['nombre_usuario'] ?? 'Anónimo';
+          }
+        } catch (err) {
+          console.warn('No se pudo cargar nombre de usuario para participante:', data.id_usuario);
+          nombreUsuario = 'Desconocido';
+        }
+      }
+
       participantes.push({
+        ...data,
         id_participacion: docSnap.id,
-        ...docSnap.data()
-      } as Participante);
-      console.log('📋 Participantes obtenidos para evento:', idEvento);
-    });
+        nombre_usuario: nombreUsuario,
+      });
+    }
 
     return participantes;
   }
@@ -183,32 +200,32 @@ async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
 
   // Actualizar estado del evento según cupos disponibles
   async actualizarEstadoEvento(idEvento: string): Promise<void> {
-  const eventoDoc = doc(this.firestore, `Evento/${idEvento}`);
-  const eventoSnap = await getDoc(eventoDoc);
-  if (!eventoSnap.exists()) return;
+    const eventoDoc = doc(this.firestore, `Evento/${idEvento}`);
+    const eventoSnap = await getDoc(eventoDoc);
+    if (!eventoSnap.exists()) return;
 
-  const evento = eventoSnap.data() as any;
+    const evento = eventoSnap.data() as any;
 
-  // Obtener todos los estados
-  const estadosRef = collection(this.firestore, 'EstadoEvento');
-  const estadosSnapshot = await getDocs(estadosRef);
-  const estados = estadosSnapshot.docs.map(d => ({ id: d.id, ...(d.data() as { descripcion: string }) }));
+    // Obtener todos los estados
+    const estadosRef = collection(this.firestore, 'EstadoEvento');
+    const estadosSnapshot = await getDocs(estadosRef);
+    const estados = estadosSnapshot.docs.map(d => ({ id: d.id, ...(d.data() as { descripcion: string }) }));
 
-  const finalizadoID = estados.find(e => e.descripcion === 'FINALIZADO')?.id;
-  const enCursoID = estados.find(e => e.descripcion === 'EN CURSO')?.id;
-  const sinCuposID = estados.find(e => e.descripcion === 'SIN CUPOS')?.id;
-  const disponibleID = estados.find(e => e.descripcion === 'DISPONIBLE')?.id;
+    const finalizadoID = estados.find(e => e.descripcion === 'FINALIZADO')?.id;
+    const enCursoID = estados.find(e => e.descripcion === 'EN CURSO')?.id;
+    const sinCuposID = estados.find(e => e.descripcion === 'SIN CUPOS')?.id;
+    const disponibleID = estados.find(e => e.descripcion === 'DISPONIBLE')?.id;
 
-  // Si ya está en estado final, no cambiar
-  if ([finalizadoID, enCursoID].includes(evento.id_estado_evento)) return;
+    // Si ya está en estado final, no cambiar
+    if ([finalizadoID, enCursoID].includes(evento.id_estado_evento)) return;
 
-  const nuevoEstadoID = evento.cupos <= 0 ? sinCuposID : disponibleID;
+    const nuevoEstadoID = evento.cupos <= 0 ? sinCuposID : disponibleID;
 
-  if (nuevoEstadoID && nuevoEstadoID !== evento.id_estado_evento) {
-    await updateDoc(eventoDoc, { id_estado_evento: nuevoEstadoID });
-    console.log(`🔁 Estado actualizado a ID: ${nuevoEstadoID}`);
+    if (nuevoEstadoID && nuevoEstadoID !== evento.id_estado_evento) {
+      await updateDoc(eventoDoc, { id_estado_evento: nuevoEstadoID });
+      console.log(`🔁 Estado actualizado a ID: ${nuevoEstadoID}`);
+    }
   }
-}
 
 
 
@@ -234,14 +251,14 @@ async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
 
 
   async obtenerIdEstadoPorDescripcion(descripcion: string): Promise<string | null> {
-  const estadosRef = collection(this.firestore, 'EstadoEvento');
-  const q = query(estadosRef, where('descripcion', '==', descripcion));
-  const querySnapshot = await getDocs(q);
+    const estadosRef = collection(this.firestore, 'EstadoEvento');
+    const q = query(estadosRef, where('descripcion', '==', descripcion));
+    const querySnapshot = await getDocs(q);
 
-  if (!querySnapshot.empty) {
-    return querySnapshot.docs[0].id; // ← este es el ID real
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].id; // ← este es el ID real
+    }
+
+    return null;
   }
-
-  return null;
-}
 }

@@ -11,6 +11,7 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { Participante } from 'src/app/models/participante.model';
+import { firstValueFrom } from 'rxjs'
 
 @Component({
   selector: 'app-perfil',
@@ -41,8 +42,18 @@ export class PerfilPage implements OnInit {
     rol: ''
   };
 
-  eventos: Evento[] = [];
-  eventosinscritos: Evento[] = [];
+  eventos: (Evento & {
+    id: string;
+    nombre_juego?: string;
+    estado_evento?: string;
+    creador_nombre?: string;
+  })[] = [];
+
+  eventosinscritos: (Evento & {
+  id: string;
+  nombre_juego?: string;
+  creador_nombre?: string;
+})[] = [];
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
@@ -79,7 +90,7 @@ export class PerfilPage implements OnInit {
     private likeService: LikeService,
     private seguirService: SeguirService,
     private eventoService: EventoService
-  ) {}
+  ) { }
 
   async ionViewWillEnter() {
     await this.cargarDatosUsuario();
@@ -91,7 +102,7 @@ export class PerfilPage implements OnInit {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   private async cargarDatosUsuario() {
     const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
@@ -307,21 +318,79 @@ export class PerfilPage implements OnInit {
     const id_usuario = this.usuarioActual.id_usuario;
     if (!id_usuario) return;
     try {
-      this.eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+      const eventosMapeados = [];
+
+      for (const evento of eventos) {
+        const juego = juegos.find(j => j.id_juego === evento.id_juego);
+        const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+        const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+        eventosMapeados.push({
+          ...evento,
+          nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+          estado_evento: estado?.descripcion ?? 'Estado desconocido',
+          creador_nombre: creadorNombre
+        });
+      }
+
+      this.eventos = eventosMapeados;
+
     } catch (error) {
       console.error('Error al cargar eventos creados:', error);
     }
   }
 
+
   async cargarEventosInscritos() {
     const id_usuario = this.usuarioActual.id_usuario;
     if (!id_usuario) return;
+
     try {
       const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
-      const promesasEventos = participantes.map(p => this.eventoService.obtenerEventoPorId(p.id_evento));
-      this.eventosinscritos = await Promise.all(promesasEventos);
+      const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
+
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+      const eventosMapeados = [];
+
+      for (const p of inscritos) {
+        try {
+          const evento = await this.eventoService.obtenerEventoPorId(p.id_evento);
+
+          // Validar que el evento no esté finalizado
+          const estadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO');
+          if (evento.id_estado_evento === estadoFinalizado?.id_estado_evento) continue;
+
+          const juego = juegos.find(j => j.id_juego === evento.id_juego);
+          const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+          const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+          eventosMapeados.push({
+            ...evento,
+            nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+            estado_evento: estado?.descripcion ?? 'Estado desconocido',
+            creador_nombre: creadorNombre
+          });
+
+        } catch (error) {
+          console.warn('⛔ Evento no disponible:', p.id_evento);
+        }
+      }
+
+      this.eventosinscritos = eventosMapeados;
+
     } catch (error) {
-      console.error('Error al cargar eventos inscritos:', error);
+      console.error('❌ Error al cargar eventos inscritos:', error);
     }
+  }
+
+
+  irASalaEvento(evento: Evento & { id: string }) {
+    this.router.navigate(['/sala-evento', evento.id]);
   }
 }

@@ -21,21 +21,26 @@
         </ion-segment>
       </div>
 
-      <!-- NOMBRE DEL EVENTO -->
-      <ion-input class="input-monster" fill="outline" label="Nombre del Evento" label-placement="floating"
-        formControlName="nombre_evento" placeholder="¿ A qué quieres jugar hoy ? "></ion-input>
-
-
-
       <!-- SELECCIÓN DE JUEGO -->
       <ion-item class="input-monster">
-        <ion-label position="floating">Juego</ion-label>
+        <ion-label position="floating">
+          Juego
+          <ion-icon name="game-controller-outline" class="icono-en-label"></ion-icon>
+        </ion-label>
         <ion-select formControlName="id_juego">
           <ion-select-option *ngFor="let juego of juegosFiltrados" [value]="juego.id_juego">
             {{ juego.nombre_juego }}
           </ion-select-option>
         </ion-select>
       </ion-item>
+
+      <!-- NOMBRE DEL EVENTO -->
+      <ion-input class="input-monster" fill="outline" label="Nombre del Evento" label-placement="floating"
+        formControlName="nombre_evento" placeholder=" Torneo o partidas casuales "></ion-input>
+
+
+
+
 
       <!-- LUGAR -->
       <ion-input class="input-monster" fill="outline" label="Lugar del Evento" label-placement="floating"
@@ -79,8 +84,31 @@
         </ng-template>
       </ion-modal> -->
 
+      
+        <!-- cupos -->
+      <div class="campo-cupos">
+        <ion-label class="label-cupos">
+          Cupos
+          <ion-icon name="people-outline" class="icono-cupos"></ion-icon>
+        </ion-label>
+
+        <div class="cupos-contenedor">
+          <ion-button fill="outline" shape="round" (click)="modificarCupos(-1)">
+            <ion-icon name="remove-outline"></ion-icon>
+          </ion-button>
+
+          <ion-input type="number" formControlName="cupos" class="input-cupos" min="2" max="50" inputmode="numeric"
+            [value]="eventoForm.get('cupos')?.value" (ionChange)="onCuposChange($event)">
+          </ion-input>
+
+          <ion-button fill="outline" shape="round" (click)="modificarCupos(1)">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
       <!-- CUPOS -->
-      <div class="campo-cupos input-monster">
+      <!-- <div class="campo-cupos input-monster">
         <ion-label class="label-cupos">Cupos</ion-label>
         <div class="cupos-selector">
           <ion-button fill="outline" shape="round" (click)="modificarCupos(-1)">
@@ -91,7 +119,7 @@
             <ion-icon name="add-outline"></ion-icon>
           </ion-button>
         </div>
-      </div>
+      </div> -->
 
       <!-- BOTÓN -->
       <ion-button expand="block" type="submit" class="boton-monster">

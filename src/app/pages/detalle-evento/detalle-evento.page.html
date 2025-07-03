@@ -10,7 +10,9 @@
     <ion-card class="card-monster" *ngIf="evento">
       <ion-card-header>
         <ion-card-title class="titulo-monster">🎮 {{ evento.nombre_evento }}</ion-card-title>
-        <ion-card-subtitle class="subtitulo-monster">Creado por: [ {{ evento.id_creador }} ]</ion-card-subtitle>
+        <ion-card-subtitle class="subtitulo-monster">
+          Creado por: <span style="color: rgb(15, 209, 167);">{{ creadorNombre }}</span>
+        </ion-card-subtitle>
 
         <!-- Estado con luz -->
         <div class="estado-luz-texto">
@@ -34,6 +36,7 @@
 
       <ion-card-content class="contenido-scroll">
         <div class="contenido-evento">
+
           <div class="campo-evento campo-descripcion">
             <label>📝 Descripción</label>
             <p>{{ evento.descripcion }}</p>
@@ -60,6 +63,7 @@
               <p>{{ evento.cupos }}</p>
             </div>
           </div>
+
         </div>
 
         <div class="boton-unirse-container" *ngIf="evento">
@@ -68,7 +72,7 @@
                       color="success"
                       [disabled]="!puedeUnirse"
                       (click)="unirseAlEvento()">
-            {{ yaInscrito ? 'Ya inscrito' : 'Unirse al evento' }}
+            {{ yaInscrito ? 'Ya estás inscrito' : 'Unirse al evento' }}
           </ion-button>
         </div>
       </ion-card-content>

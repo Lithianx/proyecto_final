@@ -7,6 +7,7 @@ export interface Evento {
   fechaInicio: Date;
   cupos: number;
   id_juego: string;                
-  id_estado_evento: string;       
+  id_estado_evento: string;      
+  timestampInicioEvento?: Date; 
              
 }

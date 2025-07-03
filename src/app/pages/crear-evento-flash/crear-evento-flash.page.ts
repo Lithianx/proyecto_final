@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
+import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
 
 import { getAuth } from 'firebase/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
@@ -39,7 +40,8 @@ export class CrearEventoFlashPage implements OnInit {
     private router: Router,
     private eventoService: EventoService,
     private firestore: Firestore,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
+    private filtroPalabraService: FiltroPalabraService
   ) { }
 
   ngOnInit() {
@@ -57,7 +59,7 @@ export class CrearEventoFlashPage implements OnInit {
       lugar: ['', Validators.required],
       descripcion: ['', Validators.required],
       fechaInicio: ['', Validators.required],
-      cupos: [1, [Validators.required, Validators.min(1)]],
+      cupos: [2, [Validators.required, Validators.min(1)]],
     });
 
     this.cargarTiposJuego();
@@ -102,6 +104,25 @@ export class CrearEventoFlashPage implements OnInit {
     }
 
     const formValues = this.eventoForm.value;
+    // Validación de palabras vetadas
+    const camposAValidar = [
+      { campo: 'nombre del evento', valor: formValues.nombre_evento },
+      { campo: 'lugar', valor: formValues.lugar },
+      { campo: 'descripción', valor: formValues.descripcion }
+    ];
+
+    for (const campo of camposAValidar) {
+      if (this.filtroPalabraService.contienePalabraVetada(campo.valor)) {
+        const toast = await this.toastCtrl.create({
+          message: `🚫 El ${campo.campo} contiene palabras no permitidas.`,
+          duration: 2500,
+          color: 'warning',
+          position: 'bottom',
+        });
+        await toast.present();
+        return;
+      }
+    }
 
     const idUsuario = await this.localStorageService.getItem<string>('id_usuario');
     if (!idUsuario || typeof idUsuario !== 'string') {
@@ -178,17 +199,23 @@ export class CrearEventoFlashPage implements OnInit {
   }
 
   modificarCupos(valor: number) {
-    const actual = this.eventoForm.get('cupos')?.value || 1;
-    const nuevo = Math.min(22, Math.max(1, actual + valor));
+    const actual = this.eventoForm.get('cupos')?.value || 2;
+    const nuevo = Math.min(50, Math.max(2, actual + valor));
     this.eventoForm.get('cupos')?.setValue(nuevo);
   }
 
+  onCuposChange(event: any) {
+    let valor = parseInt(event.detail.value, 10);
+    if (isNaN(valor)) valor = 2;
+    const nuevo = Math.min(50, Math.max(2, valor));
+    this.eventoForm.get('cupos')?.setValue(nuevo);
+  }
   volverAtras() {
     this.navCtrl.back();
   }
 
 
-  
+
 
   setFecha(valor: string) {
     if (valor) {

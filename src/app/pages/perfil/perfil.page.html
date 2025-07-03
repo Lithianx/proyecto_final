@@ -78,7 +78,8 @@
                 <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
               </ion-button>
             </ion-item>
-            <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
+            <div
+              style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
               <ng-container *ngIf="publicacion.imagen; else soloDescripcion">
                 <img [src]="publicacion.imagen" class="post-image" (click)="comentario(publicacion)" />
               </ng-container>
@@ -101,13 +102,13 @@
           <ion-card-content class="contenido-tarjeta">
             <div class="texto-tarjeta">
               <h3 class="titulo-evento">{{ evento.nombre_evento }}</h3>
-              <p class="detalle">Creador: {{ evento.id_creador }}</p>
+              <p class="detalle">Creador: {{ evento.creador_nombre }}</p>
               <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
-              <p class="detalle">Juego: {{ evento.id_juego }}</p>
+              <p class="detalle">Juego: {{ evento.nombre_juego }}</p>
             </div>
-            <ion-icon name="chevron-forward-outline" class="color-verde icono-forward" size="large"
-              [routerLink]="['/detalle-evento', evento.id_evento]">
-            </ion-icon>
+            <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
+              VER EVENTO
+            </ion-button>
           </ion-card-content>
         </ion-card>
       </div>
@@ -120,40 +121,35 @@
         <ion-card *ngFor="let evento of eventos" class="evento-card">
           <ion-card-header class="header-con-estado">
             <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
-            <ion-card-subtitle>{{ evento.id_juego }}</ion-card-subtitle>
-            <div class="info-evento">
-              <div class="estado-luz-texto">
-                <div class="estado-indicador" [ngClass]="{
-                  'verde': evento.id_estado_evento === 'DISPONIBLE',
-                  'amarillo': evento.id_estado_evento === 'EN CURSO',
-                  'rojo': evento.id_estado_evento === 'FINALIZADO'
-                }">
-                </div>
-                <div class="estado-texto" [ngClass]="{
-                  'texto-verde': evento.id_estado_evento === 'DISPONIBLE',
-                  'texto-amarillo': evento.id_estado_evento === 'EN CURSO',
-                  'texto-rojo': evento.id_estado_evento === 'FINALIZADO'
-                }">
-                  {{ evento.id_estado_evento }}
-                </div>
+            <ion-card-subtitle>{{ evento.nombre_juego }}</ion-card-subtitle>
+            <div class="estado-luz-texto">
+              <div class="estado-indicador" [ngClass]="{
+          'verde': evento.estado_evento === 'DISPONIBLE',
+          'amarillo': evento.estado_evento === 'EN CURSO',
+          'rojo': evento.estado_evento === 'FINALIZADO',
+          'naranja': evento.estado_evento === 'SIN CUPOS'
+        }"></div>
+              <div class="estado-texto" [ngClass]="{
+          'texto-verde': evento.estado_evento === 'DISPONIBLE',
+          'texto-amarillo': evento.estado_evento === 'EN CURSO',
+          'texto-rojo': evento.estado_evento === 'FINALIZADO',
+          'texto-naranja': evento.estado_evento === 'SIN CUPOS'
+        }">
+                {{ evento.estado_evento }}
               </div>
             </div>
           </ion-card-header>
+
           <ion-card-content>
-            <p>
-              <strong>Lugar:</strong> {{ evento.lugar }} <span style="color: rgb(44, 236, 19);"> | </span>
+            <p><strong>Lugar:</strong> {{ evento.lugar }} <span class="texto-verde"> | </span>
               <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
             </p>
             <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
-            <p>
-              <strong>Creado por:</strong>
-              <span style="color: rgb(15, 209, 167);"> [{{ evento.id_creador }}] </span>
-            </p>
-            <div class="botones-evento">
-              <ion-button expand="block" class="boton-unirse" [routerLink]="['/detalle-evento', evento.id_evento]">
-                VER EVENTO
-              </ion-button>
-            </div>
+            <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
+
+            <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
+              VER EVENTO
+            </ion-button>
           </ion-card-content>
         </ion-card>
       </ng-container>
