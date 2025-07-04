@@ -8,6 +8,7 @@ import { doc, updateDoc, onSnapshot, getDoc } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
 import { Participante } from 'src/app/models/participante.model';
 import { Subscription } from 'rxjs';
+import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
 
 @Component({
   selector: 'app-sala-evento',
@@ -42,6 +43,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   private unsubscribeSnapshot: any;
 
   campoCuposInvalido = false;
+  salidaVoluntaria = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -52,10 +54,13 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     private router: Router,
     private eventoService: EventoService,
     private firestore: Firestore,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private localStorageEvento: LocalStorageEventoService
   ) { }
 
   async ngOnInit() {
+    this.salidaVoluntaria = false; // ✅ Siempre reinicia esto al entrar
+
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     this.usuarioActualID = usuario?.id_usuario ?? '';
@@ -85,11 +90,17 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         nombre_usuario: this.usuarioActualNombre
       });
 
-      // ✅ Enviar mensaje de unión al chat (sistema)
+      // ✅ Enviar mensaje de unión al chat (tipo: union)
+      const yaEstuvo = await this.localStorageEvento.yaEstuvoEnEvento(this.eventoId);
+
       await this.eventoService.enviarMensajeEvento(this.eventoId, {
-        texto: `${this.usuarioActualNombre} se ha unido al evento.`,
+        texto: yaEstuvo
+          ? `${this.usuarioActualNombre} se ha reincorporado al evento.`
+          : `${this.usuarioActualNombre} se ha unido al evento.`,
         tipo: 'union'
       });
+
+      await this.localStorageEvento.marcarYaEstuvo(this.eventoId);
 
       this.esParticipante = true;
     }
@@ -97,6 +108,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     this.suscribirseCambiosEvento();
     this.suscribirseAlChat();
   }
+
 
 
   private ordenarJugadores(): void {
@@ -168,7 +180,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         // 🚨 Si ya no estás en la lista de jugadores, fuiste expulsado
         const sigueParticipando = this.jugadores.some(j => j.id_usuario === this.usuarioActualID);
 
-        if (!sigueParticipando && this.esParticipante) {
+        if (!sigueParticipando && this.esParticipante && !this.salidaVoluntaria) {
+
           this.esParticipante = false;
 
           // Mostrar toast de expulsión
@@ -522,6 +535,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
           text: 'Salir',
           handler: async () => {
             try {
+              this.salidaVoluntaria = true;
               await this.eventoService.eliminarParticipante(this.eventoId, this.usuarioActualID);
               await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
                 cupos: (this.evento.cupos ?? 0) + 1

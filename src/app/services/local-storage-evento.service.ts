@@ -72,4 +72,17 @@ export class LocalStorageEventoService {
     const dato = localStorage.getItem(clave);
     return dato ? JSON.parse(dato) : null;
   }
+
+
+
+    // ✅ Marcar que el usuario ya participó en este evento
+  async marcarYaEstuvo(eventoId: string): Promise<void> {
+    await localStorage.setItem(`ya_estuvo_en_evento_${eventoId}`, 'true');
+  }
+
+  // ✅ Verificar si ya estuvo antes en este evento
+  async yaEstuvoEnEvento(eventoId: string): Promise<boolean> {
+    return localStorage.getItem(`ya_estuvo_en_evento_${eventoId}`) === 'true';
+  }
+
 }
