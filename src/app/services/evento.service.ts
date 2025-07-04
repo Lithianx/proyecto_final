@@ -68,18 +68,41 @@ export class EventoService {
   }
 
   // Obtener evento por ID
-  async obtenerEventoPorId(id: string): Promise<Evento & { id: string }> {
+  async obtenerEventoPorId(id: string): Promise<Evento & { id: string, nombre_juego?: string }> {
     const eventoDoc = doc(this.firestore, `Evento/${id}`);
     const eventoSnap = await getDoc(eventoDoc);
 
     if (!eventoSnap.exists()) throw new Error('Evento no encontrado');
 
     const data = eventoSnap.data();
-    return {
+    const evento: Evento & { id: string, nombre_juego?: string } = {
       id,
-      ...data,
-      fechaInicio: data['fechaInicio']?.toDate?.() ?? new Date()
-    } as Evento & { id: string };
+      id_creador: data['id_creador'],
+      nombre_evento: data['nombre_evento'],
+      lugar: data['lugar'],
+      descripcion: data['descripcion'],
+      id_juego: data['id_juego'],
+      id_estado_evento: data['id_estado_evento'],
+      cupos: data['cupos'],
+      fechaInicio: data['fechaInicio']?.toDate?.() ?? new Date(),
+      nombre_juego: undefined
+    };
+
+    // 🔍 Obtener nombre del juego desde la colección Juego
+    try {
+      const juegoRef = doc(this.firestore, 'Juego', data['id_juego']);
+      const juegoSnap = await getDoc(juegoRef);
+      if (juegoSnap.exists()) {
+        evento.nombre_juego = juegoSnap.data()['nombre_juego'] || 'Sin nombre';
+      } else {
+        evento.nombre_juego = 'Juego no encontrado';
+      }
+    } catch (error) {
+      console.warn('Error al obtener nombre del juego:', error);
+      evento.nombre_juego = 'Error al cargar juego';
+    }
+
+    return evento;
   }
 
   // Obtener eventos creados por un usuario
@@ -293,10 +316,10 @@ export class EventoService {
 
 
   obtenerMensajesEvento(eventoId: string): Observable<any[]> {
-  const chatRef = collection(this.firestore, `Evento/${eventoId}/Chat`);
-  const q = query(chatRef, orderBy('timestamp'));
-  return collectionData(q, { idField: 'id' }) as Observable<any[]>;
-}
+    const chatRef = collection(this.firestore, `Evento/${eventoId}/Chat`);
+    const q = query(chatRef, orderBy('timestamp'));
+    return collectionData(q, { idField: 'id' }) as Observable<any[]>;
+  }
 
 
 }

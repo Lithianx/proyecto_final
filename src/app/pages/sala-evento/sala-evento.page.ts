@@ -4,7 +4,7 @@ import { NavController, AlertController, ToastController } from '@ionic/angular'
 import { ChangeDetectorRef } from '@angular/core';
 import { EventoService } from 'src/app/services/evento.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import { doc, updateDoc, onSnapshot } from '@angular/fire/firestore';
+import { doc, updateDoc, onSnapshot, getDoc } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
 import { Participante } from 'src/app/models/participante.model';
 import { Subscription } from 'rxjs';
@@ -61,6 +61,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
     const eventoCompleto = await this.eventoService.obtenerEventoPorId(this.eventoId);
     this.evento = eventoCompleto;
+    const nombreCreador = await this.eventoService.obtenerNombreUsuarioPorId(this.evento.id_creador);
+    this.evento.creado_por_nombre = nombreCreador;
     this.esAnfitrion = this.evento.id_creador === this.usuarioActualID;
 
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
@@ -119,7 +121,36 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         data["fechaInicio"] = data["fechaInicio"]?.toDate?.() ?? null;
         data["timestampInicioEvento"] = data["timestampInicioEvento"]?.toDate?.() ?? null;
 
-        this.evento = data;
+        // Construye el evento parcial
+        this.evento = {
+          id: this.eventoId,
+          ...data
+        };
+
+        // 🔍 Cargar nombre del juego
+        try {
+          const juegoRef = doc(this.firestore, 'Juego', data['id_juego']);
+          const juegoSnap = await getDoc(juegoRef);
+          if (juegoSnap.exists()) {
+            this.evento.nombre_juego = juegoSnap.data()['nombre_juego'] || 'Sin nombre';
+          } else {
+            this.evento.nombre_juego = 'Juego no encontrado';
+          }
+        } catch (error) {
+          console.warn('❌ Error al cargar nombre del juego en snapshot:', error);
+          this.evento.nombre_juego = 'Error al cargar juego';
+        }
+
+        // 🔍 Cargar nombre del creador
+        try {
+          const nombreCreador = await this.eventoService.obtenerNombreUsuarioPorId(this.evento.id_creador);
+          this.evento.creado_por_nombre = nombreCreador;
+        } catch (error) {
+          console.warn('❌ Error al cargar nombre del creador:', error);
+          this.evento.creado_por_nombre = 'Desconocido';
+        }
+
+        // Participantes y lógica de tiempo
         this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
         this.ordenarJugadores();
 
@@ -138,6 +169,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       }
     });
   }
+
 
   ngOnDestroy() {
     clearInterval(this.intervalId);
