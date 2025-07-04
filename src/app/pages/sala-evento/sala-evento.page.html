@@ -5,47 +5,57 @@
     <h1 class="titulo">SALA EVENTO</h1>
   </div>
 
+  <!-- FAB del anfitrión -->
+  <ion-fab vertical="top" horizontal="end" slot="fixed" *ngIf="esAnfitrion">
+    <ion-fab-button title="Opciones del anfitrión">
+      <ion-icon name="settings-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="bottom">
+      <ion-fab-button title="Unirse como jugador" (click)="unirmeComoParticipante()">
+        <ion-icon name="person-add-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button title="Salir del evento" (click)="dejarDeParticipar()">
+        <ion-icon name="exit-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button title="Editar cupos" (click)="mostrarPanelCupos = !mostrarPanelCupos">
+        <ion-icon name="people-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button title="Ver jugadores" (click)="mostrarPanelJugadores = !mostrarPanelJugadores">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+
   <div class="espera-contenedor">
     <ion-card class="espera-card">
       <ion-card-header>
         <ion-card-title class="text-center">{{ evento?.nombre_evento }}</ion-card-title>
         <ion-card-subtitle class="text-center">
           Organizado por:
-          <span style="color: rgb(15, 209, 167);">[ {{ evento?.creado_por }} ]</span>
+          <span style="color: rgb(15, 209, 167);">[ {{ evento?.creado_por_nombre }} ]</span>
         </ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Información del evento -->
         <div class="info-horizontal">
           <ion-item lines="none" class="info-item">
             <ion-label>
-              <h2>Tipo de Evento</h2>
-              <p>{{ evento?.tipo_evento }}</p>
+              <h2>Juego</h2>
+              <p>{{ evento?.nombre_juego }}</p>
             </ion-label>
           </ion-item>
-
           <ion-item lines="none" class="info-item">
             <ion-label>
               <h2>Lugar</h2>
               <p>{{ evento?.lugar }}</p>
             </ion-label>
           </ion-item>
-
           <ion-item lines="none" class="info-item">
             <ion-label>
               <h2>Fecha de Inicio</h2>
               <p>{{ evento?.fechaInicio | date: 'short' }}</p>
             </ion-label>
           </ion-item>
-
-          <ion-item lines="none" class="info-item">
-            <ion-label>
-              <h2>Fecha de Término</h2>
-              <p>{{ evento?.fechaFin | date: 'short' }}</p>
-            </ion-label>
-          </ion-item>
-
           <ion-item lines="none" class="info-item info-item-horizontal">
             <ion-label class="label-inline">
               <h2>Cupos disponibles:</h2>
@@ -54,29 +64,49 @@
           </ion-item>
         </div>
 
-        <!-- Participantes -->
-        <ion-item-divider color="dark">Participantes</ion-item-divider>
-        <ion-list>
-          <ion-item *ngFor="let jugador of jugadores">
-            <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-            <ion-label>{{ jugador.nombre }}</ion-label>
+        <!-- Panel para editar cupos -->
+        <div *ngIf="esAnfitrion && mostrarPanelCupos" class="panel-admin">
+          <ion-item>
+            <ion-label>Cambiar cupos:</ion-label>
+            <ion-input type="number" [(ngModel)]="nuevoCupo"></ion-input>
+            <ion-button color="success" (click)="actualizarCupos()">Actualizar</ion-button>
           </ion-item>
-        </ion-list>
+        </div>
 
-        <!-- Acciones -->
+        <!-- Jugadores visibles para todos -->
+        <div *ngIf="jugadores?.length > 0" class="panel-admin">
+
+          <!-- Título solo si anfitrión -->
+          <ion-item-divider color="dark">
+            Jugadores actuales
+            <ion-button *ngIf="esAnfitrion" fill="clear" size="small"
+              (click)="mostrarPanelJugadores = !mostrarPanelJugadores">
+              <ion-icon [name]="mostrarPanelJugadores ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-item-divider>
+
+          <!-- Lista visible para todos -->
+          <ion-list *ngIf="esAnfitrion ? mostrarPanelJugadores : true">
+            <ion-item *ngFor="let jugador of jugadores" (click)="esAnfitrion ? confirmarExpulsion(jugador) : null"
+              [disabled]="jugador.id_usuario === usuarioActualID || !esAnfitrion">
+              <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+              <ion-label>
+                {{ jugador.nombre_usuario }}
+                <p *ngIf="jugador.id_usuario === usuarioActualID">(Tú)</p>
+                <p *ngIf="jugador.id_usuario === evento?.id_creador">(Anfitrión)</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Acciones principales -->
         <div class="acciones">
-          <ion-button *ngIf="usuarioActual === evento?.creado_por" expand="block" color="success"
-            (click)="iniciarEvento()" [disabled]="cargandoEvento">
+          <ion-button *ngIf="esAnfitrion" expand="block" color="success" (click)="iniciarEvento()"
+            [disabled]="cargandoEvento">
             <ion-spinner *ngIf="cargandoEvento" name="dots" slot="start"></ion-spinner>
-            <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">
-              Iniciar Evento
-            </ng-container>
-            <ng-container *ngIf="!cargandoEvento && eventoEnCurso">
-              Finalizar Evento
-            </ng-container>
-            <ng-container *ngIf="cargandoEvento">
-              Cargando...
-            </ng-container>
+            <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">Iniciar Evento</ng-container>
+            <ng-container *ngIf="!cargandoEvento && eventoEnCurso">Finalizar Evento</ng-container>
+            <ng-container *ngIf="cargandoEvento">Cargando...</ng-container>
           </ion-button>
 
           <div *ngIf="eventoEnCurso" class="temporizador">
@@ -84,7 +114,7 @@
             <span>{{ tiempoTranscurrido }}</span>
           </div>
 
-          <ion-button expand="block" color="danger" (click)="confirmarSalida()">
+          <ion-button expand="block" color="danger" *ngIf="!esAnfitrion && esParticipante" (click)="confirmarSalida()">
             Salir
           </ion-button>
         </div>
@@ -92,11 +122,14 @@
     </ion-card>
   </div>
 
-  <!-- Chat ficticio de sala -->
+  <!-- Chat -->
+  <!-- Botón flotante para abrir chat -->
   <div class="chat-fab" (click)="toggleChat()" *ngIf="!chatAbierto">
     <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+    <ion-badge *ngIf="nuevosMensajesSinLeer" color="danger" class="chat-badge">!</ion-badge>
   </div>
 
+  <!-- Ventana de chat -->
   <div class="chat-flotante" *ngIf="chatAbierto">
     <div class="chat-header">
       <span>Chat de la Sala</span>
@@ -104,22 +137,33 @@
     </div>
 
     <div class="chat-cuerpo">
-      <div *ngFor="let msg of mensajes"
-        [ngClass]="{ 'msg-yo': msg.usuario === 'Tú', 'msg-otro': msg.usuario !== 'Tú' }">
-        <strong>{{ msg.usuario }}:</strong>
-        <span>{{ msg.texto }}</span>
+      <div *ngFor="let msg of mensajes" [ngClass]="{
+        'msg-sistema': msg.tipo !== 'mensaje',
+        'msg-yo': msg.tipo === 'mensaje' && msg.id_usuario === usuarioActualID,
+        'msg-otro': msg.tipo === 'mensaje' && msg.id_usuario !== usuarioActualID
+      }">
+        <ng-container [ngSwitch]="msg.tipo">
+          <div *ngSwitchCase="'mensaje'">
+            <strong>{{ msg.nombre_usuario }}:</strong>
+            <span>{{ msg.texto }}</span>
+          </div>
+          <div *ngSwitchDefault>
+            <em>🔔 {{ msg.texto }}</em>
+          </div>
+        </ng-container>
       </div>
     </div>
 
     <div class="chat-input">
       <ion-item lines="none">
-        <ion-input [(ngModel)]="mensaje" placeholder="Escribe..."></ion-input>
+        <ion-input [(ngModel)]="nuevoMensaje" placeholder="Escribe..."></ion-input>
         <ion-button fill="clear" (click)="enviarMensaje()">
           <ion-icon name="send-outline"></ion-icon>
         </ion-button>
       </ion-item>
     </div>
   </div>
+
 </ion-content>
 
 <app-navbar></app-navbar>

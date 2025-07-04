@@ -1,32 +1,3 @@
-.info-item-horizontal {
-  align-items: center;
-  justify-content: space-between;
-}
-
-.label-inline {
-  margin-right: 12px;
-}
-
-.valor-inline {
-  font-weight: bold;
-  font-size: 2.5rem;
-  color: #ffffff;
-  margin-left: 80px;
-  text-align: center;
-}
- .info-horizontal {
-  display: flex;
-  flex-wrap: wrap; 
-  gap: 12px;       
-  margin-bottom: 10px;
- 
-}
-
-.info-item {
-  flex: 1;
-  min-width: 160px;
-  min-height: 70px;
-}
 :host {
   display: flex;
   flex-direction: column;
@@ -48,11 +19,16 @@ ion-content {
   text-align: center;
   color: #ffffff;
   font-size: 1.2rem;
-  pointer-events: none; // evita que se haga clic sobre el texto
+  pointer-events: none;
 }
 
-
-
+.header-contenedor {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 50px;
+  margin-bottom: 16px;
+}
 
 .espera-contenedor {
   flex: 1;
@@ -64,7 +40,6 @@ ion-content {
 }
 
 .espera-card {
-  
   background: #111;
   border: 2px solid #2bb113;
   border-radius: 12px;
@@ -73,7 +48,6 @@ ion-content {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  
 }
 
 ion-card-title {
@@ -135,22 +109,12 @@ ion-button[color=danger] {
   border-radius: 8px;
 }
 
-
 .boton-volver {
   --color: rgb(21, 214, 21);
   margin: 0;
   padding: 0 10px;
   z-index: 2;
 }
-
-.header-contenedor {
-  display: flex;
-  align-items: center;
-  position: relative;
-  height: 50px;
-  margin-bottom: 16px;
-}
-
 
 .boton-invitar {
   position: absolute;
@@ -160,15 +124,98 @@ ion-button[color=danger] {
   color: #2bb113;
 }
 
+.info-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
 
+.info-item {
+  flex: 1;
+  min-width: 160px;
+  min-height: 70px;
+}
 
+.info-item-horizontal {
+  align-items: center;
+  justify-content: space-between;
+}
 
+.label-inline {
+  margin-right: 12px;
+}
 
-
-
-
+.valor-inline {
+  font-weight: bold;
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-left: 80px;
+  text-align: center;
+}
 
 /* FAB flotante */
+.fab-opciones {
+  position: fixed;
+  top: 65px;
+  right: 16px;
+  z-index: 1000;
+
+  ion-fab-button {
+    --background: #2bb113;
+    --color: #000;
+    box-shadow: 0 0 10px #2bb113;
+  }
+}
+
+ion-fab-list ion-button {
+  --background: #222;
+  --color: #2bb113;
+}
+
+ion-fab-list ion-button:hover {
+  --background: #2bb113;
+  --color: black;
+}
+
+/* Panel del administrador del evento */
+.panel-admin {
+  margin-top: 20px;
+  padding: 16px;
+  border: 2px solid #2bb113;
+  border-radius: 12px;
+  background-color: #1a1a1a;
+  box-shadow: 0 0 12px #2bb113;
+}
+
+.panel-admin h3 {
+  color: #2bb113;
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+}
+
+.panel-admin ion-item {
+  --background: transparent;
+  --color: white;
+  border: 1px solid #2bb113;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.panel-admin ion-input {
+  color: #fff;
+}
+
+.panel-admin ion-button {
+  margin-top: 12px;
+  --background: #2bb113;
+  --color: #000;
+  font-weight: bold;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Chat flotante */
 .chat-fab {
   position: fixed;
   bottom: 70px;
@@ -182,12 +229,22 @@ ion-button[color=danger] {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   font-size: 24px;
   cursor: pointer;
+
+  ion-badge.chat-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+  }
 }
 
-/* Ventana flotante del chat */
 .chat-flotante {
   position: fixed;
   bottom: 70px;
@@ -204,7 +261,6 @@ ion-button[color=danger] {
   box-shadow: 0 0 12px #2bb113;
 }
 
-/* Cabecera del chat */
 .chat-header {
   background-color: #000;
   color: #2bb113;
@@ -216,13 +272,11 @@ ion-button[color=danger] {
   border-bottom: 1px solid #2bb113;
 }
 
-/* Ícono cerrar */
 .cerrar-icono {
   font-size: 20px;
   cursor: pointer;
 }
 
-/* Cuerpo del chat con scroll */
 .chat-cuerpo {
   padding: 10px;
   overflow-y: auto;
@@ -230,30 +284,42 @@ ion-button[color=danger] {
   font-size: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 8px; // Espacio entre mensajes
+  gap: 8px;
+
+  // Tus mensajes
+  .msg-yo {
+    align-self: flex-end;
+    background-color: #28ac11;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 12px 12px 0 12px;
+    max-width: 75%;
+    word-wrap: break-word;
+    font-weight: bold;
+  }
+
+  // Mensajes de otros jugadores
+  .msg-otro {
+    align-self: flex-start;
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px 12px 12px 0;
+    max-width: 75%;
+    word-wrap: break-word;
+  }
+
+  // Mensajes del sistema (tipo unión, expulsión, etc)
+  .msg-sistema {
+    align-self: center;
+    color: #999;
+    font-style: italic;
+    font-size: 0.8rem;
+    background: transparent;
+    padding: 4px 8px;
+  }
 }
 
-.chat-cuerpo .msg-yo {
-  align-self: flex-end;
-  background-color: #28ac11;
-  color: black;
-  padding: 8px 12px;
-  border-radius: 12px 12px 0 12px;
-  max-width: 75%;
-  word-wrap: break-word;
-}
-
-.chat-cuerpo .msg-otro {
-  align-self: flex-start;
-  background-color: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 12px 12px 12px 0;
-  max-width: 75%;
-  word-wrap: break-word;
-}
-
-/* Input de chat */
 .chat-input {
   padding: 6px 10px;
   border-top: 1px solid #2bb113;
@@ -273,6 +339,7 @@ ion-button[color=danger] {
     --color: #2bb113;
   }
 }
+
 
 .temporizador {
   margin-top: 10px;

@@ -322,6 +322,13 @@ body {
   white-space: pre-line;
 }
 
+.boton-ver-evento {
+  --background: var(--verde-neon);
+  --color: black;
+  flex: 1;
+  margin-right: 10px;
+}
+
 /* ========== NUEVOS ESTILOS AGREGADOS ========== */
 
 /* Botones con icono */

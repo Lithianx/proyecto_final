@@ -1,10 +1,11 @@
-import { Component, OnInit, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavController, GestureController, ToastController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
 import { EventoService } from 'src/app/services/evento.service';
-import { Evento } from 'src/app/models/evento.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
+import { Evento } from 'src/app/models/evento.model';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -12,177 +13,108 @@ import { LocalStorageEventoService } from 'src/app/services/local-storage-evento
   styleUrls: ['./detalle-evento.page.scss'],
   standalone: false,
 })
-export class DetalleEventoPage implements OnInit, AfterViewChecked {
-  @ViewChild('swipeArea', { read: ElementRef }) swipeArea!: ElementRef;
-  @ViewChild('swipeThumb', { read: ElementRef }) swipeThumb!: ElementRef;
-  @ViewChild('swipeFill', { read: ElementRef }) swipeFill!: ElementRef;
-  @ViewChild('swipeText', { read: ElementRef }) swipeText!: ElementRef;
-
+export class DetalleEventoPage implements OnInit {
   evento!: Evento & { id: string };
-  usuarioEmailActual: string = '';
-  public gestureEjecutado = false;
-  private swipeInicializado = false;
+  nombreJuego = '';
+  nombreEstado = '';
+  creadorNombre = '';
+  yaInscrito = false;
+  puedeUnirse = false;
 
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
-    private gestureCtrl: GestureController,
     private router: Router,
     private eventoService: EventoService,
     private toastCtrl: ToastController,
     private usuarioService: UsuarioService,
     private localStorageEventoService: LocalStorageEventoService
-  ) { }
-
-  public mostrarSwipe: boolean = false;
-
+  ) {}
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      try {
-        const eventoObtenido = await this.eventoService.obtenerEventoPorId(id);
-        this.evento = eventoObtenido as Evento & { id: string };
+    if (!id) return;
 
-        const usuario = await this.usuarioService.getUsuarioActualConectado();
-        this.usuarioEmailActual = usuario?.correo_electronico ?? '';
+    try {
+      // 1. Obtener evento
+      const eventoBase = await this.eventoService.obtenerEventoPorId(id);
+      this.evento = eventoBase;
 
-        const soyCreador = this.evento.id_creador === usuario?.id_usuario;
+      // 2. Obtener creador
+      this.creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(eventoBase.id_creador);
 
-        if (soyCreador) {
-          await this.localStorageEventoService.guardarDatosEvento({
-            id: this.evento.id,
-            nombre_evento: this.evento.nombre_evento,
-            id_creador: this.evento.id_creador,
-            jugadores: this.evento.jugadores || [],
-            es_anfitrion: true
-          });
+      // 3. Juegos y estados
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
 
-          const toast = await this.toastCtrl.create({
-            message: 'Eres el anfitrión de este evento 👑',
-            duration: 1500,
-            position: 'top',
-            color: 'success',
-          });
-          await toast.present();
+      const nombreJuegoValue = juegos.find(j => j.id_juego === eventoBase.id_juego)?.nombre_juego ?? 'Juego desconocido';
+      this.nombreJuego = typeof nombreJuegoValue === 'string' ? nombreJuegoValue : String(nombreJuegoValue);
+      this.nombreEstado = estados.find(e => e.id_estado_evento === eventoBase.id_estado_evento)?.descripcion ?? 'Estado desconocido';
 
-          setTimeout(() => {
-            this.router.navigate(['/sala-evento', this.evento.id]);
-          }, 1600);
-          return;
-        }
+      // 4. Usuario actual y si es creador
+      const usuario = await this.usuarioService.getUsuarioActualConectado();
+      if (!usuario) return;
 
-        if (this.evento.estado === 'FINALIZADO') {
-          this.gestureEjecutado = true;
-          this.mostrarToast('Este evento ya finalizó ⛔️', 'danger');
-        }
+      const idUsuario = usuario.id_usuario;
+      const soyCreador = eventoBase.id_creador === idUsuario;
 
-        if (this.evento.estado === 'EN CURSO') {
-          this.gestureEjecutado = true;
-          this.mostrarToast('Este evento ya está en curso 🚫', 'warning');
-        }
+      await this.localStorageEventoService.guardarDatosEvento({
+        id: eventoBase.id,
+        nombre_evento: eventoBase.nombre_evento,
+        id_creador: eventoBase.id_creador,
+        es_anfitrion: soyCreador,
+      });
 
-        if (this.evento.estado === 'SIN CUPOS') {
-          this.gestureEjecutado = true;
-          this.mostrarToast('Este evento ya está lleno 🚫', 'danger');
-          return;
-        }
+      // 5. Evaluar estado actual
+      const finalizadoID = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+      const enCursoID = estados.find(e => e.descripcion === 'EN CURSO')?.id_estado_evento;
+      const sinCuposID = estados.find(e => e.descripcion === 'SIN CUPOS')?.id_estado_evento;
 
-        if (this.evento.jugadores?.includes(this.usuarioEmailActual)) {
-          this.gestureEjecutado = true;
-          this.mostrarToast('Ya estás inscrito en este evento 👍', 'warning');
-          return;
-        }
+      const eventoNoDisponible = [finalizadoID, enCursoID, sinCuposID].includes(this.evento.id_estado_evento);
+      const eventoDisponible = !eventoNoDisponible;
 
-        if (this.evento.cupos <= 0) {
-          this.gestureEjecutado = true;
-          this.mostrarToast('No hay cupos disponibles ❌', 'danger');
-          return;
-        }
-        this.mostrarSwipe = true;
+      // 6. Verificar si ya está inscrito
+      const participantes = await this.eventoService.obtenerParticipantesEvento(eventoBase.id);
+      this.yaInscrito = participantes.some(p => p.id_usuario === idUsuario);
 
-      } catch (error) {
-        console.error('❌ Error al cargar evento:', error);
-        const toast = await this.toastCtrl.create({
-          message: 'Error al cargar evento',
-          duration: 2000,
-          color: 'danger',
-          position: 'top',
-        });
-        await toast.present();
-        this.volverAtras();
+      // 7. Evaluar si puede unirse
+      this.puedeUnirse = eventoDisponible && !this.yaInscrito;
+
+      // 8. Mostrar mensajes
+      if (this.yaInscrito) {
+        this.mostrarToast('Ya estás inscrito en este evento 👍', 'warning');
+      } else if (!eventoDisponible) {
+        this.mostrarToast('Este evento no está disponible para unirse', 'danger');
       }
+
+    } catch (error) {
+      const toast = await this.toastCtrl.create({
+        message: 'Error al cargar evento',
+        duration: 2000,
+        color: 'danger',
+        position: 'top',
+      });
+      await toast.present();
+      this.volverAtras();
     }
-  }
-
-  ngAfterViewChecked() {
-    if (
-      this.evento &&
-      !this.swipeInicializado &&
-      this.swipeThumb &&
-      this.swipeThumb.nativeElement
-    ) {
-      this.swipeInicializado = true;
-      setTimeout(() => this.inicializarSwipe(), 50);
-    }
-  }
-
-  inicializarSwipe() {
-    const thumb = this.swipeThumb?.nativeElement;
-    const track = this.swipeArea?.nativeElement;
-    const fill = this.swipeFill?.nativeElement;
-    const text = this.swipeText?.nativeElement;
-
-    console.log('✅ Verificando elementos swipe:', { thumb, track, fill, text });
-
-    if (!thumb || !track || !fill || !text) {
-      console.warn('⚠️ Elementos de swipe no encontrados');
-      return;
-    }
-
-    const maxX = track.offsetWidth - thumb.offsetWidth;
-
-    const gesture = this.gestureCtrl.create({
-      el: thumb,
-      gestureName: 'slide-button',
-      threshold: 0,
-      onMove: (ev) => {
-        const delta = Math.max(0, Math.min(ev.deltaX, maxX));
-        const progress = (delta / maxX) * 100;
-
-        thumb.style.transform = `translateX(${delta}px)`;
-        fill.style.width = `${progress}%`;
-        text.textContent = progress > 90 ? '¡Listo!' : 'Desliza para tomar evento';
-
-        if (delta >= maxX && !this.gestureEjecutado) {
-          this.gestureEjecutado = true;
-          gesture.destroy();
-          this.unirseAlEvento();
-        }
-      },
-      onEnd: () => {
-        if (!this.gestureEjecutado) {
-          thumb.style.transition = 'transform 0.3s ease-out';
-          fill.style.transition = 'width 0.3s ease-out';
-          text.textContent = 'Desliza para tomar evento';
-          thumb.style.transform = 'translateX(0px)';
-          fill.style.width = '0%';
-
-          setTimeout(() => {
-            thumb.style.transition = '';
-            fill.style.transition = '';
-          }, 300);
-        }
-      },
-    });
-
-    gesture.enable();
   }
 
   async unirseAlEvento() {
-    console.log('👉 unirseAlEvento() ejecutado');
     try {
+      const usuario = await this.usuarioService.getUsuarioActualConectado();
+      if (!usuario) throw new Error('Usuario no autenticado');
+
       await this.eventoService.tomarEvento(this.evento.id);
+
+      await this.eventoService.registrarParticipante({
+        id_evento: this.evento.id,
+        id_usuario: usuario.id_usuario,
+        estado_participante: 'INSCRITO',
+        nombre_usuario: usuario.nombre_usuario,
+      });
+
+      await this.eventoService.actualizarEstadoEvento(this.evento.id);
+
       const toast = await this.toastCtrl.create({
         message: 'Te has unido al evento con éxito 🎉',
         duration: 2000,
@@ -190,10 +122,11 @@ export class DetalleEventoPage implements OnInit, AfterViewChecked {
         position: 'top',
       });
       await toast.present();
+
       this.router.navigate(['/sala-evento', this.evento.id]);
     } catch (error) {
       const toast = await this.toastCtrl.create({
-        message: 'Error: No se pudo unir al evento. ' + (error as any).message,
+        message: 'Error al unirse al evento. ' + (error as any).message,
         duration: 2500,
         color: 'danger',
         position: 'top',

@@ -10,47 +10,56 @@
     <ion-button fill="clear" class="boton-volver" (click)="volverAtras()">
       <ion-icon name="arrow-back"></ion-icon>
     </ion-button>
-    <h2 class="titulo">Eventos Disponibles</h2>
+    <h2 class="titulo">Eventos </h2>
   </div>
 
-  <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar evento"></ion-searchbar>
+  <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar juego, tipo o creador">
+  </ion-searchbar>
 
   <ng-container *ngIf="datosCargados">
+    <div *ngIf="eventosFiltrados.length === 0" class="no-eventos">
+      <ion-icon name="game-controller-outline" class="icono-vacio"></ion-icon>
+      <h3 class="texto-vacio">Aún no hay eventos disponibles</h3>
+      <p class="subtexto-vacio">¡Vuelve más tarde o crea el primero tú!</p>
+    </div>
     <ion-card *ngFor="let evento of eventosFiltrados" class="evento-card">
       <ion-card-header class="header-con-estado">
         <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
-        <ion-card-subtitle>{{ evento.tipo_evento }}</ion-card-subtitle>
+        <ion-card-subtitle>{{ evento.tipo_juego }}</ion-card-subtitle>
+
         <div class="info-evento">
           <div class="estado-luz-texto">
             <div class="estado-indicador" [ngClass]="{
-              'verde': evento.estado === 'DISPONIBLE',
-              'amarillo': evento.estado === 'EN CURSO',
-              'rojo': evento.estado === 'FINALIZADO',
-              'naranja': evento.estado === 'SIN CUPOS'
+              'verde': evento.estado_evento === 'DISPONIBLE',
+              'amarillo': evento.estado_evento === 'EN CURSO',
+              'rojo': evento.estado_evento === 'FINALIZADO',
+              'naranja': evento.estado_evento === 'SIN CUPOS'
             }">
             </div>
 
             <div class="estado-texto" [ngClass]="{
-              'texto-verde': evento.estado === 'DISPONIBLE',
-              'texto-amarillo': evento.estado === 'EN CURSO',
-              'texto-rojo': evento.estado === 'FINALIZADO',
-              'texto-naranja': evento.estado === 'SIN CUPOS'
+              'texto-verde': evento.estado_evento === 'DISPONIBLE',
+              'texto-amarillo': evento.estado_evento === 'EN CURSO',
+              'texto-rojo': evento.estado_evento === 'FINALIZADO',
+              'texto-naranja': evento.estado_evento === 'SIN CUPOS'
             }">
-              {{ evento.estado }}
+              {{ evento.estado_evento }}
             </div>
           </div>
         </div>
       </ion-card-header>
 
       <ion-card-content>
+        <p><strong>Juego:</strong> {{ evento.nombre_juego }}</p>
         <p>
-          <strong>Lugar:</strong> {{ evento.lugar }}<span style="color: rgb(44, 236, 19);"> | </span>
+          <strong>Lugar:</strong> {{ evento.lugar }}
+          <span style="color: rgb(44, 236, 19);"> | </span>
           <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
         </p>
         <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
         <p>
           <strong>Creado por:</strong>
-          <span style="color: rgb(15, 209, 167);"> [{{ evento.creado_por }}]</span>
+          <span style="color: rgb(15, 209, 167);">{{ evento.creador_nombre }}</span>
         </p>
 
         <div class="botones-evento">
