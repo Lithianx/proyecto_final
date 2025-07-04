@@ -63,8 +63,10 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
     const eventoCompleto = await this.eventoService.obtenerEventoPorId(this.eventoId);
     this.evento = eventoCompleto;
+
     const nombreCreador = await this.eventoService.obtenerNombreUsuarioPorId(this.evento.id_creador);
     this.evento.creado_por_nombre = nombreCreador;
+
     this.esAnfitrion = this.evento.id_creador === this.usuarioActualID;
 
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
@@ -73,7 +75,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     this.esParticipante = this.jugadores.some(p => p.id_usuario === this.usuarioActualID);
     this.nuevoCupo = this.evento.cupos;
 
-    if (!this.esAnfitrion && !this.jugadores.some(p => p.id_usuario === this.usuarioActualID)) {
+    // ✅ Si no es anfitrión ni está en la lista de jugadores, lo registramos
+    if (!this.esAnfitrion && !this.esParticipante) {
       await this.eventoService.registrarParticipante({
         id_usuario: this.usuarioActualID,
         id_evento: this.eventoId,
@@ -81,12 +84,20 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         estado_participante: 'ACTIVO',
         nombre_usuario: this.usuarioActualNombre
       });
+
+      // ✅ Enviar mensaje de unión al chat (sistema)
+      await this.eventoService.enviarMensajeEvento(this.eventoId, {
+        texto: `${this.usuarioActualNombre} se ha unido al evento.`,
+        tipo: 'union'
+      });
+
+      this.esParticipante = true;
     }
 
     this.suscribirseCambiosEvento();
     this.suscribirseAlChat();
-
   }
+
 
   private ordenarJugadores(): void {
     this.jugadores.sort((a, b) => {
