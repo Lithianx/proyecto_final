@@ -41,6 +41,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   esAnfitrion = false;
   private unsubscribeSnapshot: any;
 
+  campoCuposInvalido = false;
+
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
@@ -152,6 +154,27 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
         // Participantes y lógica de tiempo
         this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
+        // 🚨 Si ya no estás en la lista de jugadores, fuiste expulsado
+        const sigueParticipando = this.jugadores.some(j => j.id_usuario === this.usuarioActualID);
+
+        if (!sigueParticipando && this.esParticipante) {
+          this.esParticipante = false;
+
+          // Mostrar toast de expulsión
+          const toast = await this.toastCtrl.create({
+            message: '🚫 Fuiste expulsado del evento',
+            duration: 3000,
+            color: 'danger',
+            position: 'top'
+          });
+          await toast.present();
+
+          // Redirigir al listado de eventos
+          setTimeout(() => {
+            this.router.navigate(['/evento']);
+          }, 2000);
+        }
+
         this.ordenarJugadores();
 
         const estadoEnCursoID = await this.eventoService.obtenerIdEstadoPorDescripcion('EN CURSO');
@@ -275,6 +298,17 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   }
 
   async actualizarCupos() {
+    if (this.nuevoCupo < 2 || this.nuevoCupo > 50) {
+      const toast = await this.toastCtrl.create({
+        message: '❌ Los cupos deben estar entre 2 y 50.',
+        duration: 3000,
+        color: 'warning',
+        position: 'top',
+      });
+      await toast.present();
+      return;
+    }
+
     if (this.nuevoCupo >= this.jugadores.length) {
       await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
         cupos: this.nuevoCupo
@@ -290,7 +324,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       await toast.present();
     } else {
       const toast = await this.toastCtrl.create({
-        message: '❌ No puedes reducir los cupos por debajo de los participantes actuales.',
+        message: '❌ No puedes reducir los cupos por debajo de los jugadores actuales.',
         duration: 3000,
         color: 'danger',
         position: 'top',
@@ -416,6 +450,56 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   pad(num: number): string {
     return num < 10 ? '0' + num : num.toString();
   }
+
+  // Bloquea caracteres en tiempo real desde el teclado
+  bloquearCaracteresInvalidos(event: KeyboardEvent) {
+    const teclasPermitidas = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab'];
+    const esNumero = /^[0-9]$/;
+
+    const input = event.target as HTMLInputElement;
+
+    // Si ya hay 2 caracteres, no deja seguir escribiendo
+    if (
+      !teclasPermitidas.includes(event.key) &&
+      (!esNumero.test(event.key) || input.value.length >= 2)
+    ) {
+      event.preventDefault();
+    }
+  }
+
+
+  // ✅ Función de validación de input numérico
+  validarSoloNumeros(event: any) {
+    let valor = event.target.value;
+
+    // Eliminar todo lo que no sea número
+    valor = valor.replace(/[^0-9]/g, '');
+
+    // Limitar longitud a 2 caracteres (máximo "50")
+    if (valor.length > 2) {
+      valor = valor.substring(0, 2);
+    }
+
+    const numero = parseInt(valor, 10);
+
+    if (isNaN(numero) || valor === '') {
+      this.nuevoCupo = 2;
+      this.campoCuposInvalido = true;
+      return;
+    }
+
+    if (numero < 2 || numero > 50) {
+      this.nuevoCupo = numero;
+      this.campoCuposInvalido = true;
+      return;
+    }
+
+    this.nuevoCupo = numero;
+    this.campoCuposInvalido = false;
+  }
+
+
+
 
   async confirmarSalida() {
     const alerta = await this.alertCtrl.create({

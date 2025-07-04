@@ -68,10 +68,21 @@
         <div *ngIf="esAnfitrion && mostrarPanelCupos" class="panel-admin">
           <ion-item>
             <ion-label>Cambiar cupos:</ion-label>
-            <ion-input type="number" [(ngModel)]="nuevoCupo"></ion-input>
+
+            <ion-input type="number" inputmode="numeric" min="2" max="50" [(ngModel)]="nuevoCupo"
+              [color]="campoCuposInvalido ? 'danger' : ''" (keydown)="bloquearCaracteresInvalidos($event)"
+              (ionInput)="validarSoloNumeros($event)">
+            </ion-input>
+
             <ion-button color="success" (click)="actualizarCupos()">Actualizar</ion-button>
           </ion-item>
+
+          <!-- 🔴 Mensaje de error debajo del input -->
+          <ion-note color="danger" *ngIf="campoCuposInvalido">
+            El número debe estar entre 2 y 50
+          </ion-note>
         </div>
+
 
         <!-- Jugadores visibles para todos -->
         <div *ngIf="jugadores?.length > 0" class="panel-admin">
