@@ -123,31 +123,47 @@
   </div>
 
   <!-- Chat -->
+  <!-- Botón flotante para abrir chat -->
   <div class="chat-fab" (click)="toggleChat()" *ngIf="!chatAbierto">
     <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+    <ion-badge *ngIf="nuevosMensajesSinLeer" color="danger" class="chat-badge">!</ion-badge>
   </div>
 
+  <!-- Ventana de chat -->
   <div class="chat-flotante" *ngIf="chatAbierto">
     <div class="chat-header">
       <span>Chat de la Sala</span>
       <ion-icon name="close-outline" class="cerrar-icono" (click)="toggleChat()"></ion-icon>
     </div>
+
     <div class="chat-cuerpo">
-      <div *ngFor="let msg of mensajes"
-        [ngClass]="{ 'msg-yo': msg.usuario === usuarioActualNombre, 'msg-otro': msg.usuario !== usuarioActualNombre }">
-        <strong>{{ msg.usuario }}:</strong>
-        <span>{{ msg.texto }}</span>
+      <div *ngFor="let msg of mensajes" [ngClass]="{
+        'msg-sistema': msg.tipo !== 'mensaje',
+        'msg-yo': msg.tipo === 'mensaje' && msg.id_usuario === usuarioActualID,
+        'msg-otro': msg.tipo === 'mensaje' && msg.id_usuario !== usuarioActualID
+      }">
+        <ng-container [ngSwitch]="msg.tipo">
+          <div *ngSwitchCase="'mensaje'">
+            <strong>{{ msg.nombre_usuario }}:</strong>
+            <span>{{ msg.texto }}</span>
+          </div>
+          <div *ngSwitchDefault>
+            <em>🔔 {{ msg.texto }}</em>
+          </div>
+        </ng-container>
       </div>
     </div>
+
     <div class="chat-input">
       <ion-item lines="none">
-        <ion-input [(ngModel)]="mensaje" placeholder="Escribe..."></ion-input>
+        <ion-input [(ngModel)]="nuevoMensaje" placeholder="Escribe..."></ion-input>
         <ion-button fill="clear" (click)="enviarMensaje()">
           <ion-icon name="send-outline"></ion-icon>
         </ion-button>
       </ion-item>
     </div>
   </div>
+
 </ion-content>
 
 <app-navbar></app-navbar>

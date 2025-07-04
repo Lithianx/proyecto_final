@@ -232,6 +232,17 @@ ion-fab-list ion-button:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   font-size: 24px;
   cursor: pointer;
+
+  ion-badge.chat-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+  }
 }
 
 .chat-flotante {
@@ -274,26 +285,39 @@ ion-fab-list ion-button:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
 
-.chat-cuerpo .msg-yo {
-  align-self: flex-end;
-  background-color: #28ac11;
-  color: black;
-  padding: 8px 12px;
-  border-radius: 12px 12px 0 12px;
-  max-width: 75%;
-  word-wrap: break-word;
-}
+  // Tus mensajes
+  .msg-yo {
+    align-self: flex-end;
+    background-color: #28ac11;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 12px 12px 0 12px;
+    max-width: 75%;
+    word-wrap: break-word;
+    font-weight: bold;
+  }
 
-.chat-cuerpo .msg-otro {
-  align-self: flex-start;
-  background-color: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 12px 12px 12px 0;
-  max-width: 75%;
-  word-wrap: break-word;
+  // Mensajes de otros jugadores
+  .msg-otro {
+    align-self: flex-start;
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px 12px 12px 0;
+    max-width: 75%;
+    word-wrap: break-word;
+  }
+
+  // Mensajes del sistema (tipo unión, expulsión, etc)
+  .msg-sistema {
+    align-self: center;
+    color: #999;
+    font-style: italic;
+    font-size: 0.8rem;
+    background: transparent;
+    padding: 4px 8px;
+  }
 }
 
 .chat-input {
@@ -315,6 +339,7 @@ ion-fab-list ion-button:hover {
     --color: #2bb113;
   }
 }
+
 
 .temporizador {
   margin-top: 10px;

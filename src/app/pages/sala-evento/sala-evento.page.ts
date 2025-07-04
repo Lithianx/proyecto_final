@@ -7,6 +7,7 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 import { doc, updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
 import { Participante } from 'src/app/models/participante.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sala-evento',
@@ -19,8 +20,11 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   jugadores: Participante[] = [];
   eventoId: string = '';
   chatAbierto = false;
-  mensaje = '';
-  mensajes: { usuario: string; texto: string }[] = [];
+  mensajes: any[] = [];
+  nuevoMensaje: string = '';
+  nuevosMensajesSinLeer: boolean = false;
+  private mensajesSub!: Subscription;
+
   esParticipante = false;
   nuevoCupo: number = 0;
   mostrarPanelJugadores: boolean = false;
@@ -47,7 +51,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     private eventoService: EventoService,
     private firestore: Firestore,
     private usuarioService: UsuarioService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -61,7 +65,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
     this.ordenarJugadores();
-    
+
     this.esParticipante = this.jugadores.some(p => p.id_usuario === this.usuarioActualID);
     this.nuevoCupo = this.evento.cupos;
 
@@ -76,17 +80,34 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     }
 
     this.suscribirseCambiosEvento();
+    this.suscribirseAlChat();
+
   }
 
   private ordenarJugadores(): void {
-  this.jugadores.sort((a, b) => {
-    if (a.id_usuario === this.evento.id_creador) return -1;
-    if (b.id_usuario === this.evento.id_creador) return 1;
-    if (a.id_usuario === this.usuarioActualID) return -1;
-    if (b.id_usuario === this.usuarioActualID) return 1;
-    return a.nombre_usuario.localeCompare(b.nombre_usuario);
-  });
-}
+    this.jugadores.sort((a, b) => {
+      if (a.id_usuario === this.evento.id_creador) return -1;
+      if (b.id_usuario === this.evento.id_creador) return 1;
+      if (a.id_usuario === this.usuarioActualID) return -1;
+      if (b.id_usuario === this.usuarioActualID) return 1;
+      return a.nombre_usuario.localeCompare(b.nombre_usuario);
+    });
+  }
+
+
+  suscribirseAlChat() {
+    this.mensajesSub = this.eventoService
+      .obtenerMensajesEvento(this.eventoId)
+      .subscribe((msgs) => {
+        this.mensajes = msgs;
+
+        if (!this.chatAbierto) {
+          this.nuevosMensajesSinLeer = true;
+        }
+
+        this.scrollChatAbajo();
+      });
+  }
 
 
 
@@ -100,6 +121,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
         this.evento = data;
         this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
+        this.ordenarJugadores();
 
         const estadoEnCursoID = await this.eventoService.obtenerIdEstadoPorDescripcion('EN CURSO');
         if (
@@ -122,10 +144,14 @@ export class SalaEventoPage implements OnInit, OnDestroy {
     if (this.unsubscribeSnapshot) {
       this.unsubscribeSnapshot();
     }
+    if (this.mensajesSub) {
+      this.mensajesSub.unsubscribe();
+    }
   }
 
   async unirmeComoParticipante() {
     if (!this.esParticipante && this.evento.cupos > 0) {
+      // 1. Registrar participación
       await this.eventoService.registrarParticipante({
         id_usuario: this.usuarioActualID,
         id_evento: this.eventoId,
@@ -134,14 +160,23 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         nombre_usuario: this.usuarioActualNombre
       });
 
+      // 2. 🔔 Enviar mensaje al chat
+      await this.eventoService.enviarMensajeEvento(this.eventoId, {
+        texto: `${this.usuarioActualNombre} se ha unido al evento.`,
+        tipo: 'union'
+      });
+
+      // 3. Actualizar cupo
       await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
         cupos: this.evento.cupos - 1
       });
 
+      // 4. Refrescar jugadores
       this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
       this.ordenarJugadores();
       this.esParticipante = true;
 
+      // 5. Recalcular estado
       await this.eventoService.actualizarEstadoEvento(this.eventoId);
       this.cdr.detectChanges();
     }
@@ -149,26 +184,51 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   async dejarDeParticipar() {
     await this.eventoService.eliminarParticipante(this.eventoId, this.usuarioActualID);
+
+    // 🔔 Mensaje al chat: salida voluntaria
+    await this.eventoService.enviarMensajeEvento(this.eventoId, {
+      texto: `${this.usuarioActualNombre} ha salido del evento.`,
+      tipo: 'sistema'
+    });
+
     await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
       cupos: this.evento.cupos + 1
     });
+
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
     this.ordenarJugadores();
     this.esParticipante = false;
+
     await this.eventoService.actualizarEstadoEvento(this.eventoId);
     this.cdr.detectChanges();
   }
 
+
   async expulsarJugador(jugadorId: string) {
     if (jugadorId === this.usuarioActualID) return;
+
+    const jugadorExpulsado = this.jugadores.find(j => j.id_usuario === jugadorId);
+
     await this.eventoService.eliminarParticipante(this.eventoId, jugadorId);
+
+    // 🔔 Mensaje al chat: expulsión
+    if (jugadorExpulsado) {
+      await this.eventoService.enviarMensajeEvento(this.eventoId, {
+        texto: `${jugadorExpulsado.nombre_usuario} fue expulsado del evento.`,
+        tipo: 'expulsion'
+      });
+    }
+
     await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
       cupos: this.evento.cupos + 1
     });
+
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
+    this.ordenarJugadores();
     await this.eventoService.actualizarEstadoEvento(this.eventoId);
     this.cdr.detectChanges();
   }
+
 
   async confirmarExpulsion(jugador: Participante) {
     const alerta = await this.alertCtrl.create({
@@ -209,14 +269,43 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   toggleChat() {
     this.chatAbierto = !this.chatAbierto;
-  }
-
-  enviarMensaje() {
-    if (this.mensaje.trim()) {
-      this.mensajes.push({ usuario: this.usuarioActualNombre, texto: this.mensaje });
-      this.mensaje = '';
+    if (this.chatAbierto) {
+      this.nuevosMensajesSinLeer = false;
     }
   }
+
+
+  async enviarMensaje() {
+    if (!this.nuevoMensaje.trim()) return;
+
+    try {
+      await this.eventoService.enviarMensajeEvento(this.eventoId, {
+        texto: this.nuevoMensaje,
+        id_usuario: this.usuarioActualID,
+        nombre_usuario: this.usuarioActualNombre,
+        tipo: 'mensaje'
+      });
+      this.nuevoMensaje = '';
+    } catch (error) {
+      const toast = await this.toastCtrl.create({
+        message: '❌ Error al enviar mensaje',
+        duration: 2000,
+        color: 'danger',
+        position: 'top'
+      });
+      await toast.present();
+    }
+  }
+
+  scrollChatAbajo() {
+    setTimeout(() => {
+      const chatCuerpo = document.querySelector('.chat-cuerpo');
+      if (chatCuerpo) {
+        chatCuerpo.scrollTop = chatCuerpo.scrollHeight;
+      }
+    }, 100);
+  }
+
 
   async iniciarEvento() {
     if (!this.eventoEnCurso) {
@@ -318,6 +407,11 @@ export class SalaEventoPage implements OnInit, OnDestroy {
                 position: 'top',
               });
               await toast.present();
+              await this.eventoService.enviarMensajeEvento(this.eventoId, {
+                texto: `${this.usuarioActualNombre} ha salido del evento.`,
+                tipo: 'sistema'
+              });
+
               this.router.navigate(['/evento']);
             } catch (error) {
               const toast = await this.toastCtrl.create({

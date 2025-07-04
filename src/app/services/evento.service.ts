@@ -13,7 +13,8 @@ import {
   where,
   getDocs,
   deleteDoc,
-  QuerySnapshot
+  QuerySnapshot,
+  orderBy
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -261,4 +262,41 @@ export class EventoService {
 
     return null;
   }
+
+
+
+
+  //metodos para el chat de la sala.
+
+  async enviarMensajeEvento(
+    eventoId: string,
+    mensaje: {
+      texto: string,
+      id_usuario?: string,
+      nombre_usuario?: string,
+      tipo: 'mensaje' | 'union' | 'expulsion' | 'sistema'
+    }
+  ): Promise<void> {
+    try {
+      const chatRef = collection(this.firestore, `Evento/${eventoId}/Chat`);
+      await addDoc(chatRef, {
+        ...mensaje,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error('❌ Error al enviar mensaje al chat:', error);
+      throw new Error('No se pudo enviar el mensaje');
+    }
+  }
+
+
+
+
+  obtenerMensajesEvento(eventoId: string): Observable<any[]> {
+  const chatRef = collection(this.firestore, `Evento/${eventoId}/Chat`);
+  const q = query(chatRef, orderBy('timestamp'));
+  return collectionData(q, { idField: 'id' }) as Observable<any[]>;
+}
+
+
 }
