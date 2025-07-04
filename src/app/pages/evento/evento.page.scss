@@ -1,3 +1,12 @@
+
+::ng-deep ion-refresher-content .refresher-icon,
+::ng-deep ion-refresher-content .refresher-pulling-icon,
+::ng-deep ion-refresher-content .refresher-refreshing-icon {
+  color: #3fe520 !important; // Cambia este valor por el color que desees
+}
+
+
+
 .fila-eventos {
   display: flex; /* Activa Flexbox */
   align-items: center; /* Alinea verticalmente */

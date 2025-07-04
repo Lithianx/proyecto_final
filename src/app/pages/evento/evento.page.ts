@@ -82,9 +82,11 @@ export class EventoPage implements OnInit {
   }
 
   async doRefresh(event: any) {
-  await this.cargarEventos(); 
-  event.target.complete();   
-}
+    setTimeout(async () => {
+      await this.cargarEventos();
+      event.target.complete();
+    }, 1500);
+  }
 
 
   volverAtras() {
