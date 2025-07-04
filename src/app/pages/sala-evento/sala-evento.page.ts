@@ -59,7 +59,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit() {
-    this.salidaVoluntaria = false; // ✅ Siempre reinicia esto al entrar
+    this.salidaVoluntaria = false;
 
     this.eventoId = this.route.snapshot.paramMap.get('id') ?? '';
     const usuario = await this.usuarioService.getUsuarioActualConectado();
@@ -90,7 +90,11 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         nombre_usuario: this.usuarioActualNombre
       });
 
-      // ✅ Enviar mensaje de unión al chat (tipo: union)
+      this.esParticipante = true;
+    }
+
+    // ✅ Enviar mensaje de unión o reincorporación (solo si no es anfitrión)
+    if (!this.esAnfitrion) {
       const yaEstuvo = await this.localStorageEvento.yaEstuvoEnEvento(this.eventoId);
 
       await this.eventoService.enviarMensajeEvento(this.eventoId, {
@@ -101,8 +105,6 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       });
 
       await this.localStorageEvento.marcarYaEstuvo(this.eventoId);
-
-      this.esParticipante = true;
     }
 
     this.suscribirseCambiosEvento();
@@ -230,7 +232,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   async unirmeComoParticipante() {
     if (!this.esParticipante && this.evento.cupos > 0) {
-
+      // 1. Registrar participación
       await this.eventoService.registrarParticipante({
         id_usuario: this.usuarioActualID,
         id_evento: this.eventoId,
@@ -239,9 +241,10 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         nombre_usuario: this.usuarioActualNombre
       });
 
-      // ✅ Mostrar mensaje si ya estuvo o es nuevo
+      // 2. Detectar si ya había estado antes en este evento
       const yaEstuvo = await this.localStorageEvento.yaEstuvoEnEvento(this.eventoId);
 
+      // 3. Enviar mensaje al chat
       await this.eventoService.enviarMensajeEvento(this.eventoId, {
         texto: yaEstuvo
           ? `${this.usuarioActualNombre} se ha reincorporado al evento.`
@@ -249,21 +252,25 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         tipo: 'union'
       });
 
-      // ✅ Guardar que ya participó
+      // 4. Marcar como que ya participó
       await this.localStorageEvento.marcarYaEstuvo(this.eventoId);
 
+      // 5. Actualizar cupos
       await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
         cupos: this.evento.cupos - 1
       });
 
+      // 6. Refrescar jugadores
       this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
       this.ordenarJugadores();
       this.esParticipante = true;
 
+      // 7. Recalcular estado del evento
       await this.eventoService.actualizarEstadoEvento(this.eventoId);
       this.cdr.detectChanges();
     }
   }
+
 
 
   async dejarDeParticipar() {
