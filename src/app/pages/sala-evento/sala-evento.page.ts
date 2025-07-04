@@ -230,7 +230,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   async unirmeComoParticipante() {
     if (!this.esParticipante && this.evento.cupos > 0) {
-      // 1. Registrar participación
+
       await this.eventoService.registrarParticipante({
         id_usuario: this.usuarioActualID,
         id_evento: this.eventoId,
@@ -239,27 +239,32 @@ export class SalaEventoPage implements OnInit, OnDestroy {
         nombre_usuario: this.usuarioActualNombre
       });
 
-      // 2. 🔔 Enviar mensaje al chat
+      // ✅ Mostrar mensaje si ya estuvo o es nuevo
+      const yaEstuvo = await this.localStorageEvento.yaEstuvoEnEvento(this.eventoId);
+
       await this.eventoService.enviarMensajeEvento(this.eventoId, {
-        texto: `${this.usuarioActualNombre} se ha unido al evento.`,
+        texto: yaEstuvo
+          ? `${this.usuarioActualNombre} se ha reincorporado al evento.`
+          : `${this.usuarioActualNombre} se ha unido al evento.`,
         tipo: 'union'
       });
 
-      // 3. Actualizar cupo
+      // ✅ Guardar que ya participó
+      await this.localStorageEvento.marcarYaEstuvo(this.eventoId);
+
       await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
         cupos: this.evento.cupos - 1
       });
 
-      // 4. Refrescar jugadores
       this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
       this.ordenarJugadores();
       this.esParticipante = true;
 
-      // 5. Recalcular estado
       await this.eventoService.actualizarEstadoEvento(this.eventoId);
       this.cdr.detectChanges();
     }
   }
+
 
   async dejarDeParticipar() {
     await this.eventoService.eliminarParticipante(this.eventoId, this.usuarioActualID);
