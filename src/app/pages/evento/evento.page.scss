@@ -1,3 +1,12 @@
+
+::ng-deep ion-refresher-content .refresher-icon,
+::ng-deep ion-refresher-content .refresher-pulling-icon,
+::ng-deep ion-refresher-content .refresher-refreshing-icon {
+  color: #3fe520 !important; // Cambia este valor por el color que desees
+}
+
+
+
 .fila-eventos {
   display: flex; /* Activa Flexbox */
   align-items: center; /* Alinea verticalmente */
@@ -127,5 +136,31 @@ ion-searchbar{
 .texto-naranja {
   color: orange;
 }
+
+.no-eventos {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  color: white;
+  opacity: 0.7;
+}
+
+.icono-vacio {
+  font-size: 64px;
+  color: var(--verde-neon, #39ff14);
+  margin-bottom: 16px;
+}
+
+.texto-vacio {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.subtexto-vacio {
+  font-size: 16px;
+  color: #ccc;
+}
+
 
 

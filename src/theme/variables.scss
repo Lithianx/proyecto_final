@@ -58,4 +58,10 @@ ion-searchbar.search-bar::part(container) {
   color: var(--ion-color-dark) !important;
 }
 
+ion-alert button.alert-button:nth-child(1) {
+  color: rgb(230, 30, 30) !important;
+  font-weight: bold;
+}
+
+
 

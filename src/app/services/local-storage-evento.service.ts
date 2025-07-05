@@ -7,10 +7,13 @@ export class LocalStorageEventoService {
 
   constructor() {}
 
-  // Guardar datos del evento actual
+  /**
+   * Guarda los datos del evento actual en el LocalStorage
+   * @param evento Objeto con los datos del evento
+   */
   async guardarDatosEvento(evento: {
     id: string;
-    nombre_evento: string;
+    nombre_evento: string; // ahora corresponde al juego seleccionado
     id_creador: string;
     jugadores?: string[];
     es_anfitrion?: boolean;
@@ -29,7 +32,7 @@ export class LocalStorageEventoService {
     }
   }
 
-  // Obtener valores individuales
+  // --- Obtener valores individuales ---
   async getIdEvento(): Promise<string | null> {
     return localStorage.getItem('id_evento');
   }
@@ -51,7 +54,7 @@ export class LocalStorageEventoService {
     return (await localStorage.getItem('es_anfitrion')) === 'true';
   }
 
-  // Eliminar todo (por ejemplo, al salir del evento)
+  // --- Limpiar datos almacenados ---
   async limpiarDatosEvento(): Promise<void> {
     try {
       await localStorage.removeItem('id_evento');
@@ -64,15 +67,22 @@ export class LocalStorageEventoService {
     }
   }
 
-
-
-async getItem<T>(clave: string): Promise<T | null> {
-  const dato = localStorage.getItem(clave);
-  if (!dato) return null;
-  // Si es JSON válido (objeto o array), parsea, si no, retorna como string
-  if ((dato.startsWith('{') && dato.endsWith('}')) || (dato.startsWith('[') && dato.endsWith(']'))) {
-    return JSON.parse(dato);
+  // --- Acceso genérico por clave ---
+  async getItem<T>(clave: string): Promise<T | null> {
+    const dato = localStorage.getItem(clave);
+    return dato ? JSON.parse(dato) : null;
   }
-  return dato as unknown as T;
-}
+
+
+
+    // ✅ Marcar que el usuario ya participó en este evento
+  async marcarYaEstuvo(eventoId: string): Promise<void> {
+    await localStorage.setItem(`ya_estuvo_en_evento_${eventoId}`, 'true');
+  }
+
+  // ✅ Verificar si ya estuvo antes en este evento
+  async yaEstuvoEnEvento(eventoId: string): Promise<boolean> {
+    return localStorage.getItem(`ya_estuvo_en_evento_${eventoId}`) === 'true';
+  }
+
 }

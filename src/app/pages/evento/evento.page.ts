@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
+import { Evento } from 'src/app/models/evento.model';
+import { Juego } from 'src/app/models/juego.model';
+import { TipoJuego } from 'src/app/models/tipo-juego.model';
+import { EstadoEvento } from 'src/app/models/estado-evento.model';
 
 @Component({
   selector: 'app-evento',
@@ -12,9 +15,14 @@ import { LocalStorageEventoService } from 'src/app/services/local-storage-evento
   standalone: false,
 })
 export class EventoPage implements OnInit {
+  eventos: any[] = [];
+  eventosFiltrados: any[] = [];
+  idUsuarioActual: string = '';
+  datosCargados = false;
 
-  eventos: Evento[] = [];
-  eventosFiltrados: Evento[] = [];
+  juegos: Juego[] = [];
+  tiposJuego: TipoJuego[] = [];
+  estados: EstadoEvento[] = [];
 
   constructor(
     private router: Router,
@@ -23,55 +31,63 @@ export class EventoPage implements OnInit {
     private localStorageEventoService: LocalStorageEventoService
   ) { }
 
+  async ngOnInit() {
+    this.idUsuarioActual = await this.localStorageEventoService.getItem<string>('id_usuario') ?? '';
+    await this.cargarReferencias();
+    await this.cargarEventos();
+    this.datosCargados = true;
+  }
 
-  idUsuarioActual: string = '';
-  public datosCargados = false;
+  async cargarReferencias() {
+    this.juegos = await new Promise<Juego[]>((resolve) =>
+      this.eventoService.getJuegos().subscribe(resolve)
+    );
 
-  ngOnInit() {
-    this.localStorageEventoService.getItem<string>('id_usuario').then(id => {
-      this.idUsuarioActual = id ?? '';
-      this.cargarEventos().then(() => {
-        this.datosCargados = true; // ⬅️ ya están listos los datos para mostrar
-      });
-    });
+    this.tiposJuego = await new Promise<TipoJuego[]>((resolve) =>
+      this.eventoService.getTiposJuego().subscribe(resolve)
+    );
+
+    this.estados = await new Promise<EstadoEvento[]>((resolve) =>
+      this.eventoService.getEstadosEvento().subscribe(resolve)
+    );
   }
 
 
-  // Refrescar cada 10 segundos
-  /* setInterval(() => {
-    this.cargarEventos();
-  }, 10000); */
+  async cargarEventos() {
+    this.eventoService.obtenerEventos().subscribe(async (eventos) => {
+      const eventosMapeados = [];
 
-  async cargarEventos(): Promise<void> {
-    return new Promise((resolve) => {
-      this.eventoService.obtenerEventos().subscribe(async (eventos) => {
-        const ahora = new Date();
+      for (const evento of eventos) {
+        await this.eventoService.actualizarEstadoEvento(evento.id);
 
-        for (const evento of eventos) {
-          await this.eventoService.actualizarEstadoEvento(evento.id);
-        }
+        const juego = this.juegos.find(j => j.id_juego === evento.id_juego);
+        const tipo = this.tiposJuego.find(t => t.id_tipo_juego === juego?.id_tipo_juego);
+        const estado = this.estados.find(e => e.id_estado_evento === evento.id_estado_evento);
 
-        this.eventoService.obtenerEventos().subscribe((eventosActualizados) => {
-          this.eventos = eventosActualizados;
-          this.eventosFiltrados = eventosActualizados.filter((e) => {
-            if (e.estado === 'FINALIZADO') {
-              const horasPasadas = (ahora.getTime() - e.fechaFin.getTime()) / (1000 * 60 * 60);
-              return horasPasadas < 24;
-            }
-            return true;
-          });
-          resolve(); // ⬅️ resolver cuando se cargue todo
+        // Obtener nombre del creador usando el nuevo método del servicio
+        const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+        eventosMapeados.push({
+          ...evento,
+          nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+          tipo_juego: tipo?.nombre_tipo_juego ?? 'Tipo desconocido',
+          estado_evento: estado?.descripcion ?? 'Estado desconocido',
+          creador_nombre: creadorNombre
         });
-      });
+      }
+
+      this.eventos = eventosMapeados;
+      this.eventosFiltrados = [...eventosMapeados];
     });
   }
 
-  doRefresh(event: any) {
-    this.cargarEventos();
-    setTimeout(() => {
+  async doRefresh(event: any) {
+    setTimeout(async () => {
+      await this.cargarEventos();
       event.target.complete();
-    }, 1000);
+    }, 1500);
   }
+
 
   volverAtras() {
     this.navCtrl.back();
@@ -85,21 +101,19 @@ export class EventoPage implements OnInit {
       return;
     }
 
-    this.eventosFiltrados = this.eventos.filter(evento =>
-      evento.nombre_evento.toLowerCase().includes(texto) ||
-      evento.lugar.toLowerCase().includes(texto) ||
-      evento.tipo_evento.toLowerCase().includes(texto)
+    this.eventosFiltrados = this.eventos.filter((evento) =>
+    (evento.nombre_juego?.toLowerCase()?.includes(texto) ||
+      evento.lugar?.toLowerCase()?.includes(texto) ||
+      evento.tipo_juego?.toLowerCase()?.includes(texto) ||
+      evento.creador_nombre?.toLowerCase()?.includes(texto))
     );
   }
 
-  irADetalleEvento(evento: Evento) {
+  irADetalleEvento(evento: Evento & { id: string }) {
     if (String(evento.id_creador) === String(this.idUsuarioActual)) {
-      console.log('🎯 Es el anfitrión, redirigiendo a sala');
       this.router.navigate(['/sala-evento', evento.id]);
     } else {
-      console.log('👤 No es anfitrión, redirigiendo a detalle');
       this.router.navigate(['/detalle-evento', evento.id]);
     }
   }
-
 }

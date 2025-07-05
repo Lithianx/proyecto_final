@@ -9,9 +9,9 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
-import { LocalStorageService } from 'src/app/services/local-storage-social.service'; 
-import { ComunicacionService } from 'src/app/services/comunicacion.service';  // <-- Importar ComunicacionService
-
+import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // <--- Importa el servicio
+import { Juego } from 'src/app/models/juego.model';
+import { ComunicacionService } from 'src/app/services/comunicacion.service';
 @Component({
   selector: 'app-perfil-user',
   templateUrl: './perfil-user.page.html',
@@ -21,7 +21,9 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';  //
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
-  eventos: Evento[] = [];
+  eventosCreados: (Evento & { id: string; juegoNombre?: string })[] = [];
+  eventosInscritos: (Evento & { id: string; juegoNombre?: string })[] = [];
+
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
 
@@ -54,13 +56,6 @@ export class PerfilUserPage implements OnInit {
     seguidos: 0
   };
 
-  eventosInscritos = [
-    { id: 1, nombre: 'Campeonato de LoL', fecha: '12/05/2025', juego: 'League of Legends', creador: 'usuario1' },
-    { id: 2, nombre: 'Torneo Valorant', fecha: '19/05/2025', juego: 'Valorant', creador: 'usuario2' },
-  ];
-
-  eventosCreados: Evento[] = [];
-
   private _vistaSeleccionada: string = 'publicaciones';
   get vistaSeleccionada(): string {
     return this._vistaSeleccionada;
@@ -74,6 +69,7 @@ export class PerfilUserPage implements OnInit {
   }
 
   mostrarModal: boolean = false;
+  juegosMap = new Map<string, string>(); // Map<id_juego, nombre>
 
   constructor(
     private route: ActivatedRoute,
@@ -91,8 +87,7 @@ export class PerfilUserPage implements OnInit {
 
   async ngOnInit() {
     this.idUsuarioLogueado = await this.localStorageService.getItem('id_usuario') || '';
-    console.log('ID usuario logueado en perfil:', this.idUsuarioLogueado);
-
+    await this.cargarJuegos(); // Cargar mapa de juegos
     this.route.paramMap.subscribe(async params => {
       const id = params.get('id');
       if (id) {
@@ -102,6 +97,7 @@ export class PerfilUserPage implements OnInit {
         await this.cargarDatosUsuario(id);
         await this.cargarPublicaciones(id);
         await this.cargarEventosCreados(id);
+        await this.cargarEventosInscritos(id);
 
         this.actualizarEstadoSeguir();
         this.actualizarEstadisticasSeguir(id);
@@ -115,6 +111,7 @@ export class PerfilUserPage implements OnInit {
       await this.cargarDatosUsuario(this.idUsuario);
       await this.cargarPublicaciones(this.idUsuario);
       await this.cargarEventosCreados(this.idUsuario);
+      await this.cargarEventosInscritos(this.idUsuario);
 
       this.actualizarEstadoSeguir();
       this.actualizarEstadisticasSeguir(this.idUsuario);
@@ -161,11 +158,38 @@ export class PerfilUserPage implements OnInit {
   }
 
   async cargarEventosCreados(id_usuario: string) {
-    if (!id_usuario) return;
     try {
-      this.eventosCreados = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      this.eventosCreados = eventos.map(ev => ({
+        ...ev,
+        juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
+      }));
     } catch (error) {
       console.error('Error al cargar eventos creados:', error);
+    }
+  }
+
+  async cargarEventosInscritos(id_usuario: string) {
+    try {
+      const participantes = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
+      const promesas = participantes.map(p => this.eventoService.obtenerEventoPorId(p.id_evento));
+      const eventos = await Promise.all(promesas);
+
+      this.eventosInscritos = eventos.map(ev => ({
+        ...ev,
+        juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
+      }));
+    } catch (error) {
+      console.error('Error al cargar eventos inscritos:', error);
+    }
+  }
+
+  private async cargarJuegos() {
+    try {
+      const juegos = await this.eventoService.getJuegos().toPromise();
+      juegos.forEach(j => this.juegosMap.set(String(j.id_juego), String(j.nombre_juego)));
+    } catch (error) {
+      console.error('Error al cargar juegos:', error);
     }
   }
 
