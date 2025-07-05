@@ -27,7 +27,7 @@
           Juego
           <ion-icon name="game-controller-outline" class="icono-en-label"></ion-icon>
         </ion-label>
-        <ion-select formControlName="id_juego">
+        <ion-select formControlName="id_juego" interface="alert" okText="Aceptar" cancelText="Cancelar">
           <ion-select-option *ngFor="let juego of juegosFiltrados" [value]="juego.id_juego">
             {{ juego.nombre_juego }}
           </ion-select-option>
@@ -66,10 +66,10 @@
       </ion-modal>
 
 
-      
 
-      
-        <!-- cupos -->
+
+
+      <!-- cupos -->
       <div class="campo-cupos">
         <ion-label class="label-cupos">
           Cupos
@@ -91,7 +91,7 @@
         </div>
       </div>
 
-      
+
 
       <!-- BOTÓN -->
       <ion-button expand="block" type="submit" class="boton-monster">
