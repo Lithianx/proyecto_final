@@ -97,7 +97,7 @@ export class CrearEventoFlashPage implements OnInit {
         message: 'Por favor completa todos los campos',
         duration: 2000,
         color: 'danger',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
       return;
@@ -117,7 +117,7 @@ export class CrearEventoFlashPage implements OnInit {
           message: `🚫 El ${campo.campo} contiene palabras no permitidas.`,
           duration: 2500,
           color: 'warning',
-          position: 'bottom',
+          position: 'top',
         });
         await toast.present();
         return;
@@ -158,7 +158,7 @@ export class CrearEventoFlashPage implements OnInit {
         message: 'Selecciona una fecha válida',
         duration: 2000,
         color: 'danger',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
       return;
@@ -182,7 +182,7 @@ export class CrearEventoFlashPage implements OnInit {
         message: '✅ Evento creado exitosamente',
         duration: 2000,
         color: 'success',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
       this.router.navigate(['/home']);
@@ -192,7 +192,7 @@ export class CrearEventoFlashPage implements OnInit {
         message: '❌ Error al guardar el evento',
         duration: 2000,
         color: 'danger',
-        position: 'bottom',
+        position: 'top',
       });
       await toast.present();
     }

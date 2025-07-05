@@ -36,3 +36,8 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /*@import "@ionic/angular/css/palettes/dark.system.css";*/
 /*@import '@ionic/angular/css/palettes/dark.class.css';*/
+
+ion-alert button.alert-button:nth-child(1) {
+  color: rgb(230, 30, 30) !important;
+  font-weight: bold;
+}
