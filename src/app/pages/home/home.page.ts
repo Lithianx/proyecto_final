@@ -9,7 +9,9 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { GuardaPublicacion } from 'src/app/models/guarda-publicacion.model';
 import { Like } from 'src/app/models/like.model';
 import { Seguir } from 'src/app/models/seguir.model';
+import { Notificacion } from 'src/app/models/notificacion.model';
 
+import { NotificacionesService } from 'src/app/services/notificaciones.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
@@ -61,6 +63,7 @@ export class HomePage implements OnInit, OnDestroy {
   private likesPublicacionesSub?: Subscription;
 
   constructor(
+    private notificacionesService: NotificacionesService,
     private actionSheetCtrl: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
@@ -181,10 +184,31 @@ export class HomePage implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  // Dar o quitar like
-  async likePublicacion(publicacion: Publicacion) {
-    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+async likePublicacion(publicacion: any) {
+  const idPublicacion = publicacion.id_publicacion;
+  const idAutor = publicacion.id_usuario;
+  const idUsuarioActual = this.usuarioActual.id_usuario;
+
+  const yaLikeo = this.usuarioLikeoPublicacion(idPublicacion);
+
+  try {
+    await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
+
+    if (!yaLikeo && idUsuarioActual !== idAutor) {
+      await this.notificacionesService.crearNotificacion(
+        'like',
+        idUsuarioActual,
+        idAutor,
+        idPublicacion
+      );
+      this.mostrarToast('Has dado like y notificación creada.');
+    }
+  } catch (error) {
+    console.error('Error al dar like o crear notificación:', error);
+    this.mostrarToast('Error al procesar like.', 'danger');
   }
+}
+
 
   // Métodos síncronos para la vista
   getLikesPublicacion(id_publicacion: string): number {

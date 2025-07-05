@@ -11,6 +11,7 @@ import { Comentario } from 'src/app/models/comentario.model';
 import { Mensaje } from 'src/app/models/mensaje.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
 import { query, where } from '@angular/fire/firestore';
+import { Notificacion } from 'src/app/models/notificacion.model';  // Asegúrate de importar tu modelo
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -491,5 +492,17 @@ async addConversacion(conversacion: Conversacion): Promise<void> {
   await addDoc(ref, { ...conversacion });
 }
 
-
+ // Agregar una notificación
+  async addNotificacion(notificacion: Notificacion): Promise<string> {
+    const notificacionesRef = collection(this.firestore, 'Notificacion');
+    // Guardar la notificación con fecha de servidor
+    const { fecha, ...rest } = notificacion; // Ignorar fecha que venga en objeto
+    const docRef = await addDoc(notificacionesRef, {
+      ...rest,
+      fecha: serverTimestamp()
+    });
+    // Actualiza el documento con el id generado por Firestore
+    await updateDoc(docRef, { id_notificacion: docRef.id });
+    return docRef.id;
+  }
 }
