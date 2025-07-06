@@ -527,4 +527,13 @@ async actualizarNotificacion(id_notificacion: string, datosActualizados: Partial
   const docRef = doc(this.firestore, 'Notificacion', id_notificacion);
   await updateDoc(docRef, datosActualizados);
 }
+
+async eliminarNotificacion(idNotificacion: string): Promise<void> {
+  try {
+    const docRef = doc(this.firestore, 'Notificacion', idNotificacion);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Error eliminando la notificación en Firebase:', error);
+  }
+}
 }

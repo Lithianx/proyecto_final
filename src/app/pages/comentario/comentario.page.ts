@@ -20,6 +20,10 @@ import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
+import { Notificacion } from 'src/app/models/notificacion.model';
+
+import { NotificacionesService } from 'src/app/services/notificaciones.service';
+
 
 @Component({
   selector: 'app-comentario',
@@ -72,6 +76,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
   private comentariosSub?: Subscription;
 
   constructor(
+    private notificacionesService: NotificacionesService,
     private route: ActivatedRoute,
     private navCtrl: NavController,
     private actionSheetCtrl: ActionSheetController,
@@ -248,52 +253,66 @@ export class ComentarioPage implements OnInit, OnDestroy {
   }
 
   async publicarComentario() {
-    const mensaje = this.nuevoComentario.trim();
-    if (!mensaje) return;
+  const mensaje = this.nuevoComentario.trim();
+  if (!mensaje) return;
 
-    // Filtro de palabras vetadas
-    if (this.filtroPalabra.contienePalabraVetada(mensaje)) {
-      const toast = await this.toastCtrl.create({
-        message: 'Tu comentario contiene palabras no permitidas.',
-        duration: 2500,
-        color: 'danger',
-        position: 'top'
-      });
-      toast.present();
-      return;
-    }
-
-    const nuevo: Comentario = {
-      id_comentario: Date.now().toString(),
-      id_publicacion: this.publicacion.id_publicacion,
-      id_usuario: this.usuarioActual.id_usuario,
-      contenido_comentario: mensaje,
-      fecha_comentario: new Date(),
-    };
-    await this.comentarioService.agregarComentario(nuevo);
-    this.nuevoComentario = '';
-
-    const online = await this.UtilsService.checkInternetConnection();
-
-    await this.toastCtrl.create({
-      message: online
-        ? '¡Comentario publicado exitosamente!'
-        : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
-      duration: 1000,
-      position: 'top',
-      color: online ? 'success' : 'warning'
-    }).then(toast => toast.present());
-
-    // Recarga solo la offline y la combinada
-    this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
-      c => c.id_publicacion === this.publicacion.id_publicacion &&
-        c.id_usuario === this.usuarioActual.id_usuario
-    ) || [];
-    this.comentariosCombinados = [
-      ...this.comentarios,
-      ...this.comentariosOffline
-    ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+  // Filtro de palabras vetadas
+  if (this.filtroPalabra.contienePalabraVetada(mensaje)) {
+    const toast = await this.toastCtrl.create({
+      message: 'Tu comentario contiene palabras no permitidas.',
+      duration: 2500,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
+    return;
   }
+
+  const nuevo: Comentario = {
+    id_comentario: Date.now().toString(),
+    id_publicacion: this.publicacion.id_publicacion,
+    id_usuario: this.usuarioActual.id_usuario,
+    contenido_comentario: mensaje,
+    fecha_comentario: new Date(),
+  };
+  await this.comentarioService.agregarComentario(nuevo);
+  this.nuevoComentario = '';
+
+  // Crear notificación para autor de la publicación (solo si no es el mismo usuario)
+  if (this.usuarioActual.id_usuario !== this.publicacion.id_usuario) {
+    try {
+      await this.notificacionesService.crearNotificacion(
+        'comentario',
+        this.usuarioActual.id_usuario,
+        this.publicacion.id_usuario,
+        this.publicacion.id_publicacion
+      );
+    } catch (error) {
+      console.error('Error al crear notificación de comentario:', error);
+    }
+  }
+
+  const online = await this.UtilsService.checkInternetConnection();
+
+  await this.toastCtrl.create({
+    message: online
+      ? '¡Comentario publicado exitosamente!'
+      : 'Comentario guardado offline. Se sincronizará cuando tengas conexión.',
+    duration: 1000,
+    position: 'top',
+    color: online ? 'success' : 'warning'
+  }).then(toast => toast.present());
+
+  // Recarga solo la offline y la combinada
+  this.comentariosOffline = (await this.comentarioService.getComentariosOffline()).filter(
+    c => c.id_publicacion === this.publicacion.id_publicacion &&
+      c.id_usuario === this.usuarioActual.id_usuario
+  ) || [];
+  this.comentariosCombinados = [
+    ...this.comentarios,
+    ...this.comentariosOffline
+  ].sort((a, b) => b.fecha_comentario.getTime() - a.fecha_comentario.getTime());
+}
 
   getLikesComentario(id_comentario: string): number {
     return this.likesComentarios.filter(l => l.id_comentario === id_comentario && l.estado_like).length;
@@ -306,12 +325,78 @@ export class ComentarioPage implements OnInit, OnDestroy {
   }
 
   async comentariolikes(comentario: Comentario) {
-    await this.likeService.toggleLikeComentario(this.usuarioActual.id_usuario, comentario.id_comentario);
+  const idUsuarioActual = this.usuarioActual.id_usuario;
+  const idComentario = comentario.id_comentario;
+  const idAutorComentario = comentario.id_usuario;
+
+  const yaLikeo = this.likesComentarios.some(
+    l => l.id_comentario === idComentario && l.id_usuario === idUsuarioActual && l.estado_like
+  );
+
+  try {
+    await this.likeService.toggleLikeComentario(idUsuarioActual, idComentario);
+
+    if (!yaLikeo && idUsuarioActual !== idAutorComentario) {
+      // Crear notificación de like en comentario
+      await this.notificacionesService.crearNotificacion(
+        'like_comentario',
+        idUsuarioActual,
+        idAutorComentario,
+        comentario.id_publicacion // Puedes pasar id_publicacion o id_comentario, según tu modelo
+
+      );
+      this.mostrarToast('Has dado like al comentario. Notificación creada.');
+    } else if (yaLikeo && idUsuarioActual !== idAutorComentario) {
+      // Eliminar notificación al quitar like
+      await this.notificacionesService.eliminarNotificacion(
+        'like_comentario',
+        idUsuarioActual,
+        idAutorComentario,
+        comentario.id_publicacion
+
+      );
+      this.mostrarToast('Has quitado el like al comentario. Notificación eliminada.');
+    }
+  } catch (error) {
+    console.error('Error al manejar like y notificación de comentario:', error);
+    this.mostrarToast('Error al procesar like del comentario.', 'danger');
   }
+}
 
   async likePublicacion(publicacion: Publicacion) {
-    await this.likeService.toggleLike(this.usuarioActual.id_usuario, publicacion.id_publicacion);
+  const idPublicacion = publicacion.id_publicacion;
+  const idAutor = publicacion.id_usuario;
+  const idUsuarioActual = this.usuarioActual.id_usuario;
+
+  const yaLikeo = this.usuarioLikeoPublicacion(idPublicacion);
+
+  try {
+    await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
+
+    if (!yaLikeo && idUsuarioActual !== idAutor) {
+      // Crear notificación de like
+      await this.notificacionesService.crearNotificacion(
+        'like',
+        idUsuarioActual,
+        idAutor,
+        idPublicacion
+      );
+      this.mostrarToast('Has dado like y notificación creada.');
+    } else if (yaLikeo && idUsuarioActual !== idAutor) {
+      // Eliminar notificación al quitar like
+      await this.notificacionesService.eliminarNotificacion(
+        'like',
+        idUsuarioActual,
+        idAutor,
+        idPublicacion
+      );
+      this.mostrarToast('Has quitado el like. Notificación eliminada.');
+    }
+  } catch (error) {
+    console.error('Error al dar/quitar like o manejar notificación:', error);
+    this.mostrarToast('Error al procesar like.', 'danger');
   }
+}
 
   getLikesPublicacion(id_publicacion: string): number {
     return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
@@ -377,11 +462,40 @@ export class ComentarioPage implements OnInit, OnDestroy {
     return this.guardaPublicacionService.estaGuardada(this.usuarioActual.id_usuario, publicacion.id_publicacion);
   }
 
-  async seguir(usuario: Usuario) {
-    await this.seguirService.toggleSeguir(this.usuarioActual.id_usuario, usuario.id_usuario);
+async seguir(usuario: Usuario) {
+  const idSeguidor = this.usuarioActual.id_usuario;
+  const idSeguido = usuario.id_usuario;
+
+  const yaLoSigue = this.seguirService.sigue(idSeguidor, idSeguido);
+
+  try {
+    await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
     this.seguimientos = this.seguirService.getSeguimientos();
-    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
+
+    if (!yaLoSigue && idSeguidor !== idSeguido) {
+      // Crear notificación de "follow"
+      await this.notificacionesService.crearNotificacion(
+        'follow',
+        idSeguidor,
+        idSeguido
+      );
+      this.mostrarToast('Ahora sigues a este usuario. Notificación creada.');
+    } else if (yaLoSigue) {
+      // Eliminar notificación de "follow" (dejar de seguir)
+      await this.notificacionesService.eliminarNotificacion(
+        'follow',
+        idSeguidor,
+        idSeguido
+      );
+      this.mostrarToast('Has dejado de seguir a este usuario. Notificación eliminada.');
+    }
+  } catch (error) {
+    console.error('Error al manejar la notificación de seguimiento:', error);
+    this.mostrarToast('Error con la notificación de seguimiento.', 'danger');
   }
+}
+
 
   sigueAlAutor(publicacion: Publicacion): boolean {
     if (publicacion.id_usuario === this.usuarioActual.id_usuario) {

@@ -17,13 +17,13 @@ export class NotificacionesService {
     idUserObjet?: string
   ) {
     try {
-      const nuevaNotificacion: Notificacion = {
-        tipoAccion,
-        idUserHecho,
-        idUserReceptor,
-        idUserObjet,
-        estado: false // ✅ Nueva notificación se marca como no leída
-      };
+        const nuevaNotificacion: Notificacion = {
+          tipoAccion,
+          idUserHecho,
+          idUserReceptor,
+          estado: false,
+          ...(idUserObjet ? { idUserObjet } : {}) // Solo si tiene valor
+        };
       await this.firebaseService.addNotificacion(nuevaNotificacion);
     } catch (error) {
       console.error('Error al crear la notificación:', error);
@@ -62,6 +62,29 @@ export class NotificacionesService {
   } catch (error) {
     console.error('Error obteniendo notificaciones enriquecidas:', error);
     return [];
+  }
+}
+
+async eliminarNotificacion(
+  tipoAccion: string,
+  idUserHecho: string,
+  idUserReceptor: string,
+  idUserObjet?: string
+): Promise<void> {
+  try {
+    const notificaciones = await this.firebaseService.getTodasNotificaciones();
+    const notificacion = notificaciones.find(n =>
+      n.tipoAccion === tipoAccion &&
+      n.idUserHecho === idUserHecho &&
+      n.idUserReceptor === idUserReceptor &&
+      (idUserObjet ? n.idUserObjet === idUserObjet : true)
+    );
+
+    if (notificacion && notificacion.id_notificacion) {
+      await this.firebaseService.eliminarNotificacion(notificacion.id_notificacion);
+    }
+  } catch (error) {
+    console.error('Error al eliminar la notificación:', error);
   }
 }
 

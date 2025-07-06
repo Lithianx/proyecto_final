@@ -195,6 +195,7 @@ async likePublicacion(publicacion: any) {
     await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
 
     if (!yaLikeo && idUsuarioActual !== idAutor) {
+      // Si no había dado like, lo da y se crea notificación
       await this.notificacionesService.crearNotificacion(
         'like',
         idUsuarioActual,
@@ -202,12 +203,22 @@ async likePublicacion(publicacion: any) {
         idPublicacion
       );
       this.mostrarToast('Has dado like y notificación creada.');
+    } else if (yaLikeo && idUsuarioActual !== idAutor) {
+      // Si ya había dado like y lo quitó, elimina notificación
+      await this.notificacionesService.eliminarNotificacion(
+        'like',
+        idUsuarioActual,
+        idAutor
+      );
+      this.mostrarToast('Has quitado el like. Notificación eliminada.');
     }
+
   } catch (error) {
-    console.error('Error al dar like o crear notificación:', error);
+    console.error('Error al procesar like o notificación:', error);
     this.mostrarToast('Error al procesar like.', 'danger');
   }
 }
+
 
 
   // Métodos síncronos para la vista
@@ -254,12 +265,37 @@ async likePublicacion(publicacion: any) {
   }
 
   // Seguir/Dejar de seguir
-  async seguir(usuario: Usuario) {
-    await this.seguirService.toggleSeguir(this.usuarioActual.id_usuario, usuario.id_usuario);
-    await this.seguirService.cargarSeguimientos();
-    this.seguimientos = this.seguirService.getSeguimientos();
-    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, this.usuarioActual.id_usuario);
+async seguir(usuario: Usuario) {
+  const idSeguidor = this.usuarioActual.id_usuario;
+  const idSeguido = usuario.id_usuario;
+
+  const yaLoSigue = this.seguirService.sigue(idSeguidor, idSeguido);
+
+  await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
+  await this.seguirService.cargarSeguimientos();
+  this.seguimientos = this.seguirService.getSeguimientos();
+  this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
+
+  try {
+    if (!yaLoSigue && idSeguidor !== idSeguido) {
+      // Crear notificación de "follow"
+      await this.notificacionesService.crearNotificacion(
+        'follow',
+        idSeguidor,
+        idSeguido
+      );
+      this.mostrarToast('Ahora sigues a este usuario. Notificación creada.');
+    } else if (yaLoSigue) {
+      // Eliminar notificación de "follow" (dejar de seguir)
+      await this.notificacionesService.eliminarNotificacion('follow', idSeguidor, idSeguido);
+      this.mostrarToast('Has dejado de seguir a este usuario. Notificación eliminada.');
+    }
+  } catch (error) {
+    console.error('Error al manejar la notificación de seguimiento:', error);
+    this.mostrarToast('Error con la notificación de seguimiento.', 'danger');
   }
+}
+
 
   sigueAlAutor(publicacion: Publicacion): boolean {
     if (publicacion.id_usuario === this.usuarioActual.id_usuario) {
