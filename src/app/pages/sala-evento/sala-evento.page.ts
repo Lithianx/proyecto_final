@@ -154,6 +154,17 @@ export class SalaEventoPage implements OnInit, OnDestroy {
           ...data
         };
 
+        // 🔥 Si el evento fue finalizado, redirige a todos los usuarios a la pantalla de evento finalizado
+        const estadoFinalizadoID = await this.eventoService.obtenerIdEstadoPorDescripcion('FINALIZADO');
+
+        if (this.evento.id_estado_evento === estadoFinalizadoID) {
+          setTimeout(() => {
+            this.router.navigate(['/evento-finalizado']);
+          }, 1000);
+          return; // No seguir ejecutando más lógica
+        }
+
+
         // 🔍 Cargar nombre del juego
         try {
           const juegoRef = doc(this.firestore, 'Juego', data['id_juego']);
@@ -274,6 +285,15 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
 
   async dejarDeParticipar() {
+    if (!this.esParticipante) {
+      console.warn('⛔ Ya no eres participante, no puedes volver a salir.');
+      return;
+    }
+
+    // 🔒 Evita doble clic rápido
+    this.esParticipante = false;
+
+    // Eliminar participación
     await this.eventoService.eliminarParticipante(this.eventoId, this.usuarioActualID);
 
     // 🔔 Mensaje al chat: salida voluntaria
@@ -282,17 +302,25 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       tipo: 'sistema'
     });
 
-    await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
-      cupos: this.evento.cupos + 1
-    });
+    // ✅ Aumentar cupo solo si no supera el máximo de 50
+    const cupoActual = this.evento.cupos ?? 0;
+    if (cupoActual < 50) {
+      await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+        cupos: cupoActual + 1
+      });
+      this.evento.cupos = cupoActual + 1; // actualiza local
+    } else {
+      console.warn('⚠️ No se sumó cupo porque ya está en el máximo permitido (50)');
+    }
 
+    // Refrescar jugadores
     this.jugadores = await this.eventoService.obtenerParticipantesEvento(this.eventoId);
     this.ordenarJugadores();
-    this.esParticipante = false;
 
     await this.eventoService.actualizarEstadoEvento(this.eventoId);
     this.cdr.detectChanges();
   }
+
 
 
   async expulsarJugador(jugadorId: string) {
@@ -445,7 +473,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
               await toast.present();
               setTimeout(() => {
                 this.cargandoEvento = false;
-                this.navCtrl.navigateRoot('/home');
+                this.navCtrl.navigateRoot('/evento-finalizado');
               }, 2000);
             },
           },
@@ -482,6 +510,34 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       }
     }
   }
+
+
+/*   async confirmarFinalizarEvento() {
+    const alerta = await this.alertCtrl.create({
+      header: 'Finalizar Evento',
+      message: '¿Estás seguro que deseas finalizar este evento?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Finalizar',
+          handler: async () => {
+            this.cargandoEvento = true;
+            await this.finalizarEvento();
+            const toast = await this.toastCtrl.create({
+              message: '✅ Evento finalizado correctamente',
+              duration: 2000,
+              position: 'top',
+              color: 'success',
+            });
+            await toast.present();
+            this.cargandoEvento = false;
+          },
+        },
+      ],
+    });
+    await alerta.present();
+  } */
+
 
   pad(num: number): string {
     return num < 10 ? '0' + num : num.toString();

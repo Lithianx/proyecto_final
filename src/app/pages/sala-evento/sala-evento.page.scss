@@ -178,42 +178,7 @@ ion-fab-list ion-button:hover {
   --color: black;
 }
 
-/* Panel del administrador del evento */
-.panel-admin {
-  margin-top: 20px;
-  padding: 16px;
-  border: 2px solid #2bb113;
-  border-radius: 12px;
-  background-color: #1a1a1a;
-  box-shadow: 0 0 12px #2bb113;
-}
 
-.panel-admin h3 {
-  color: #2bb113;
-  margin-bottom: 12px;
-  font-size: 1.2rem;
-}
-
-.panel-admin ion-item {
-  --background: transparent;
-  --color: white;
-  border: 1px solid #2bb113;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.panel-admin ion-input {
-  color: #fff;
-}
-
-.panel-admin ion-button {
-  margin-top: 12px;
-  --background: #2bb113;
-  --color: #000;
-  font-weight: bold;
-  border-radius: 8px;
-  width: 100%;
-}
 
 /* Chat flotante */
 .chat-fab {
@@ -349,4 +314,165 @@ ion-fab-list ion-button:hover {
   align-items: center;
   gap: 8px;
   justify-content: center;
+}
+
+// 🌑 PANEL PRINCIPAL
+.panel-admin {
+  background-color: #0b0b0b;
+  border: 2px solid #2bb113;
+  box-shadow: 0 0 15px #2bb113;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 20px 0;
+
+  ion-card-title {
+    color: #2bb113;
+    font-size: 1.4rem;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  ion-card-subtitle {
+    color: #cccccc;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+  }
+
+  ion-row {
+    align-items: center;
+    justify-content: center;
+  }
+
+  ion-col {
+    padding: 4px;
+  }
+}
+
+// 🎯 LABEL DEL INPUT
+// LABEL del input
+.label-cupos {
+  color: #2bb113;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  display: block;
+  text-align: center;
+}
+
+
+
+
+// ✅ BOTONES BASE
+.panel-admin ion-button {
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 10px;
+  transition: 0.2s;
+  font-size: 0.9rem;
+  box-shadow: 0 0 10px #2bb113;
+}
+
+// 🟢 BOTÓN VERDE
+.panel-admin ion-button[color=success] {
+  --background: #2bb113;
+  --color: #000;
+  box-shadow: 0 0 10px #2bb113;
+}
+
+// 🟡 BOTÓN AMARILLO
+.panel-admin ion-button[color=warning] {
+  --background: #ffcc00;
+  --color: black;
+  box-shadow: 0 0 10px #ffcc00;
+}
+
+// ⚪ BOTÓN GRIS MEDIO
+.panel-admin ion-button[color=medium] {
+  --background: #444;
+  --color: #2bb113;
+  border: 1px solid #2bb113;
+  box-shadow: 0 0 10px #2bb113;
+}
+
+// 🔴 BOTÓN ROJO
+.panel-admin ion-button[color=danger] {
+  --background: #ff4444;
+  --color: white;
+  box-shadow: 0 0 10px #ff4444;
+}
+
+// 🎯 TEXTO DE ERROR BAJO INPUT
+.panel-admin ion-note[color=danger] {
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.panel-admin ion-row {
+  align-items: stretch;
+}
+
+.panel-admin ion-col {
+  display: flex;
+  align-items: stretch;
+}
+
+.panel-admin ion-button {
+  width: 100%;
+  height: 42px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+
+// Fila contenedora para input + botón
+.fila-input {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+// INPUT personalizado
+.input-cupos {
+  width: 100px;
+  height: 36px;
+  border: 1px solid #2bb113;
+  border-radius: 8px;
+  padding: 4px 10px;
+  background-color: #111;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: 0 0 6px #2bb113;
+  text-align: center; // ✅ horizontal
+
+  // Aplica al input interno de ion-input
+  ::ng-deep input {
+    text-align: center; // ✅ horizontal
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    line-height: 36px; // ✅ vertical (igual al height)
+  }
+}
+
+
+// Nota de error
+.error-cupos {
+  font-size: 0.8rem;
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  color: red;
+}
+
+.cupos-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
