@@ -5,26 +5,71 @@
     <h1 class="titulo">SALA EVENTO</h1>
   </div>
 
-  <!-- FAB del anfitrión -->
-  <ion-fab vertical="top" horizontal="end" slot="fixed" *ngIf="esAnfitrion">
-    <ion-fab-button title="Opciones del anfitrión">
-      <ion-icon name="settings-outline"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-list side="bottom">
-      <ion-fab-button title="Unirse como jugador" (click)="unirmeComoParticipante()">
-        <ion-icon name="person-add-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button title="Salir del evento" (click)="dejarDeParticipar()">
-        <ion-icon name="exit-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button title="Editar cupos" (click)="mostrarPanelCupos = !mostrarPanelCupos">
-        <ion-icon name="people-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button title="Ver jugadores" (click)="mostrarPanelJugadores = !mostrarPanelJugadores">
-        <ion-icon name="eye-outline"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
-  </ion-fab>
+  <!-- Panel del Anfitrión (CRUD visual) -->
+  <ion-card *ngIf="esAnfitrion" class="panel-admin">
+    <ion-card-header>
+      <ion-card-title>Panel del Anfitrión</ion-card-title>
+      <ion-card-subtitle>Administra tu evento</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid>
+
+        <!-- BOTÓN INICIAR / FINALIZAR -->
+        <ion-row>
+          <ion-col size="12">
+            <!-- Botón para INICIAR EVENTO -->
+            <ion-button expand="block" color="success" *ngIf="!eventoEnCurso" (click)="iniciarEvento()">
+              <ion-icon name="play-outline" slot="start"></ion-icon>
+              Iniciar evento
+            </ion-button>
+
+            <!-- Botón para FINALIZAR EVENTO -->
+            <ion-button expand="block" color="danger" *ngIf="eventoEnCurso" (click)="iniciarEvento()">
+              <ion-icon name="stop-circle-outline" slot="start"></ion-icon>
+              Finalizar evento
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+
+        <!-- BOTONES PARTICIPAR / SALIR -->
+        <ion-row>
+          <ion-col size="6">
+            <ion-button expand="block" color="warning" (click)="unirmeComoParticipante()">
+              <ion-icon name="log-in-outline" slot="start"></ion-icon>
+              Participar
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button expand="block" color="medium" (click)="dejarDeParticipar()" [disabled]="!esParticipante">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Salir como jugador
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <!-- CAMPO CUPOS (AL FINAL) -->
+        <ion-row>
+          <ion-col size="12" class="cupos-wrapper">
+            <label class="label-cupos">Cupos</label>
+            <div class="fila-input">
+              <ion-input class="input-cupos" type="number" [(ngModel)]="nuevoCupo" min="2" max="50"
+                [color]="campoCuposInvalido ? 'danger' : ''" (keydown)="bloquearCaracteresInvalidos($event)"
+                (ionInput)="validarSoloNumeros($event)">
+              </ion-input>
+
+              <ion-button color="success" size="small" (click)="actualizarCupos()">Actualizar</ion-button>
+            </div>
+            <ion-note class="error-cupos" color="danger" *ngIf="campoCuposInvalido">
+              El número debe estar entre 2 y 50
+            </ion-note>
+          </ion-col>
+        </ion-row>
+
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
 
   <div class="espera-contenedor">
     <ion-card class="espera-card">
@@ -64,30 +109,8 @@
           </ion-item>
         </div>
 
-        <!-- Panel para editar cupos -->
-        <div *ngIf="esAnfitrion && mostrarPanelCupos" class="panel-admin">
-          <ion-item>
-            <ion-label>Cambiar cupos:</ion-label>
-
-            <ion-input type="number" inputmode="numeric" min="2" max="50" [(ngModel)]="nuevoCupo"
-              [color]="campoCuposInvalido ? 'danger' : ''" (keydown)="bloquearCaracteresInvalidos($event)"
-              (ionInput)="validarSoloNumeros($event)">
-            </ion-input>
-
-            <ion-button color="success" (click)="actualizarCupos()">Actualizar</ion-button>
-          </ion-item>
-
-          <!-- 🔴 Mensaje de error debajo del input -->
-          <ion-note color="danger" *ngIf="campoCuposInvalido">
-            El número debe estar entre 2 y 50
-          </ion-note>
-        </div>
-
-
-        <!-- Jugadores visibles para todos -->
+        <!-- Lista de jugadores -->
         <div *ngIf="jugadores?.length > 0" class="panel-admin">
-
-          <!-- Título solo si anfitrión -->
           <ion-item-divider color="dark">
             Jugadores actuales
             <ion-button *ngIf="esAnfitrion" fill="clear" size="small"
@@ -96,7 +119,6 @@
             </ion-button>
           </ion-item-divider>
 
-          <!-- Lista visible para todos -->
           <ion-list *ngIf="esAnfitrion ? mostrarPanelJugadores : true">
             <ion-item *ngFor="let jugador of jugadores" (click)="esAnfitrion ? confirmarExpulsion(jugador) : null"
               [disabled]="jugador.id_usuario === usuarioActualID || !esAnfitrion">
@@ -110,16 +132,8 @@
           </ion-list>
         </div>
 
-        <!-- Acciones principales -->
+        <!-- TEMPORIZADOR + SALIDA -->
         <div class="acciones">
-          <ion-button *ngIf="esAnfitrion" expand="block" color="success" (click)="iniciarEvento()"
-            [disabled]="cargandoEvento">
-            <ion-spinner *ngIf="cargandoEvento" name="dots" slot="start"></ion-spinner>
-            <ng-container *ngIf="!cargandoEvento && !eventoEnCurso">Iniciar Evento</ng-container>
-            <ng-container *ngIf="!cargandoEvento && eventoEnCurso">Finalizar Evento</ng-container>
-            <ng-container *ngIf="cargandoEvento">Cargando...</ng-container>
-          </ion-button>
-
           <div *ngIf="eventoEnCurso" class="temporizador">
             <ion-icon name="time-outline"></ion-icon>
             <span>{{ tiempoTranscurrido }}</span>
@@ -134,13 +148,11 @@
   </div>
 
   <!-- Chat -->
-  <!-- Botón flotante para abrir chat -->
   <div class="chat-fab" (click)="toggleChat()" *ngIf="!chatAbierto">
     <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
     <ion-badge *ngIf="nuevosMensajesSinLeer" color="danger" class="chat-badge">!</ion-badge>
   </div>
 
-  <!-- Ventana de chat -->
   <div class="chat-flotante" *ngIf="chatAbierto">
     <div class="chat-header">
       <span>Chat de la Sala</span>
@@ -174,7 +186,6 @@
       </ion-item>
     </div>
   </div>
-
 </ion-content>
 
 <app-navbar></app-navbar>
