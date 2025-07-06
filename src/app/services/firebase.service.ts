@@ -11,7 +11,10 @@ import { Comentario } from 'src/app/models/comentario.model';
 import { Mensaje } from 'src/app/models/mensaje.model';
 import { Conversacion } from 'src/app/models/conversacion.model';
 import { query, where } from '@angular/fire/firestore';
-import { Notificacion } from 'src/app/models/notificacion.model';  // Asegúrate de importar tu modelo
+import { Notificacion } from 'src/app/models/notificacion.model';  
+
+
+
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
@@ -492,6 +495,7 @@ async addConversacion(conversacion: Conversacion): Promise<void> {
   await addDoc(ref, { ...conversacion });
 }
 
+
  // Agregar una notificación
   async addNotificacion(notificacion: Notificacion): Promise<string> {
     const notificacionesRef = collection(this.firestore, 'Notificacion');
@@ -505,4 +509,22 @@ async addConversacion(conversacion: Conversacion): Promise<void> {
     await updateDoc(docRef, { id_notificacion: docRef.id });
     return docRef.id;
   }
+  
+async getTodasNotificaciones(): Promise<Notificacion[]> {
+  const notificacionesRef = collection(this.firestore, 'Notificacion');
+  const snapshot = await getDocs(notificacionesRef);
+  return snapshot.docs.map(docSnap => {
+    const data = docSnap.data();
+    return {
+      ...data,
+      id_notificacion: docSnap.id,
+      fecha: data['fecha']?.toDate ? data['fecha'].toDate() : data['fecha'] || new Date()
+    } as Notificacion;
+  });
+}
+
+async actualizarNotificacion(id_notificacion: string, datosActualizados: Partial<Notificacion>): Promise<void> {
+  const docRef = doc(this.firestore, 'Notificacion', id_notificacion);
+  await updateDoc(docRef, datosActualizados);
+}
 }
