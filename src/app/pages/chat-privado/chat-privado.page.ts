@@ -483,15 +483,15 @@ console.log('mensajesOffline', this.mensajesOffline);
   */
 
   // ===========================
-  // MÉTODOS SIN VIDEO (ACTIVOS)
+  // MÉTODOS ACTUALIZADOS (PERMITEN VIDEO)
   // ===========================
   abrirInputVideo() {
-    this.mostrarToast('No se pueden enviar videos por este chat.');
+    this.fileInput.nativeElement.click(); // Ahora usa el mismo input que acepta videos
   }
 
   async onVideoSeleccionado(event: any) {
-    this.mostrarToast('No se pueden enviar videos por este chat.');
-    event.target.value = '';
+    // Esta función ya no es necesaria porque onArchivoSeleccionado maneja videos
+    this.onArchivoSeleccionado(event);
   }
 
   seleccionarArchivo() {
@@ -535,33 +535,37 @@ console.log('mensajesOffline', this.mensajesOffline);
   */
 
   // ===========================
-  // MÉTODO SIN VIDEO (ACTIVO)
+  // MÉTODO ACTUALIZADO (PERMITE IMÁGENES Y VIDEOS)
   // ===========================
   async onArchivoSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file) {
-      // Validar que sea una imagen
-      if (!file.type.startsWith('image/')) {
-        if (file.type.startsWith('video/')) {
-          this.mostrarToast('No se pueden enviar videos por este chat.');
-        } else {
-          this.mostrarToast('Solo se pueden enviar imágenes.');
-        }
+      // Validar que sea imagen o video
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        this.mostrarToast('Solo se pueden enviar imágenes o videos.');
         event.target.value = '';
         return;
       }
 
-      // Validar tamaño del archivo (límite de 5MB)
+      // Validar tamaño del archivo
+      let maxSize = 5; // 5MB para imágenes
+      let fileType = 'imagen';
+      
+      if (file.type.startsWith('video/')) {
+        maxSize = 25; // 25MB para videos
+        fileType = 'video';
+      }
+
       const fileSizeInMB = file.size / (1024 * 1024);
-      if (fileSizeInMB > 5) {
-        this.mostrarToast(`La imagen es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es 5MB.`);
+      if (fileSizeInMB > maxSize) {
+        this.mostrarToast(`El ${fileType} es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es ${maxSize}MB.`);
         event.target.value = '';
         return;
       }
 
       // Mostrar toast de carga
       const loadingToast = await this.toastController.create({
-        message: 'Enviando imagen...',
+        message: `Enviando ${fileType}...`,
         duration: 0,
         position: 'bottom'
       });
@@ -572,32 +576,45 @@ console.log('mensajesOffline', this.mensajesOffline);
         try {
           const base64 = reader.result as string;
           
-          // Validar tamaño en base64
-          if (!this.validateImageSize(base64)) {
-            this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(base64)}). Se comprimirá automáticamente.`);
-          }
-
           // Verificar conexión
           const online = await this.utilsService.checkInternetConnection();
           if (!online) {
             await loadingToast.dismiss();
-            this.mostrarToast('No se puede enviar la imagen sin conexión a internet.');
+            this.mostrarToast(`No se puede enviar el ${fileType} sin conexión a internet.`);
             return;
           }
 
-          // Comprimir y subir la imagen a Firebase Storage
-          const imageUrl = await this.firebaseStorageService.uploadCompressedImage(
-            base64,
-            'chat-images',
-            800,  // maxWidth (menor para chat)
-            600,  // maxHeight
-            0.8   // quality
-          );
+          let mediaUrl: string;
+          let tipoMensaje: 'imagen' | 'video';
 
-          // Enviar mensaje con la URL de la imagen
+          if (file.type.startsWith('image/')) {
+            // Validar tamaño en base64 para imágenes
+            if (!this.validateImageSize(base64)) {
+              this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(base64)}). Se comprimirá automáticamente.`);
+            }
+            
+            // Comprimir y subir la imagen
+            mediaUrl = await this.firebaseStorageService.uploadCompressedImage(
+              base64,
+              'chat-images',
+              800,  // maxWidth
+              600,  // maxHeight
+              0.8   // quality
+            );
+            tipoMensaje = 'imagen';
+          } else {
+            // Subir video sin compresión
+            mediaUrl = await this.firebaseStorageService.uploadVideo(
+              base64,
+              'chat-videos'
+            );
+            tipoMensaje = 'video';
+          }
+
+          // Enviar mensaje con la URL del archivo
           await this.comunicacionService.enviarMensajeMultimedia(
-            'imagen',
-            imageUrl,  // Ahora enviamos la URL en lugar del base64
+            tipoMensaje,
+            mediaUrl,
             this.idConversacionActual,
             this.usuarioActual.id_usuario,
           );
@@ -607,8 +624,8 @@ console.log('mensajesOffline', this.mensajesOffline);
           
         } catch (error) {
           await loadingToast.dismiss();
-          console.error('Error al enviar imagen:', error);
-          this.mostrarToast('Error al enviar la imagen. Inténtalo de nuevo.');
+          console.error(`Error al enviar ${fileType}:`, error);
+          this.mostrarToast(`Error al enviar el ${fileType}. Inténtalo de nuevo.`);
         }
 
         event.target.value = '';
@@ -616,7 +633,7 @@ console.log('mensajesOffline', this.mensajesOffline);
 
       reader.onerror = async () => {
         await loadingToast.dismiss();
-        this.mostrarToast('Error al procesar la imagen.');
+        this.mostrarToast(`Error al procesar el ${fileType}.`);
       };
 
       reader.readAsDataURL(file);
@@ -699,21 +716,10 @@ async enviarMensaje() {
 */
 
 // ===========================
-// MÉTODO MODIFICADO (NO PERMITE VIDEOS)
+// MÉTODO ACTUALIZADO (PERMITE TODOS LOS TIPOS DE MENSAJE)
 // ===========================
 async enviarMensaje() {
     if (this.nuevoMensaje.trim() === '') return;
-
-    // Si el mensaje es video, NO lo envía
-    if (
-      this.nuevoMensaje.startsWith('[video]') ||
-      this.nuevoMensaje.endsWith('.mp4') ||
-      this.nuevoMensaje.endsWith('.webm') ||
-      this.nuevoMensaje.endsWith('.mov')
-    ) {
-      this.mostrarToast('No se pueden enviar videos por este chat.');
-      return;
-    }
 
     const mensaje: Mensaje = {
       id_mensaje: '', // Temporal

@@ -96,16 +96,6 @@ export class ComunicacionService {
   }
 
   async enviarMensaje(mensaje: Mensaje): Promise<boolean> {
-    if (
-      mensaje.contenido.startsWith('[video]') ||
-      mensaje.contenido.endsWith('.mp4') ||
-      mensaje.contenido.endsWith('.webm') ||
-      mensaje.contenido.endsWith('.mov')
-    ) {
-      alert('No se pueden enviar videos por este chat.');
-      return false;
-    }
-
     const online = await this.utilsService.checkInternetConnection();
     const mensajeCifrado = {
       ...mensaje,
@@ -191,10 +181,6 @@ export class ComunicacionService {
     idConversacion: string,
     idUsuario: string
   ) {
-    if (tipo === 'video') {
-      alert('No se pueden enviar videos por este chat.');
-      return;
-    }
     const mensaje: Mensaje = {
       id_mensaje: new Date().getTime().toString(),
       id_conversacion: idConversacion,
