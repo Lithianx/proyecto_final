@@ -8,9 +8,9 @@ import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
 import { CryptoService } from './crypto.service';
 import { UsuarioService } from './usuario.service';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +18,10 @@ import { Observable } from 'rxjs';
 export class ComunicacionService {
   mensajes$: Observable<Mensaje[]>;
   conversaciones$: Observable<Conversacion[]>;
+
+  // --- Contador de mensajes no vistos ---
+  private mensajesNoVistos = new BehaviorSubject<number>(0);
+  public mensajesNoVistos$ = this.mensajesNoVistos.asObservable();
 
   constructor(
     private localStorage: LocalStorageService,
@@ -58,6 +62,28 @@ export class ComunicacionService {
         });
       }
     });
+
+    // Suscribirse a los cambios de mensajes para actualizar el contador
+    this.mensajes$.subscribe(async (mensajes) => {
+      await this.actualizarContadorMensajesNoVistos(mensajes);
+    });
+  }
+
+  private async actualizarContadorMensajesNoVistos(mensajes: Mensaje[]) {
+    try {
+      const usuarioActual = await this.usuarioService.getUsuarioActualConectado();
+      if (!usuarioActual) {
+        this.mensajesNoVistos.next(0);
+        return;
+      }
+      const noVistos = mensajes.filter(mensaje =>
+        !mensaje.estado_visto &&
+        mensaje.id_usuario_emisor !== usuarioActual.id_usuario
+      );
+      this.mensajesNoVistos.next(noVistos.length);
+    } catch (error) {
+      this.mensajesNoVistos.next(0);
+    }
   }
 
   filtrarMensajesPorConversacion(mensajes: Mensaje[], id_conversacion: string): Mensaje[] {
@@ -294,5 +320,9 @@ export class ComunicacionService {
       }
     }
     await this.localStorage.setItem('conversaciones_offline', noSincronizadas);
+  }
+
+  public resetearContadorMensajesNoVistos() {
+    this.mensajesNoVistos.next(0);
   }
 }
