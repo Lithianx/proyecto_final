@@ -96,27 +96,38 @@
     </div>
 
     <!-- Eventos Inscritos -->
-    <div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
-      <h2 class="titulo-seccion">Eventos Inscritos</h2>
-      <div *ngFor="let evento of eventosInscritos" class="tarjeta-evento">
-        <ion-card>
-          <ion-card-content class="contenido-tarjeta">
-            <div class="texto-tarjeta">
-              <h3 class="titulo-evento">{{ evento.nombre_evento }}</h3>
-              <p class="detalle">Lugar: {{ evento.lugar }}</p>
-              <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
-              <p class="detalle">Juego: {{ evento.juegoNombre }}</p>
-            </div>
-            <ion-icon
-              name="chevron-forward-outline"
-              class="color-verde icono-forward"
-              size="large"
-              [routerLink]="['/detalle-evento', evento.id]">
-            </ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </div>
+<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
+  <h2 class="titulo-seccion">Eventos Inscritos</h2>
+  
+  <ng-container *ngIf="eventosInscritos.length > 0; else sinEventosInscritos">
+    <div *ngFor="let evento of eventosInscritos" class="tarjeta-evento">
+      <ion-card>
+        <ion-card-content class="contenido-tarjeta">
+          <div class="texto-tarjeta">
+            <h3 class="titulo-evento">{{ evento.nombre_evento }}</h3>
+            <p class="detalle">Lugar: {{ evento.lugar }}</p>
+            <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
+            <p class="detalle">Juego: {{ evento.juegoNombre }}</p>
+          </div>
+          <ion-icon
+            name="chevron-forward-outline"
+            class="color-verde icono-forward"
+            size="large"
+            [routerLink]="['/detalle-evento', evento.id]">
+          </ion-icon>
+        </ion-card-content>
+      </ion-card>
     </div>
+  </ng-container>
+
+  <ng-template #sinEventosInscritos>
+    <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+      <ion-icon name="calendar-outline" size="large"></ion-icon>
+      <p>No estás inscrito en ningún evento por el momento.</p>
+    </div>
+  </ng-template>
+</div>
+
 
     <!-- Eventos Creados -->
     <div *ngIf="vistaSeleccionada === 'eventos-creados'">

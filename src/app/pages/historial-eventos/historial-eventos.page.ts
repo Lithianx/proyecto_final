@@ -1,4 +1,20 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Router } from '@angular/router'; // <-- Importa Router
+import { EventoService } from 'src/app/services/evento.service';
+import { LocalStorageService } from '../../services/local-storage-social.service';
+
+// Define una interfaz mínima para Evento
+interface Evento {
+  id: string;
+  nombre_evento?: string;
+  estado_evento?: string;
+  nombre_juego?: string;
+  lugar?: string;
+  fechaInicio?: Date | string;
+  cupos?: number;
+  creador_nombre?: string;
+  // agrega más campos según necesites
+}
 
 @Component({
   selector: 'app-historial-eventos',
@@ -10,48 +26,37 @@ export class HistorialEventosPage implements OnInit {
 
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
-  // Listas originales
-  eventosinscritos_finaliazado = [
-    {
-      id: 1,
-      nombre: 'Campeonato de LoL',
-      fecha: '12/05/2025',
-      juego: 'League of Legends',
-      creador: 'usuario1',
-    },
-    {
-      id: 2,
-      nombre: 'Torneo Valorant',
-      fecha: '19/05/2025',
-      juego: 'Valorant',
-      creador: 'usuario2',
-    },
-  ];
+  eventosinscritos_finaliazado = [ /* ... */ ]; // igual que antes
 
-  eventosCreados_finaliazado = [
-    {
-      id: 1,
-      nombre: 'Campeonato de LoL',
-      fecha: '12/05/2025',
-      juego: 'League of Legends',
-    },
-    {
-      id: 2,
-      nombre: 'Torneo Valorant',
-      fecha: '19/05/2025',
-      juego: 'Valorant',
-    },
-  ];
+  eventosCreados_finaliazado = [ /* ... */ ]; // igual que antes
 
   mostrarModal: boolean = false;
   searchTerm: string = '';
-
   private _vistaSeleccionada: string = 'eventos-inscritos';
+  eventosCreadosDesdeFirebase: Evento[] = [];
 
-  constructor() {}
+  constructor(
+    private eventoService: EventoService,
+    private localStorageService: LocalStorageService,
+    private router: Router // <-- Inyecta Router aquí
+  ) {}
 
   ngOnInit() {
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+    this.cargarDatosUsuario();
+  }
+
+  private async cargarDatosUsuario() {
+    try {
+      const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
+      if (!id_usuario) {
+        console.warn('No hay id_usuario en localStorage');
+        return;
+      }
+      this.cargarEventosCreados(id_usuario);
+    } catch (error) {
+      console.error('Error obteniendo id_usuario desde localStorage', error);
+    }
   }
 
   ionViewDidEnter() {
@@ -77,30 +82,29 @@ export class HistorialEventosPage implements OnInit {
 
   applySliderTransform(value: string) {
     const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
-
     if (!segmentElement) {
       console.warn('Elemento publicacionesNav no encontrado');
       return;
     }
-
     let position = 0;
-
     switch (value) {
       case 'eventos-inscritos':
         position = 3;
         break;
       case 'eventos-creados':
-        position = 320 / 3; // aprox 106.66px si tu contenedor mide 320px
+        position = 320 / 3;
         break;
       default:
         position = 3;
     }
-
     const adjustedPosition = position - 1;
     segmentElement.style.setProperty('--slider-transform', `translateX(${adjustedPosition}%)`);
   }
 
-  // Filtro para eventos inscritos
+  onSearchChange(event: any) {
+    this.searchTerm = event.detail.value;
+  }
+
   get eventosInscritosFiltrados() {
     if (!this.searchTerm) {
       return this.eventosinscritos_finaliazado;
@@ -111,18 +115,36 @@ export class HistorialEventosPage implements OnInit {
     );
   }
 
-  // Filtro para eventos creados
   get eventosCreadosFiltrados() {
+    const base = this.eventosCreadosDesdeFirebase.length > 0
+      ? this.eventosCreadosDesdeFirebase
+      : this.eventosCreados_finaliazado;
+
     if (!this.searchTerm) {
-      return this.eventosCreados_finaliazado;
+      return base;
     }
     const term = this.searchTerm.toLowerCase();
-    return this.eventosCreados_finaliazado.filter(evento =>
-      evento.nombre.toLowerCase().includes(term)
+    return base.filter(evento =>
+      evento.nombre_evento?.toLowerCase().includes(term) || 
+      evento.nombre?.toLowerCase().includes(term)
     );
   }
 
-  onSearchChange(event: any) {
-    this.searchTerm = event.detail.value;
+  async cargarEventosCreados(idUsuario: string) {
+  try {
+    const eventos = await this.eventoService.obtenerEventosPorCreadorYEstado(idUsuario);
+    
+    // Muestra todos los eventos recibidos en consola
+    console.log('🔥 Eventos recibidos desde Firebase:');
+    console.table(eventos); // Muestra en tabla los datos si usas Chrome
+
+    this.eventosCreadosDesdeFirebase = eventos;
+  } catch (error) {
+    console.error('❌ Error cargando eventos creados:', error);
+  }
+}
+
+  irASalaEvento(evento: Evento) {
+    this.router.navigate(['/sala-evento', evento.id]);
   }
 }

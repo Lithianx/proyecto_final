@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController, NavController } from '@ionic/angular';  // <-- Importar NavController
+import { ActionSheetController, NavController } from '@ionic/angular';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { Usuario } from 'src/app/models/usuario.model';
 import { PublicacionService } from 'src/app/services/publicacion.service';
@@ -9,9 +9,12 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
-import { LocalStorageService } from 'src/app/services/local-storage-social.service'; // <--- Importa el servicio
-import { Juego } from 'src/app/models/juego.model';
+import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
+import { NotificacionesService } from 'src/app/services/notificaciones.service';
+import { Injectable } from '@angular/core';
+import { ToastController } from '@ionic/angular';
+
 @Component({
   selector: 'app-perfil-user',
   templateUrl: './perfil-user.page.html',
@@ -81,41 +84,37 @@ export class PerfilUserPage implements OnInit {
     private seguirService: SeguirService,
     private eventoService: EventoService,
     private localStorageService: LocalStorageService,
-    private comunicacionService: ComunicacionService,  // <-- Inyectar el servicio
-    private navCtrl: NavController                            // <-- Inyectar NavController
+    private comunicacionService: ComunicacionService,
+    private navCtrl: NavController,
+    private notificacionesService: NotificacionesService,
   ) {}
 
   async ngOnInit() {
     this.idUsuarioLogueado = await this.localStorageService.getItem('id_usuario') || '';
-    await this.cargarJuegos(); // Cargar mapa de juegos
-    this.route.paramMap.subscribe(async params => {
-      const id = params.get('id');
-      if (id) {
-        this.idUsuario = id;
+    console.log('ID usuario logueado en ngOnInit:', this.idUsuarioLogueado);
 
-        await this.seguirService.cargarSeguimientos();
-        await this.cargarDatosUsuario(id);
-        await this.cargarPublicaciones(id);
-        await this.cargarEventosCreados(id);
-        await this.cargarEventosInscritos(id);
-
-        this.actualizarEstadoSeguir();
-        this.actualizarEstadisticasSeguir(id);
-      }
-    });
+    await this.cargarJuegos();
   }
 
   async ionViewWillEnter() {
-    if (this.idUsuario) {
-      await this.seguirService.cargarSeguimientos();
-      await this.cargarDatosUsuario(this.idUsuario);
-      await this.cargarPublicaciones(this.idUsuario);
-      await this.cargarEventosCreados(this.idUsuario);
-      await this.cargarEventosInscritos(this.idUsuario);
-
-      this.actualizarEstadoSeguir();
-      this.actualizarEstadisticasSeguir(this.idUsuario);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      console.warn('No se recibió id en ruta');
+      return;
     }
+
+    this.idUsuario = id;
+    console.log('ionViewWillEnter idUsuario:', this.idUsuario);
+
+    await this.seguirService.cargarSeguimientos();
+
+    await this.cargarDatosUsuario(id);
+    await this.cargarPublicaciones(id);
+    await this.cargarEventosCreados(id);
+    await this.cargarEventosInscritos(id);
+
+    this.actualizarEstadoSeguir();
+    this.actualizarEstadisticasSeguir(id);
 
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
@@ -131,13 +130,13 @@ export class PerfilUserPage implements OnInit {
   private async cargarDatosUsuario(id_usuario: string) {
     try {
       const usuario = await this.usuarioService.getUsuarioPorId(id_usuario);
+      console.log('Datos usuario cargados:', usuario);
       if (usuario) {
         this.usuarioActual = usuario;
         this.fotoPerfil = usuario.avatar || this.fotoPerfil;
         this.nombreUsuario = usuario.nombre_usuario || this.nombreUsuario;
         this.descripcionBio = usuario.descripcion || this.descripcionBio;
         this.subname = usuario.sub_name || this.subname;
-        console.log('Datos del usuario:', usuario);
       } else {
         console.warn('Usuario no encontrado para id:', id_usuario);
       }
@@ -152,6 +151,7 @@ export class PerfilUserPage implements OnInit {
       this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === id_usuario);
       this.publicacionesFiltradas = [...this.publicaciones];
       this.estadisticas.publicaciones = this.publicaciones.length;
+      console.log('Publicaciones cargadas:', this.publicaciones);
     } catch (error) {
       console.error('Error cargando publicaciones:', error);
     }
@@ -164,6 +164,7 @@ export class PerfilUserPage implements OnInit {
         ...ev,
         juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
       }));
+      console.log('Eventos creados cargados:', this.eventosCreados);
     } catch (error) {
       console.error('Error al cargar eventos creados:', error);
     }
@@ -179,6 +180,7 @@ export class PerfilUserPage implements OnInit {
         ...ev,
         juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
       }));
+      console.log('Eventos inscritos cargados:', this.eventosInscritos);
     } catch (error) {
       console.error('Error al cargar eventos inscritos:', error);
     }
@@ -188,6 +190,7 @@ export class PerfilUserPage implements OnInit {
     try {
       const juegos = await this.eventoService.getJuegos().toPromise();
       juegos.forEach(j => this.juegosMap.set(String(j.id_juego), String(j.nombre_juego)));
+      console.log('Juegos cargados:', juegos);
     } catch (error) {
       console.error('Error al cargar juegos:', error);
     }
@@ -199,6 +202,7 @@ export class PerfilUserPage implements OnInit {
     const seguidos = seguimientos.filter(s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento).length;
     this.estadisticas.seguidores = seguidores;
     this.estadisticas.seguidos = seguidos;
+    console.log('Estadísticas seguidores:', seguidores, 'seguidos:', seguidos);
   }
 
   ionViewDidEnter() {
@@ -229,14 +233,11 @@ export class PerfilUserPage implements OnInit {
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Opciones',
       buttons: [
-        {
+          {
           text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
           icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
           handler: async () => {
-            await this.seguirService.toggleSeguir(this.idUsuarioLogueado, this.idUsuario);
-            await this.seguirService.cargarSeguimientos();
-            this.siguiendo = this.seguirService.sigue(this.idUsuarioLogueado, this.idUsuario);
-            this.actualizarEstadisticasSeguir(this.idUsuario);
+            await this.seguir();
           }
         },
         {
@@ -313,7 +314,48 @@ export class PerfilUserPage implements OnInit {
   irAReportar(publicacion: Publicacion) {
     this.router.navigate(['/reportar', publicacion.id_publicacion]);
   }
-    volver() {
+
+  volver() {
     this.navCtrl.back();
   }
+async seguir() {
+  const idSeguidor = this.idUsuarioLogueado;
+  const idSeguido = this.idUsuario;
+
+  if (!idSeguidor || !idSeguido || idSeguidor === idSeguido) return;
+
+  const yaLoSigue = this.seguirService.sigue(idSeguidor, idSeguido);
+
+  try {
+    await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
+    await this.seguirService.cargarSeguimientos();
+
+    this.siguiendo = !yaLoSigue;
+
+    this.actualizarEstadisticasSeguir(idSeguido);
+
+    if (!yaLoSigue) {
+      // Crear notificación de seguimiento con tu servicio
+      await this.notificacionesService.crearNotificacion(
+        'Comenzo a seguirte',
+        idSeguidor,
+        idSeguido
+      );
+      console.log('Ahora sigues a este usuario. Notificación creada.');
+    } else {
+      // Eliminar notificación de seguimiento con tu servicio
+      await this.notificacionesService.eliminarNotificacion(
+        'Comenzo a seguirte',
+        idSeguidor,
+        idSeguido
+      );
+      console.log('Has dejado de seguir a este usuario. Notificación eliminada.');
+    }
+  } catch (error) {
+    console.error('Error al manejar la notificación de seguimiento:', error);
+    console.error('Error con la notificación de seguimiento.');
+  }
+}
+
+
 }

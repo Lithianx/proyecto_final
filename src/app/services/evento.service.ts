@@ -321,5 +321,25 @@ export class EventoService {
     return collectionData(q, { idField: 'id' }) as Observable<any[]>;
   }
 
+  async obtenerEventosPorCreadorYEstado(idUsuario: string, estadoId: string = 'EV0aC1pwvmyvaLERiY6B'): Promise<(Evento & { id: string })[]> {
+  const q = query(
+    this.eventosRef,
+    where('id_creador', '==', idUsuario),
+    where('id_estado_evento', '==', estadoId)
+  );
+  const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+  const eventos: (Evento & { id: string })[] = [];
+  querySnapshot.forEach(docSnap => {
+    eventos.push({
+      id: docSnap.id,
+      ...docSnap.data(),
+      fechaInicio: docSnap.data()['fechaInicio']?.toDate?.() ?? new Date()
+    } as Evento & { id: string });
+  });
+
+  return eventos;
+}
+
 
 }
