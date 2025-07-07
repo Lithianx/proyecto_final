@@ -159,7 +159,7 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
         if (this.evento.id_estado_evento === estadoFinalizadoID) {
           setTimeout(() => {
-            this.router.navigate(['/evento-finalizado']);
+            this.router.navigate([`/evento-finalizado/${this.eventoId}`]);
           }, 1000);
           return; // No seguir ejecutando más lógica
         }
@@ -473,7 +473,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
               await toast.present();
               setTimeout(() => {
                 this.cargandoEvento = false;
-                this.navCtrl.navigateRoot('/evento-finalizado');
+                this.navCtrl.navigateRoot(`/evento-finalizado/${this.eventoId}`);
+
               }, 2000);
             },
           },
@@ -503,7 +504,8 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       try {
         const estadoFinalizadoID = await this.eventoService.obtenerIdEstadoPorDescripcion('FINALIZADO');
         await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
-          id_estado_evento: estadoFinalizadoID
+          id_estado_evento: estadoFinalizadoID,
+          timestampFinalizacionEvento: new Date()
         });
       } catch (error) {
         console.error('❌ Error al finalizar evento:', error);
@@ -512,31 +514,6 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   }
 
 
-/*   async confirmarFinalizarEvento() {
-    const alerta = await this.alertCtrl.create({
-      header: 'Finalizar Evento',
-      message: '¿Estás seguro que deseas finalizar este evento?',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Finalizar',
-          handler: async () => {
-            this.cargandoEvento = true;
-            await this.finalizarEvento();
-            const toast = await this.toastCtrl.create({
-              message: '✅ Evento finalizado correctamente',
-              duration: 2000,
-              position: 'top',
-              color: 'success',
-            });
-            await toast.present();
-            this.cargandoEvento = false;
-          },
-        },
-      ],
-    });
-    await alerta.present();
-  } */
 
 
   pad(num: number): string {

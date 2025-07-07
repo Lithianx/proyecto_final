@@ -1,18 +1,65 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Evento finalizado</ion-title>
+<ion-header translucent>
+  <ion-toolbar class="header-dark">
+    <ion-title>🎮 Evento Finalizado</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <h1 class="titulo-finalizado">¡Este evento ha finalizado!</h1>
-  <p>Gracias por participar.</p>
+<ion-content class="fondo-negro" [fullscreen]="true">
+  <div class="contenedor-evento">
+    <h1 class="titulo-finalizado">¡Gracias por participar!</h1>
+    <p class="subtitulo">El evento ha llegado a su fin</p>
 
-  <ion-button expand="block" routerLink="/home">
-    Volver al home
-  </ion-button>
+    <!-- DATOS DEL EVENTO -->
+    <ion-card class="evento-card">
+      <ion-card-header>
+        <ion-card-title>{{ evento?.nombre_evento }}</ion-card-title>
+        <ion-card-subtitle>Organizado por: <span class="resaltado">{{ evento?.creador_nombre }}</span>
+        </ion-card-subtitle>
+      </ion-card-header>
 
-  <ion-button expand="block" color="success" routerLink="/crear-evento-flash">
-    Crear tu propio evento
-  </ion-button>
+      <ion-card-content>
+        <p><strong>Juego:</strong> {{ evento?.nombre_juego }}</p>
+        <p><strong>Lugar:</strong> {{ evento?.lugar }}</p>
+        <p><strong>Fecha de inicio:</strong> {{ evento?.fechaInicio | date: 'short' }}</p>
+        <p *ngIf="duracion !== 'No disponible'"><strong>Duración:</strong> {{ duracion }}</p>
+        <p *ngIf="duracion === 'No disponible'"><strong>Duración:</strong> No disponible</p>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- LISTA DE PARTICIPANTES -->
+    <ion-card class="jugadores-card">
+      <ion-card-header>
+        <ion-card-title>Participantes</ion-card-title>
+      </ion-card-header>
+
+      <ion-list>
+        <ion-item *ngFor="let jugador of participantes">
+          <ion-avatar slot="start">
+            <img [src]="jugador.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + jugador.id_usuario"
+              alt="avatar" />
+
+
+
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ jugador.nombre_usuario }}</h2>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+
+    <!-- BOTONES -->
+    <div class="botones-acciones">
+      <ion-button expand="block" color="medium" (click)="volverHome()">
+        <ion-icon name="home-outline" slot="start"></ion-icon>
+        Volver al Home
+      </ion-button>
+
+      <ion-button expand="block" color="success" (click)="crearEvento()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Crear un nuevo evento
+      </ion-button>
+    </div>
+  </div>
 </ion-content>

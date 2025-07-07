@@ -9,5 +9,7 @@ export interface Evento {
   id_juego: string;                
   id_estado_evento: string;      
   timestampInicioEvento?: Date; 
+  timestampFinalizacionEvento?: Date;
+
              
 }

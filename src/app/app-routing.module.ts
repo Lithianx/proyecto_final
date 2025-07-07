@@ -156,8 +156,9 @@ const routes: Routes = [
     path: 'admin-reporte',
     canActivate: [AuthGuard, AdminGuard],
     loadChildren: () => import('./pages/admin-reporte/admin-reporte.module').then(m => m.AdminReportePageModule)
-  },  {
-    path: 'evento-finalizado',
+  },
+  {
+    path: 'evento-finalizado/:id',
     loadChildren: () => import('./pages/evento-finalizado/evento-finalizado.module').then( m => m.EventoFinalizadoPageModule)
   }
 
