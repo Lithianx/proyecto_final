@@ -52,7 +52,7 @@ export class NotificacionesService {
       return {
         ...notificacion,
         nombre_usuario: usuarioHecho?.nombre_usuario || 'Desconocido',
-        fotoPerfil: usuarioHecho?.fotoPerfil || '',
+        fotoPerfil: usuarioHecho?.avatar || '',
         imagenPublicacion: publicacionRelacionada?.imagen || null
       };
     });

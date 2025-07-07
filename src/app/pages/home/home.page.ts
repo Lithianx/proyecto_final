@@ -195,7 +195,7 @@ async likePublicacion(publicacion: any) {
     await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
 
     if (!yaLikeo && idUsuarioActual !== idAutor) {
-      console.log(`👍 [LIKE] Creando notificación: ${idUsuarioActual} dio like a la publicación ${idPublicacion} de ${idAutor}`);
+
       await this.notificacionesService.crearNotificacion(
         'Le gusto tu publicacion',
         idUsuarioActual,
@@ -203,7 +203,7 @@ async likePublicacion(publicacion: any) {
         idPublicacion
       );
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
-      console.log(`👎 [LIKE] Eliminando notificación: ${idUsuarioActual} quitó like a la publicación ${idPublicacion} de ${idAutor}`);
+
       await this.notificacionesService.eliminarNotificacion(
         'Le gusto tu publicacion',
         idUsuarioActual,
@@ -275,14 +275,14 @@ async seguir(usuario: Usuario) {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
 
     if (!yaLoSigue && idSeguidor !== idSeguido) {
-      console.log(`✅ [SEGUIR] Creando notificación: ${idSeguidor} comenzó a seguir a ${idSeguido}`);
+
       await this.notificacionesService.crearNotificacion(
         'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );
     } else if (yaLoSigue) {
-      console.log(`🗑️ [SEGUIR] Eliminando notificación: ${idSeguidor} dejó de seguir a ${idSeguido}`);
+
       await this.notificacionesService.eliminarNotificacion(
         'Comenzo a seguirte',
         idSeguidor,
