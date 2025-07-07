@@ -7,11 +7,13 @@ import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { FirebaseStorageService } from 'src/app/services/firebase-storage.service';
 import { NavController } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-editar-publicacion',
@@ -51,6 +53,8 @@ export class EditarPublicacionPage implements OnInit {
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
+    private firebaseStorageService: FirebaseStorageService,
+    private utilsService: UtilsService,
     private navCtrl: NavController,
   private toastCtrl: ToastController,
   private filtroPalabra: FiltroPalabraService
@@ -88,6 +92,25 @@ export class EditarPublicacionPage implements OnInit {
         console.warn('Publicación no encontrada');
       }
     });
+  }
+
+  // Función para validar el tamaño de la imagen
+  private validateImageSize(base64String: string): boolean {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    return sizeInMB <= 5;
+  }
+
+  // Función para mostrar información del tamaño de la imagen
+  private getImageSizeInfo(base64String: string): string {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    if (sizeInMB < 1) {
+      return `${(sizeInMB * 1024).toFixed(0)} KB`;
+    } else {
+      return `${sizeInMB.toFixed(1)} MB`;
+    }
   }
 
   eliminarImagen() {
@@ -128,7 +151,21 @@ async seleccionarImagen() {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt
       });
-      this.imagenBase64 = image.dataUrl || null;
+      
+      if (image.dataUrl) {
+        // Validar tamaño de la imagen
+        if (!this.validateImageSize(image.dataUrl)) {
+          const toast = await this.toastCtrl.create({
+            message: `La imagen es demasiado grande (${this.getImageSizeInfo(image.dataUrl)}). Se comprimirá automáticamente.`,
+            duration: 3000,
+            color: 'warning',
+            position: 'top'
+          });
+          toast.present();
+        }
+        
+        this.imagenBase64 = image.dataUrl;
+      }
     } catch (error: any) {
       const toast = await this.toastCtrl.create({
         message: 'No se pudo acceder a la cámara o galería. Revisa los permisos de la app.',
@@ -147,11 +184,40 @@ async seleccionarImagen() {
 
 async onArchivoSeleccionado(event: any) {
   const file = event.target.files[0];
-  if (file && file.type.startsWith('image/')) { // Solo imágenes
+  if (file && file.type.startsWith('image/')) {
+    // Validar tamaño del archivo (límite de 5MB)
+    const fileSizeInMB = file.size / (1024 * 1024);
+    if (fileSizeInMB > 5) {
+      const toast = await this.toastCtrl.create({
+        message: `La imagen es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es 5MB.`,
+        duration: 3000,
+        color: 'danger',
+        position: 'top'
+      });
+      toast.present();
+      if (this.fileInput) {
+        this.fileInput.nativeElement.value = '';
+      }
+      return;
+    }
+
     this.cargandoImagen = true; // Mostrar spinner
     const reader = new FileReader();
-    reader.onload = () => {
-      this.imagenBase64 = reader.result as string;
+    reader.onload = async () => {
+      const imageBase64 = reader.result as string;
+      
+      // Validar tamaño en base64
+      if (!this.validateImageSize(imageBase64)) {
+        const toast = await this.toastCtrl.create({
+          message: `La imagen es demasiado grande (${this.getImageSizeInfo(imageBase64)}). Se comprimirá automáticamente.`,
+          duration: 3000,
+          color: 'warning',
+          position: 'top'
+        });
+        toast.present();
+      }
+      
+      this.imagenBase64 = imageBase64;
       this.cargandoImagen = false; // Ocultar spinner
     };
     reader.onerror = () => {
@@ -185,11 +251,70 @@ async guardarCambios() {
     return;
   }
 
-  if (this.publicacion) {
+  if (!this.publicacion) return;
+
+  // Mostrar toast de carga
+  const loadingToast = await this.toastCtrl.create({
+    message: 'Guardando cambios...',
+    duration: 0,
+    position: 'top'
+  });
+  await loadingToast.present();
+
+  try {
+    let imagenUrl = this.publicacion.imagen || '';
+    
+    // Si hay una nueva imagen, subirla a Firebase Storage
+    if (this.imagenBase64 && this.imagenBase64 !== this.publicacion.imagen) {
+      // Verificar si es una URL de Giphy (no necesita subirse a Storage)
+      if (this.imagenBase64.startsWith('http')) {
+        imagenUrl = this.imagenBase64;
+      } else {
+        // Verificar conexión para subir la imagen
+        const online = await this.utilsService.checkInternetConnection();
+        if (online) {
+          // Si había una imagen anterior y no es de Giphy, eliminarla
+          if (this.publicacion.imagen && 
+              this.publicacion.imagen.includes('firebasestorage.googleapis.com') &&
+              !this.publicacion.imagen.startsWith('https://media.giphy.com/')) {
+            try {
+              await this.firebaseStorageService.deleteImage(this.publicacion.imagen);
+            } catch (error) {
+              console.error('Error al eliminar imagen anterior:', error);
+            }
+          }
+          
+          // Comprimir y subir la nueva imagen
+          imagenUrl = await this.firebaseStorageService.uploadCompressedImage(
+            this.imagenBase64,
+            'publicaciones',
+            1200, // maxWidth
+            1200, // maxHeight
+            0.8   // quality
+          );
+        } else {
+          // Si no hay conexión, mostrar error
+          await loadingToast.dismiss();
+          const toast = await this.toastCtrl.create({
+            message: 'No se puede subir la imagen sin conexión a internet.',
+            duration: 3000,
+            color: 'danger',
+            position: 'top'
+          });
+          toast.present();
+          return;
+        }
+      }
+    }
+
+    // Actualizar la publicación
     this.publicacion.contenido = this.contenido;
-    this.publicacion.imagen = this.imagenBase64 || '';
+    this.publicacion.imagen = imagenUrl;
 
     await this.publicacionService.updatePublicacion(this.publicacion);
+
+    // Cerrar toast de carga
+    await loadingToast.dismiss();
 
     // Si quieres mostrar todas las publicaciones (online/offline)
     if (navigator.onLine) {
@@ -201,6 +326,19 @@ async guardarCambios() {
     console.log('Cambios guardados:', this.publicaciones);
     await this.mostrarToast('¡Publicación modificada exitosamente!');
     this.router.navigate(['/home']);
+
+  } catch (error) {
+    // Cerrar toast de carga en caso de error
+    await loadingToast.dismiss();
+    
+    console.error('Error al guardar cambios:', error);
+    const toast = await this.toastCtrl.create({
+      message: 'Error al guardar los cambios. Inténtalo de nuevo.',
+      duration: 3000,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
   }
 }
 

@@ -10,6 +10,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { FirebaseStorageService } from 'src/app/services/firebase-storage.service';
 
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { environment } from 'src/environments/environment';
@@ -66,10 +67,30 @@ export class ChatPrivadoPage implements OnInit {
     private localStorage: LocalStorageService,
     private comunicacionService: ComunicacionService,
     private usuarioService: UsuarioService,
+    private firebaseStorageService: FirebaseStorageService,
     private cdRef: ChangeDetectorRef,
     private utilsService: UtilsService,
     private toastController: ToastController
   ) { }
+
+  // Función para validar el tamaño de la imagen
+  private validateImageSize(base64String: string): boolean {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    return sizeInMB <= 5;
+  }
+
+  // Función para mostrar información del tamaño de la imagen
+  private getImageSizeInfo(base64String: string): string {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    if (sizeInMB < 1) {
+      return `${(sizeInMB * 1024).toFixed(0)} KB`;
+    } else {
+      return `${sizeInMB.toFixed(1)} MB`;
+    }
+  }
 
   private convertirFecha(fecha: any): Date {
     if (fecha instanceof Date) return fecha;
@@ -377,13 +398,53 @@ console.log('mensajesOffline', this.mensajesOffline);
       });
 
       if (image && image.dataUrl) {
-        await this.comunicacionService.enviarMensajeMultimedia(
-          'imagen',
-          image.dataUrl,
-          this.idConversacionActual,
-          this.usuarioActual.id_usuario,
-        );
-        this.scrollToBottom();
+        // Validar tamaño de la imagen
+        if (!this.validateImageSize(image.dataUrl)) {
+          this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(image.dataUrl)}). Se comprimirá automáticamente.`);
+        }
+
+        // Mostrar toast de carga
+        const loadingToast = await this.toastController.create({
+          message: 'Enviando imagen...',
+          duration: 0,
+          position: 'bottom'
+        });
+        await loadingToast.present();
+
+        try {
+          // Verificar conexión
+          const online = await this.utilsService.checkInternetConnection();
+          if (!online) {
+            await loadingToast.dismiss();
+            this.mostrarToast('No se puede enviar la imagen sin conexión a internet.');
+            return;
+          }
+
+          // Comprimir y subir la imagen a Firebase Storage
+          const imageUrl = await this.firebaseStorageService.uploadCompressedImage(
+            image.dataUrl,
+            'chat-images',
+            800,  // maxWidth (menor para chat)
+            600,  // maxHeight
+            0.8   // quality
+          );
+
+          // Enviar mensaje con la URL de la imagen
+          await this.comunicacionService.enviarMensajeMultimedia(
+            'imagen',
+            imageUrl,  // Ahora enviamos la URL en lugar del base64
+            this.idConversacionActual,
+            this.usuarioActual.id_usuario,
+          );
+
+          this.scrollToBottom();
+          await loadingToast.dismiss();
+
+        } catch (error) {
+          await loadingToast.dismiss();
+          console.error('Error al enviar imagen:', error);
+          this.mostrarToast('Error al enviar la imagen. Inténtalo de nuevo.');
+        }
       }
     } catch (error: any) {
       if (error.message?.toLowerCase().includes('permission')) {
@@ -479,23 +540,83 @@ console.log('mensajesOffline', this.mensajesOffline);
   async onArchivoSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
+      // Validar que sea una imagen
+      if (!file.type.startsWith('image/')) {
+        if (file.type.startsWith('video/')) {
+          this.mostrarToast('No se pueden enviar videos por este chat.');
+        } else {
+          this.mostrarToast('Solo se pueden enviar imágenes.');
+        }
+        event.target.value = '';
+        return;
+      }
 
+      // Validar tamaño del archivo (límite de 5MB)
+      const fileSizeInMB = file.size / (1024 * 1024);
+      if (fileSizeInMB > 5) {
+        this.mostrarToast(`La imagen es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es 5MB.`);
+        event.target.value = '';
+        return;
+      }
+
+      // Mostrar toast de carga
+      const loadingToast = await this.toastController.create({
+        message: 'Enviando imagen...',
+        duration: 0,
+        position: 'bottom'
+      });
+      await loadingToast.present();
+
+      const reader = new FileReader();
       reader.onload = async () => {
-        const base64 = reader.result as string;
-        if (file.type.startsWith('image/')) {
+        try {
+          const base64 = reader.result as string;
+          
+          // Validar tamaño en base64
+          if (!this.validateImageSize(base64)) {
+            this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(base64)}). Se comprimirá automáticamente.`);
+          }
+
+          // Verificar conexión
+          const online = await this.utilsService.checkInternetConnection();
+          if (!online) {
+            await loadingToast.dismiss();
+            this.mostrarToast('No se puede enviar la imagen sin conexión a internet.');
+            return;
+          }
+
+          // Comprimir y subir la imagen a Firebase Storage
+          const imageUrl = await this.firebaseStorageService.uploadCompressedImage(
+            base64,
+            'chat-images',
+            800,  // maxWidth (menor para chat)
+            600,  // maxHeight
+            0.8   // quality
+          );
+
+          // Enviar mensaje con la URL de la imagen
           await this.comunicacionService.enviarMensajeMultimedia(
             'imagen',
-            base64,
+            imageUrl,  // Ahora enviamos la URL en lugar del base64
             this.idConversacionActual,
             this.usuarioActual.id_usuario,
           );
-        } else if (file.type.startsWith('video/')) {
-          this.mostrarToast('No se pueden enviar videos por este chat.');
+
+          this.scrollToBottom();
+          await loadingToast.dismiss();
+          
+        } catch (error) {
+          await loadingToast.dismiss();
+          console.error('Error al enviar imagen:', error);
+          this.mostrarToast('Error al enviar la imagen. Inténtalo de nuevo.');
         }
-        this.scrollToBottom();
 
         event.target.value = '';
+      };
+
+      reader.onerror = async () => {
+        await loadingToast.dismiss();
+        this.mostrarToast('Error al procesar la imagen.');
       };
 
       reader.readAsDataURL(file);
