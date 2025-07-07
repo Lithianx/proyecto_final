@@ -63,6 +63,7 @@ export class AdminReportePage implements OnInit {
 
   async aceptarReporte(reporte: Reporte, publicaciones: Publicacion[], usuarios: Usuario[]) {
     try {
+      
       if (this.esReporteDePublicacion(reporte)) {
         // REPORTE DE PUBLICACIÓN
         // Elimina la publicación asociada
@@ -79,6 +80,7 @@ export class AdminReportePage implements OnInit {
         this.mostrarToast('Reporte aceptado y publicación eliminada.', 'success');
       } else {
         // REPORTE DE PERFIL/USUARIO
+        console.log('Es reporte de perfil/usuario');
         const usuarioReportado = this.getUsuarioReportado(reporte, usuarios);
         if (usuarioReportado) {
           // Desactivar cuenta del usuario reportado
@@ -152,13 +154,14 @@ export class AdminReportePage implements OnInit {
     if (reporte.id_publicacion) return undefined; // Es reporte de publicación
     
     // Para reportes de perfil, necesitamos extraer el ID del usuario reportado
-    // Esto puede venir en la descripción o necesitamos modificar el modelo
+    // El formato esperado es: "Usuario ID: xxxxx | descripción"
     
-    // Por ahora, buscaremos en la descripción patrones como "Usuario ID: xxxx"
+    
     const match = reporte.descripcion_reporte.match(/Usuario\s+ID:\s*([a-zA-Z0-9]+)/i);
     if (match) {
       const userId = match[1];
-      return usuarios.find(user => user.id_usuario === userId);
+      const usuario = usuarios.find(user => user.id_usuario === userId);
+      return usuario;
     }
     
     return undefined;

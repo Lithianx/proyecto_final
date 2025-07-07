@@ -48,12 +48,26 @@ export class UsuarioService {
    * Si hay conexión, usa Firebase Auth. Si no, busca en localStorage.
    */
   async login(correo: string, contrasena: string): Promise<Usuario | null> {
+    console.log('🔑 Iniciando login para:', correo);
     const online = await this.utilsService.checkInternetConnection();
+    console.log('🌐 Estado de conexión:', online ? 'Online' : 'Offline');
+    
     if (online) {
       try {
         const credenciales = await signInWithEmailAndPassword(this.auth, correo, contrasena);
+        console.log('✅ Firebase Auth exitoso');
+        
         await this.cargarUsuarios();
         const usuario = this.getUsuarios().find(u => u.correo_electronico === correo);
+        console.log('👤 Usuario encontrado:', usuario?.nombre_usuario, 'Estado cuenta:', usuario?.estado_cuenta);
+        
+        // Verificar si la cuenta está desactivada
+        if (usuario && usuario.estado_cuenta === false) {
+          console.log('❌ Cuenta desactivada, cerrando sesión de Firebase');
+          await this.auth.signOut(); // Cerrar sesión de Firebase
+          throw new Error('Tu cuenta ha sido desactivada. Contacta al administrador.');
+        }
+        
         if (usuario) {
           const usuarioMinimo = {
             id_usuario: usuario.id_usuario,
@@ -62,22 +76,34 @@ export class UsuarioService {
             rol: usuario.rol,
             correo_electronico: usuario.correo_electronico,
             sub_name: usuario.sub_name,
-            descripcion: usuario.descripcion
+            descripcion: usuario.descripcion,
+            estado_cuenta: usuario.estado_cuenta
              
           };
           await this.localStorage.setItem('usuarioActual', usuarioMinimo);
           await this.localStorage.setItem('id_usuario', usuario.id_usuario);
+          console.log('💾 Usuario guardado en localStorage con estado_cuenta:', usuarioMinimo.estado_cuenta);
         }
         return usuario ?? null;
       } catch (error) {
+        console.error('❌ Error en login online:', error);
         throw error;
       }
     } else {
       // Offline: buscar usuario en localStorage
+      console.log('📱 Modo offline, buscando en localStorage');
       await this.cargarUsuarios();
       const usuario = this.getUsuarios().find(
         u => u.correo_electronico === correo && u.contrasena === contrasena
       );
+      console.log('👤 Usuario encontrado offline:', usuario?.nombre_usuario, 'Estado cuenta:', usuario?.estado_cuenta);
+      
+      // Verificar si la cuenta está desactivada
+      if (usuario && usuario.estado_cuenta === false) {
+        console.log('❌ Cuenta desactivada en modo offline');
+        throw new Error('Tu cuenta ha sido desactivada. Contacta al administrador.');
+      }
+      
       if (usuario) {
         const usuarioMinimo = {
           id_usuario: usuario.id_usuario,
@@ -86,10 +112,12 @@ export class UsuarioService {
           rol: usuario.rol,
           correo_electronico: usuario.correo_electronico,
           sub_name: usuario.sub_name,
-          descripcion: usuario.descripcion
+          descripcion: usuario.descripcion,
+          estado_cuenta: usuario.estado_cuenta
         };
         await this.localStorage.setItem('usuarioActual', usuarioMinimo);
         await this.localStorage.setItem('id_usuario', usuario.id_usuario);
+        console.log('💾 Usuario guardado en localStorage offline con estado_cuenta:', usuarioMinimo.estado_cuenta);
       }
       return usuario ?? null;
     }
@@ -178,6 +206,14 @@ export class UsuarioService {
             await this.cargarUsuarios();
             const usuarios = this.getUsuarios();
             const usuarioEncontrado = usuarios.find(u => u.correo_electronico === user.email);
+            
+            // Verificar si la cuenta está desactivada
+            if (usuarioEncontrado && usuarioEncontrado.estado_cuenta === false) {
+              await this.logout(); // Cerrar sesión automáticamente
+              resolve(null);
+              return;
+            }
+            
             if (usuarioEncontrado) {
               const usuarioMinimo = {
                 id_usuario: usuarioEncontrado.id_usuario,
@@ -186,7 +222,8 @@ export class UsuarioService {
                 rol: usuarioEncontrado.rol,
                 correo_electronico: usuarioEncontrado.correo_electronico,
                 sub_name: usuarioEncontrado.sub_name,
-                descripcion: usuarioEncontrado.descripcion
+                descripcion: usuarioEncontrado.descripcion,
+                estado_cuenta: usuarioEncontrado.estado_cuenta
               };
               await this.localStorage.setItem('usuarioActual', usuarioMinimo);
             }
@@ -199,6 +236,17 @@ export class UsuarioService {
     } else {
       // Offline: obtener usuario de localStorage
       const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
+      
+      // Verificar si la cuenta está desactivada también en modo offline
+      if (usuarioActual) {
+        await this.cargarUsuarios();
+        const usuarioCompleto = this.getUsuarios().find(u => u.id_usuario === usuarioActual.id_usuario);
+        if (usuarioCompleto && usuarioCompleto.estado_cuenta === false) {
+          await this.logout(); // Cerrar sesión automáticamente
+          return null;
+        }
+      }
+      
       return usuarioActual ?? null;
     }
   }
@@ -223,7 +271,9 @@ export class UsuarioService {
           rol: u.rol,
           correo_electronico: u.correo_electronico,
           sub_name: u.sub_name,
-          descripcion: u.descripcion
+          descripcion: u.descripcion,
+          estado_cuenta: u.estado_cuenta, // ¡INCLUIR ESTADO_CUENTA!
+          estado_online: u.estado_online
         }));
         await this.localStorage.setItem('usuarios', usuariosMinimos);
       } catch (error) {
@@ -243,8 +293,8 @@ export class UsuarioService {
         correo_electronico: u.correo_electronico || '',
         fecha_registro: new Date(),
         contrasena: '',
-        estado_cuenta: true,
-        estado_online: true,
+        estado_cuenta: u.estado_cuenta ?? true, // Usar el valor real o true por defecto
+        estado_online: u.estado_online ?? true,
         sub_name: u.sub_name,
         descripcion: u.descripcion
       }));
@@ -284,7 +334,9 @@ export class UsuarioService {
       rol: u.rol,
       correo_electronico: u.correo_electronico,
       sub_name: u.sub_name,
-      descripcion: u.descripcion
+      descripcion: u.descripcion,
+      estado_cuenta: u.estado_cuenta,
+      estado_online: u.estado_online
     }));
     await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
@@ -312,7 +364,9 @@ export class UsuarioService {
       rol: u.rol,
       correo_electronico: u.correo_electronico,
       sub_name: u.sub_name,
-      descripcion: u.descripcion
+      descripcion: u.descripcion,
+      estado_cuenta: u.estado_cuenta,
+      estado_online: u.estado_online
     }));
     await this.localStorage.setItem('usuarios', usuariosMinimos);
   }
@@ -334,7 +388,9 @@ export class UsuarioService {
         rol: u.rol,
         correo_electronico: u.correo_electronico,
         sub_name: u.sub_name,
-        descripcion: u.descripcion
+        descripcion: u.descripcion,
+        estado_cuenta: u.estado_cuenta,
+        estado_online: u.estado_online
       }));
       await this.localStorage.setItem('usuarios', usuariosMinimos);
 
@@ -366,7 +422,7 @@ export class UsuarioService {
       const docRef = doc(this.firestore, 'Usuario', id_usuario);
       await updateDoc(docRef, { estado_cuenta: false });
     }
-    await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: true });
+    await this.actualizarUsuarioLocal(id_usuario, { estado_cuenta: false });
   }
 
   // Actualiza solo campos específicos en localStorage
@@ -382,7 +438,9 @@ export class UsuarioService {
         rol: u.rol,
         correo_electronico: u.correo_electronico,
         sub_name: u.sub_name,
-        descripcion: u.descripcion
+        descripcion: u.descripcion,
+        estado_cuenta: u.estado_cuenta,
+        estado_online: u.estado_online
       }));
       await this.localStorage.setItem('usuarios', usuariosMinimos);
       this.usuariosEnMemoria = usuarios;
@@ -395,5 +453,76 @@ export class UsuarioService {
   private obtenerFechaValida(fecha: any): Date {
     const nuevaFecha = new Date(fecha);
     return isNaN(nuevaFecha.getTime()) ? new Date() : nuevaFecha;
+  }
+
+  /**
+   * Valida el estado de cuenta del usuario actual, forzando sincronización con Firebase si hay conexión.
+   * Útil para validar después de acciones críticas o cambios sospechosos en localStorage.
+   */
+  async validarEstadoCuentaActual(): Promise<boolean> {
+    const online = await this.utilsService.checkInternetConnection();
+    const usuarioLocal = await this.localStorage.getItem<Usuario>('usuarioActual');
+    
+    if (!usuarioLocal) {
+      console.log('🔍 No hay usuario en localStorage');
+      return false;
+    }
+    
+    if (online) {
+      // Forzar recarga desde Firebase para validar estado real
+      console.log('🔄 Validando estado de cuenta desde Firebase...');
+      try {
+        const docRef = doc(this.firestore, 'Usuario', usuarioLocal.id_usuario);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const usuarioFirebase = docSnap.data() as Usuario;
+          
+          if (usuarioFirebase.estado_cuenta === false) {
+            console.log('❌ Cuenta desactivada detectada en Firebase, cerrando sesión');
+            await this.logout();
+            return false;
+          }
+          
+          // Actualizar localStorage con datos reales de Firebase
+          const usuarioActualizado = {
+            id_usuario: usuarioFirebase.id_usuario,
+            nombre_usuario: usuarioFirebase.nombre_usuario,
+            avatar: usuarioFirebase.avatar,
+            rol: usuarioFirebase.rol,
+            correo_electronico: usuarioFirebase.correo_electronico,
+            sub_name: usuarioFirebase.sub_name,
+            descripcion: usuarioFirebase.descripcion,
+            estado_cuenta: usuarioFirebase.estado_cuenta
+          };
+          await this.localStorage.setItem('usuarioActual', usuarioActualizado);
+          console.log('✅ Estado de cuenta validado y sincronizado');
+          return true;
+        } else {
+          console.log('❌ Usuario no encontrado en Firebase');
+          await this.logout();
+          return false;
+        }
+      } catch (error) {
+        console.error('Error validando estado de cuenta:', error);
+        // En caso de error, confiar en localStorage como respaldo
+        return usuarioLocal.estado_cuenta !== false;
+      }
+    } else {
+      // Offline: validar con datos locales
+      console.log('📱 Validando estado offline con datos locales');
+      return usuarioLocal.estado_cuenta !== false;
+    }
+  }
+
+  /**
+   * Obtiene el usuario actual validando siempre su estado de cuenta
+   */
+  async getUsuarioActualValidado(): Promise<Usuario | null> {
+    const esValido = await this.validarEstadoCuentaActual();
+    if (!esValido) {
+      return null;
+    }
+    return await this.localStorage.getItem<Usuario>('usuarioActual');
   }
 }
