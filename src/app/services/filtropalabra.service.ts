@@ -118,15 +118,23 @@ private palabrasVetadas = [
       return true;
     }
     
-    // Patrón 2: Símbolos intercalados (ej: "p-u-t-a", "p*u*t*a")
+    // Patrón 2: Símbolos intercalados (ej: "p-u-t-a", "p*u*t*a", "G,o,RdAs")
     const conSimbolos = textoOriginal.replace(/[^a-z0-9]/g, '');
-    if (conSimbolos === palabraVetadaUnida && textoOriginal.includes(palabraVetadaUnida)) {
+    if (conSimbolos.toLowerCase() === palabraVetadaUnida) {
       // Verificar que haya símbolos intercalados
       const caracteresNoAlfanum = textoOriginal.replace(/[a-z0-9]/g, '').length;
       return caracteresNoAlfanum >= 2;
     }
     
-    // Patrón 3: Prefijos/sufijos obvios (ej: "xxputaxx", "123puta456")
+    // Patrón 3: Letras separadas por comas/puntos (ej: "G,o,RdAs", "p.u.t.a")
+    const textoSinSeparadores = textoOriginal.replace(/[,.\-_|/\\*+=#@!$%^&(){}[\]<>?;:'"~`]/g, '');
+    if (textoSinSeparadores.toLowerCase() === palabraVetadaUnida) {
+      // Verificar que tenga suficientes separadores
+      const separadores = textoOriginal.match(/[,.\-_|/\\*+=#@!$%^&(){}[\]<>?;:'"~`]/g);
+      return separadores && separadores.length >= 2;
+    }
+    
+    // Patrón 4: Prefijos/sufijos obvios (ej: "xxputaxx", "123puta456")
     const textoSinNumeros = textoOriginal.replace(/[0-9]/g, '');
     const textoSinX = textoOriginal.replace(/x+/g, '');
     
@@ -145,6 +153,24 @@ private palabrasVetadas = [
     // Dividir el texto en palabras individuales
     const palabrasTexto = textoNormal.split(/\s+/);
     
+    // 1. Verificar patrones de evasión en el texto completo (sin dividir por espacios)
+    const textoCompletoSinEspacios = textoNormal.replace(/\s+/g, '');
+    const tieneEvasionCompleta = this.palabrasVetadas.some(palabra => {
+      const palabraNorm = this.normalizar(palabra);
+      const palabraVetadaUnida = this.unirCaracteresSeparados(palabraNorm);
+      
+      // Solo verificar palabras individuales para evasión completa
+      if (!palabraNorm.includes(' ') && palabraVetadaUnida.length >= 4) {
+        return this.detectarPatronEvasion(textoCompletoSinEspacios, palabraVetadaUnida);
+      }
+      return false;
+    });
+    
+    if (tieneEvasionCompleta) {
+      return true;
+    }
+    
+    // 2. Verificar palabras individuales y frases
     return this.palabrasVetadas.some(palabra => {
       const palabraNorm = this.normalizar(palabra);
       
