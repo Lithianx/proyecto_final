@@ -151,7 +151,7 @@ export class HistorialEventosPage implements OnInit {
 }
 
   irASalaEvento(evento: Evento) {
-    this.router.navigate(['/sala-evento', evento.id]);
+    this.router.navigate(['/evento-finalizado', evento.id]);
   }
   private async cargarEventosInscritos(idUsuario: string) {
   try {
