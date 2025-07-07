@@ -767,7 +767,14 @@ async enviarMensaje() {
   esPublicacion(mensaje: Mensaje): boolean {
     try {
       const obj = JSON.parse(mensaje.contenido);
-      return obj && obj.id_publicacion && obj.contenido;
+      // Una publicación debe tener id_publicacion y al menos uno de: contenido, imagen, video
+      return obj && obj.id_publicacion && (
+        obj.contenido !== undefined || 
+        obj.imagen || 
+        obj.video ||
+        obj.fecha_publicacion ||
+        obj.id_usuario
+      );
     } catch {
       return false;
     }

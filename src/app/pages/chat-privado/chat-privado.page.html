@@ -29,9 +29,12 @@
             style="cursor:pointer;">
             <ion-card-content>
               <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
-                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen">
-                <p>
+                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="publicacion-imagen">
+                <p *ngIf="publicacion.contenido && publicacion.contenido.trim().length > 0">
                   {{ publicacion.contenido | slice:0:80 }}<span *ngIf="publicacion.contenido?.length > 80">...</span>
+                </p>
+                <p class="publicacion-sin-texto">
+                  📷 Publicación compartida
                 </p>
               </div>
             </ion-card-content>
