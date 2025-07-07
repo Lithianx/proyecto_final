@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { PublicacionService } from 'src/app/services/publicacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { FirebaseStorageService } from 'src/app/services/firebase-storage.service';
 import { NavController } from '@ionic/angular';
 import { UtilsService } from 'src/app/services/utils.service';
 import { ToastController } from '@ionic/angular';
@@ -52,6 +53,7 @@ export class CrearPublicacionPage implements OnInit {
     private localStorage: LocalStorageService,
     private publicacionService: PublicacionService,
     private usuarioService: UsuarioService,
+    private firebaseStorageService: FirebaseStorageService,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
     private utilsService: UtilsService,
@@ -92,6 +94,28 @@ export class CrearPublicacionPage implements OnInit {
     this.mostrarBuscadorGiphy = false;
   }
 
+  // Función para validar el tamaño de la imagen
+  private validateImageSize(base64String: string): boolean {
+    // Calcular el tamaño en bytes de la imagen base64
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    // Límite de 5MB para imágenes
+    return sizeInMB <= 5;
+  }
+
+  // Función para mostrar información del tamaño de la imagen
+  private getImageSizeInfo(base64String: string): string {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    if (sizeInMB < 1) {
+      return `${(sizeInMB * 1024).toFixed(0)} KB`;
+    } else {
+      return `${sizeInMB.toFixed(1)} MB`;
+    }
+  }
+
 async seleccionarImagen() {
   const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.() || !!(window as any).Capacitor?.isNative;
   if (isCapacitor) {
@@ -108,7 +132,21 @@ async seleccionarImagen() {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt
       });
-      this.imagenBase64 = image.dataUrl || null;
+      
+      if (image.dataUrl) {
+        // Validar tamaño de la imagen
+        if (!this.validateImageSize(image.dataUrl)) {
+          const toast = await this.toastCtrl.create({
+            message: `La imagen es demasiado grande (${this.getImageSizeInfo(image.dataUrl)}). Se comprimirá automáticamente.`,
+            duration: 3000,
+            color: 'warning',
+            position: 'top'
+          });
+          toast.present();
+        }
+        
+        this.imagenBase64 = image.dataUrl;
+      }
     } catch (error: any) {
       const toast = await this.toastCtrl.create({
         message: 'No se pudo acceder a la cámara o galería. Revisa los permisos de la app.',
@@ -128,10 +166,39 @@ async seleccionarImagen() {
 async onArchivoSeleccionado(event: any) {
   const file = event.target.files[0];
   if (file && file.type.startsWith('image/')) {
+    // Validar tamaño del archivo (límite de 5MB)
+    const fileSizeInMB = file.size / (1024 * 1024);
+    if (fileSizeInMB > 5) {
+      const toast = await this.toastCtrl.create({
+        message: `La imagen es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es 5MB.`,
+        duration: 3000,
+        color: 'danger',
+        position: 'top'
+      });
+      toast.present();
+      if (this.fileInput) {
+        this.fileInput.nativeElement.value = '';
+      }
+      return;
+    }
+
     this.cargandoImagen = true; // Mostrar spinner
     const reader = new FileReader();
-    reader.onload = () => {
-      this.imagenBase64 = reader.result as string;
+    reader.onload = async () => {
+      const imageBase64 = reader.result as string;
+      
+      // Validar tamaño en base64
+      if (!this.validateImageSize(imageBase64)) {
+        const toast = await this.toastCtrl.create({
+          message: `La imagen es demasiado grande (${this.getImageSizeInfo(imageBase64)}). Se comprimirá automáticamente.`,
+          duration: 3000,
+          color: 'warning',
+          position: 'top'
+        });
+        toast.present();
+      }
+      
+      this.imagenBase64 = imageBase64;
       this.cargandoImagen = false; // Ocultar spinner
     };
     reader.onerror = () => {
@@ -168,39 +235,99 @@ async publicar() {
     return;
   }
 
-  const nuevaPublicacion: Publicacion = {
-    id_publicacion: '', // Temporal
-    id_usuario: this.usuarioActual.id_usuario,
-    contenido: this.contenido || '',
-    imagen: this.imagenBase64 || '',
-    fecha_publicacion: new Date(),
-  };
+  // Mostrar toast de carga
+  const loadingToast = await this.toastCtrl.create({
+    message: 'Publicando...',
+    duration: 0,
+    position: 'top'
+  });
+  await loadingToast.present();
 
-  // Guardar en Firebase y obtener el ID generado
-  const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
-  nuevaPublicacion.id_publicacion = id_publicacion;
+  try {
+    let imagenUrl = '';
+    
+    // Si hay imagen, subirla a Firebase Storage
+    if (this.imagenBase64) {
+      // Verificar si es una URL de Giphy (no necesita subirse a Storage)
+      if (this.imagenBase64.startsWith('http')) {
+        imagenUrl = this.imagenBase64;
+      } else {
+        // Verificar conexión para subir la imagen
+        const online = await this.utilsService.checkInternetConnection();
+        if (online) {
+          // Comprimir y subir la imagen
+          imagenUrl = await this.firebaseStorageService.uploadCompressedImage(
+            this.imagenBase64,
+            'publicaciones',
+            1200, // maxWidth
+            1200, // maxHeight
+            0.8   // quality
+          );
+        } else {
+          // Si no hay conexión, mostrar error
+          await loadingToast.dismiss();
+          const toast = await this.toastCtrl.create({
+            message: 'No se puede subir la imagen sin conexión a internet.',
+            duration: 3000,
+            color: 'danger',
+            position: 'top'
+          });
+          toast.present();
+          return;
+        }
+      }
+    }
 
-  // Verifica conexión usando tu servicio
-  const online = await this.utilsService.checkInternetConnection();
+    const nuevaPublicacion: Publicacion = {
+      id_publicacion: '', // Temporal
+      id_usuario: this.usuarioActual.id_usuario,
+      contenido: this.contenido || '',
+      imagen: imagenUrl || '', // Ahora es una URL en lugar de base64
+      fecha_publicacion: new Date(),
+    };
 
-  // Muestra el toast adecuado
-  await this.toastCtrl.create({
-    message: online
-      ? '¡Publicación creada exitosamente!'
-      : 'Publicación guardada offline. Se sincronizará cuando tengas conexión.',
-    duration: 3000,
-    position: 'top',
-    color: online ? 'success' : 'warning'
-  }).then(toast => toast.present());
+    // Guardar en Firebase y obtener el ID generado
+    const id_publicacion = await this.publicacionService.addPublicacion(nuevaPublicacion);
+    nuevaPublicacion.id_publicacion = id_publicacion;
 
-  // Limpia el formulario
-  this.contenido = '';
-  this.imagenBase64 = null;
-  if (this.fileInput) {
-    this.fileInput.nativeElement.value = '';
+    // Cerrar toast de carga
+    await loadingToast.dismiss();
+
+    // Verifica conexión usando tu servicio
+    const online = await this.utilsService.checkInternetConnection();
+
+    // Muestra el toast adecuado
+    await this.toastCtrl.create({
+      message: online
+        ? '¡Publicación creada exitosamente!'
+        : 'Publicación guardada offline. Se sincronizará cuando tengas conexión.',
+      duration: 3000,
+      position: 'top',
+      color: online ? 'success' : 'warning'
+    }).then(toast => toast.present());
+
+    // Limpia el formulario
+    this.contenido = '';
+    this.imagenBase64 = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
+
+    // Navega a home
+    this.router.navigate(['/home']);
+
+  } catch (error) {
+    // Cerrar toast de carga en caso de error
+    await loadingToast.dismiss();
+    
+    console.error('Error al publicar:', error);
+    const toast = await this.toastCtrl.create({
+      message: 'Error al crear la publicación. Inténtalo de nuevo.',
+      duration: 3000,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
   }
-
-  // Navega a home
-  this.router.navigate(['/home']);
 }
 }

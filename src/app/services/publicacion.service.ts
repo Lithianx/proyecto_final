@@ -3,6 +3,7 @@ import { LocalStorageService } from './local-storage-social.service';
 import { Publicacion } from '../models/publicacion.model';
 import { Seguir } from '../models/seguir.model';
 import { FirebaseService } from './firebase.service';
+import { FirebaseStorageService } from './firebase-storage.service';
 import { Firestore, collection, collectionData, serverTimestamp } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { UtilsService } from './utils.service';
@@ -12,6 +13,7 @@ export class PublicacionService {
   publicaciones$: Observable<Publicacion[]>;
   constructor(private localStorage: LocalStorageService,
     private firebaseService: FirebaseService,
+    private firebaseStorageService: FirebaseStorageService,
     private firestore: Firestore,
     private utilsService: UtilsService
   ) {
@@ -88,6 +90,20 @@ async addPublicacion(publicacion: Publicacion) {
   async removePublicacion(id: string) {
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
+      // Obtener la publicación antes de eliminarla para eliminar la imagen
+      const publicacion = await this.getPublicacionById(id);
+      
+      // Eliminar la imagen de Storage si existe y no es una URL externa (Giphy)
+      if (publicacion?.imagen && 
+          publicacion.imagen.includes('firebasestorage.googleapis.com') &&
+          !publicacion.imagen.startsWith('https://media.giphy.com/')) {
+        try {
+          await this.firebaseStorageService.deleteImage(publicacion.imagen);
+        } catch (error) {
+          console.error('Error al eliminar imagen de Storage:', error);
+        }
+      }
+
       await this.firebaseService.removePublicacion(id);
       await this.firebaseService.removeGuardadosByPublicacion(id);
       await this.firebaseService.removeLikesByPublicacion(id);
