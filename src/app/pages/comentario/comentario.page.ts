@@ -282,7 +282,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
   if (this.usuarioActual.id_usuario !== this.publicacion.id_usuario) {
     try {
       await this.notificacionesService.crearNotificacion(
-        'comentario',
+        'Comento tu Publicacion ',
         this.usuarioActual.id_usuario,
         this.publicacion.id_usuario,
         this.publicacion.id_publicacion
@@ -339,7 +339,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     if (!yaLikeo && idUsuarioActual !== idAutorComentario) {
       // Crear notificación de like en comentario
       await this.notificacionesService.crearNotificacion(
-        'like_comentario',
+        'Le gusto tu comentario',
         idUsuarioActual,
         idAutorComentario,
         comentario.id_publicacion // Puedes pasar id_publicacion o id_comentario, según tu modelo
@@ -349,7 +349,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     } else if (yaLikeo && idUsuarioActual !== idAutorComentario) {
       // Eliminar notificación al quitar like
       await this.notificacionesService.eliminarNotificacion(
-        'like_comentario',
+        'Le gusto tu comentario',
         idUsuarioActual,
         idAutorComentario,
         comentario.id_publicacion
@@ -376,7 +376,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     if (!yaLikeo && idUsuarioActual !== idAutor) {
       // Crear notificación de like
       await this.notificacionesService.crearNotificacion(
-        'like',
+        'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor,
         idPublicacion
@@ -385,7 +385,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
       // Eliminar notificación al quitar like
       await this.notificacionesService.eliminarNotificacion(
-        'like',
+        'Le gusto tu publicacio',
         idUsuarioActual,
         idAutor,
         idPublicacion
@@ -476,7 +476,7 @@ async seguir(usuario: Usuario) {
     if (!yaLoSigue && idSeguidor !== idSeguido) {
       // Crear notificación de "follow"
       await this.notificacionesService.crearNotificacion(
-        'follow',
+        'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );
@@ -484,7 +484,7 @@ async seguir(usuario: Usuario) {
     } else if (yaLoSigue) {
       // Eliminar notificación de "follow" (dejar de seguir)
       await this.notificacionesService.eliminarNotificacion(
-        'follow',
+        'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );

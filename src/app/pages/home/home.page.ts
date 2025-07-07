@@ -197,7 +197,7 @@ async likePublicacion(publicacion: any) {
     if (!yaLikeo && idUsuarioActual !== idAutor) {
       // Si no había dado like, lo da y se crea notificación
       await this.notificacionesService.crearNotificacion(
-        'like',
+        'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor,
         idPublicacion
@@ -206,7 +206,7 @@ async likePublicacion(publicacion: any) {
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
       // Si ya había dado like y lo quitó, elimina notificación
       await this.notificacionesService.eliminarNotificacion(
-        'like',
+        'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor
       );
@@ -280,7 +280,7 @@ async seguir(usuario: Usuario) {
     if (!yaLoSigue && idSeguidor !== idSeguido) {
       // Crear notificación de "follow"
       await this.notificacionesService.crearNotificacion(
-        'follow',
+        'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );

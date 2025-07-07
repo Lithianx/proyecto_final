@@ -87,6 +87,39 @@ async eliminarNotificacion(
     console.error('Error al eliminar la notificación:', error);
   }
 }
+async getNotificacionesPorReceptor(idUserReceptor: string): Promise<Notificacion[]> {
+  try {
+    const todas = await this.firebaseService.getTodasNotificaciones();
+    const filtradas = todas.filter(n => n.idUserReceptor === idUserReceptor);
+    return filtradas;
+  } catch (error) {
+    console.error('Error al obtener notificaciones por receptor:', error);
+    return [];
+  }
+}
+async getNotificacionesConUsuarioHecho(idUserReceptor: string): Promise<any[]> {
+  try {
+    const notificaciones = await this.firebaseService.getTodasNotificaciones();
+    const usuarios = await this.firebaseService.getUsuarios();
+
+    const filtradas = notificaciones.filter(n => n.idUserReceptor === idUserReceptor);
+
+    const enriquecidas = filtradas.map(n => {
+      const usuarioHecho = usuarios.find(u => u.id_usuario === n.idUserHecho);
+      return {
+        ...n,
+        nombre_usuario: usuarioHecho?.nombre_usuario || 'Desconocido',
+        fotoPerfil: usuarioHecho?.avatar || '',  // según tu modelo Usuario, asumo avatar
+        // fecha ya está en n.fecha (puede ser null si no está)
+      };
+    });
+
+    return enriquecidas;
+  } catch (error) {
+    console.error('Error al obtener notificaciones enriquecidas:', error);
+    return [];
+  }
+}
 
 
 }

@@ -7,18 +7,17 @@
     </ion-button>
     <div class="title">Notificaciones</div>
   </div>
-
-  <div class="notificaciones-container">
-    <div class="notificacion" *ngFor="let n of notificaciones">
-      <img class="avatar" [src]="n.imagen" alt="Usuario" (click)="verPerfil(n.idUsuario)">
-      <div class="contenido">
-        <strong class="usuario" (click)="verPerfil(n.idUsuario)">
-          {{ n.usuario }}
-        </strong> {{ n.accion }}
-        <div class="tiempo">{{ obtenerTiempoRelativo(n.timestamp) }}</div>
-      </div>
+<div class="notificaciones-container">
+  <div class="notificacion" *ngFor="let n of notificaciones">
+    <img class="avatar" [src]="n.fotoPerfil || 'assets/default-avatar.png'" alt="Usuario" (click)="verPerfil(n.idUserHecho)">
+    <div class="contenido">
+      <strong class="usuario" (click)="verPerfil(n.idUserHecho)">
+        {{ n.nombre_usuario }}
+      </strong> {{ n.tipoAccion }}
+      <div class="tiempo">{{ obtenerTiempoRelativo(n.fecha) }}</div>
     </div>
   </div>
+</div>
 </ion-content>
 
 <app-navbar></app-navbar>
