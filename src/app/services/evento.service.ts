@@ -318,6 +318,7 @@ export class EventoService {
     return collectionData(q, { idField: 'id' }) as Observable<any[]>;
   }
 
+
   async obtenerEventosPorCreadorYEstado(idUsuario: string, estadoId: string = 'EV0aC1pwvmyvaLERiY6B'): Promise<(Evento & { id: string })[]> {
     const q = query(
       this.eventosRef,
@@ -402,6 +403,7 @@ export class EventoService {
 
     return participantes;
   }
+
   async obtenerEventosDesdeParticipacionesUsuario(id_usuario: string): Promise<(Evento & { id: string })[]> {
     const eventos: (Evento & { id: string })[] = [];
     const estadoFinalizadoId = 'EV0aC1pwvmyvaLERiY6B';

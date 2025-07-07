@@ -1,5 +1,5 @@
 ion-content.login-content {
-    --background: linear-gradient(to top, #00ac49, #000000);
+    --background: linear-gradient(to top, #028d3c, #000000);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -176,4 +176,8 @@ ion-item.input-item.error-input ion-input input {
 /* Cambiar placeholder también */
 ion-item.input-item.error-input ion-input input::placeholder {
   color: var(--ion-color-danger);
+}
+.app-logo {
+  width: 100px;
+  height: auto;
 }

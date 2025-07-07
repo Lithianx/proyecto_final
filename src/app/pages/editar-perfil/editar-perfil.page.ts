@@ -7,6 +7,7 @@ import { LocalStorageService } from '../../services/local-storage-social.service
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { FirebaseStorageService } from 'src/app/services/firebase-storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
 
 @Component({
   selector: 'app-editar-perfil',
@@ -45,7 +46,8 @@ export class EditarPerfilPage implements OnInit {
     private firebaseStorageService: FirebaseStorageService,
     private utilsService: UtilsService,
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private filtroPalabraService: FiltroPalabraService
   ) {}
 
   ngOnInit() {}
@@ -75,23 +77,16 @@ export class EditarPerfilPage implements OnInit {
     }
   }
 
-  // Función para validar el tamaño de la imagen
   private validateImageSize(base64String: string): boolean {
     const sizeInBytes = (base64String.length * 3) / 4;
     const sizeInMB = sizeInBytes / (1024 * 1024);
     return sizeInMB <= 5;
   }
 
-  // Función para mostrar información del tamaño de la imagen
   private getImageSizeInfo(base64String: string): string {
     const sizeInBytes = (base64String.length * 3) / 4;
     const sizeInMB = sizeInBytes / (1024 * 1024);
-    
-    if (sizeInMB < 1) {
-      return `${(sizeInMB * 1024).toFixed(0)} KB`;
-    } else {
-      return `${sizeInMB.toFixed(1)} MB`;
-    }
+    return sizeInMB < 1 ? `${(sizeInMB * 1024).toFixed(0)} KB` : `${sizeInMB.toFixed(1)} MB`;
   }
 
   async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning' = 'success') {
@@ -115,7 +110,20 @@ export class EditarPerfilPage implements OnInit {
       return;
     }
 
-    // Mostrar toast de carga
+    // Validar palabras prohibidas
+    const campos = [
+      { nombre: 'Nombre de usuario', valor: this.usuario.nombre_usuario },
+      { nombre: 'Subnombre', valor: this.usuario.sub_name || '' },
+      { nombre: 'Descripción', valor: this.usuario.descripcion || '' }
+    ];
+
+    for (const campo of campos) {
+      if (this.filtroPalabraService.contienePalabraVetada(campo.valor)) {
+        this.mostrarToast(`El campo "${campo.nombre}" contiene contenido inapropiado.`, 'danger');
+        return;
+      }
+    }
+
     const loadingToast = await this.toastController.create({
       message: 'Guardando cambios...',
       duration: 0,
@@ -124,13 +132,10 @@ export class EditarPerfilPage implements OnInit {
     await loadingToast.present();
 
     try {
-      // Procesar imagen de avatar si existe
       if (this.imagenBase64) {
-        // Verificar conexión para subir la imagen
         const online = await this.utilsService.checkInternetConnection();
         if (online) {
-          // Si había un avatar anterior y no es la imagen por defecto, eliminarla
-          if (this.usuario.avatar && 
+          if (this.usuario.avatar &&
               this.usuario.avatar.includes('firebasestorage.googleapis.com') &&
               !this.usuario.avatar.includes('ionicframework.com/docs/img/demos/avatar.svg')) {
             try {
@@ -139,19 +144,12 @@ export class EditarPerfilPage implements OnInit {
               console.error('Error al eliminar avatar anterior:', error);
             }
           }
-          
-          // Comprimir y subir la nueva imagen de avatar
+
           const avatarUrl = await this.firebaseStorageService.uploadCompressedImage(
-            this.imagenBase64,
-            'avatars',
-            400, // maxWidth (más pequeño para avatares)
-            400, // maxHeight
-            0.9  // quality (mayor calidad para avatares)
+            this.imagenBase64, 'avatars', 400, 400, 0.9
           );
-          
           this.usuario.avatar = avatarUrl;
         } else {
-          // Si no hay conexión, mostrar error
           await loadingToast.dismiss();
           this.mostrarToast('No se puede subir la imagen sin conexión a internet.', 'danger');
           return;
@@ -165,15 +163,11 @@ export class EditarPerfilPage implements OnInit {
       this.descripcionBio = this.usuario.descripcion || '';
       this.subname = this.usuario.sub_name || '';
 
-      // Cerrar toast de carga
       await loadingToast.dismiss();
-
       this.mostrarToast('Perfil actualizado correctamente', 'success');
       this.router.navigate(['/perfil']);
     } catch (error) {
-      // Cerrar toast de carga en caso de error
       await loadingToast.dismiss();
-      
       console.error('Error al actualizar el perfil:', error);
       this.mostrarToast('Ocurrió un error al actualizar el perfil.', 'danger');
     }
@@ -185,21 +179,20 @@ export class EditarPerfilPage implements OnInit {
       try {
         this.cargandoImagen = true;
         const image = await Camera.getPhoto({
-          quality: 90, // Mayor calidad para avatares
+          quality: 90,
           allowEditing: false,
           saveToGallery: false,
           resultType: CameraResultType.DataUrl,
           source: CameraSource.Prompt
         });
-        
+
         if (image.dataUrl) {
-          // Validar tamaño de la imagen
           if (!this.validateImageSize(image.dataUrl)) {
             this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(image.dataUrl)}). Se comprimirá automáticamente.`, 'warning');
           }
-          
+
           this.imagenBase64 = image.dataUrl;
-          this.usuario.avatar = image.dataUrl; // Vista previa temporal
+          this.usuario.avatar = image.dataUrl;
         }
       } catch (error: any) {
         this.mostrarToast('No se pudo acceder a la cámara o galería. Revisa los permisos.', 'danger');
@@ -214,13 +207,10 @@ export class EditarPerfilPage implements OnInit {
   async onArchivoSeleccionado(event: any) {
     const file = event.target.files[0];
     if (file && file.type.startsWith('image/')) {
-      // Validar tamaño del archivo (límite de 5MB)
       const fileSizeInMB = file.size / (1024 * 1024);
       if (fileSizeInMB > 5) {
         this.mostrarToast(`La imagen es demasiado grande (${fileSizeInMB.toFixed(1)} MB). El límite es 5MB.`, 'danger');
-        if (this.fileInput) {
-          this.fileInput.nativeElement.value = '';
-        }
+        this.fileInput.nativeElement.value = '';
         return;
       }
 
@@ -228,14 +218,13 @@ export class EditarPerfilPage implements OnInit {
       const reader = new FileReader();
       reader.onload = async () => {
         const imageBase64 = reader.result as string;
-        
-        // Validar tamaño en base64
+
         if (!this.validateImageSize(imageBase64)) {
           this.mostrarToast(`La imagen es demasiado grande (${this.getImageSizeInfo(imageBase64)}). Se comprimirá automáticamente.`, 'warning');
         }
-        
+
         this.imagenBase64 = imageBase64;
-        this.usuario.avatar = imageBase64; // Vista previa temporal
+        this.usuario.avatar = imageBase64;
         this.cargandoImagen = false;
       };
       reader.onerror = () => {
@@ -244,9 +233,7 @@ export class EditarPerfilPage implements OnInit {
       reader.readAsDataURL(file);
     } else {
       this.mostrarToast('Por favor selecciona solo archivos de imagen.', 'danger');
-      if (this.fileInput) {
-        this.fileInput.nativeElement.value = '';
-      }
+      this.fileInput.nativeElement.value = '';
     }
   }
 }

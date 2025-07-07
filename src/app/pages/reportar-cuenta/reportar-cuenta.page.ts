@@ -27,6 +27,7 @@ export class ReportarCuentaPage implements OnInit {
 
   // Aquí guardaremos el usuario que hace el reporte
   idUsuarioReportante: string = '';
+  enviandoReporte = false;
 
   constructor(
     private navCtrl: NavController,
@@ -59,6 +60,12 @@ export class ReportarCuentaPage implements OnInit {
   }
 
   async enviarReporte() {
+    // Prevenir múltiples envíos
+    if (this.enviandoReporte) {
+      console.log('Reporte ya está siendo enviado');
+      return;
+    }
+
     if (!this.razonReporte) {
       const alerta = await this.alertCtrl.create({
         header: 'Falta información',
@@ -79,18 +86,21 @@ export class ReportarCuentaPage implements OnInit {
       return;
     }
 
-    // Construir objeto reporte
-    const nuevoReporte: Reporte = {
-      id_reporte: '',
-      id_usuario: this.idUsuarioReportante, // quien reporta
-      id_tipo_reporte: this.razonReporte,
-      id_publicacion: '', // En este caso no es una publicación, sino una cuenta, dejamos vacío o null
-      descripcion_reporte: this.detallesAdicionales || '',
-      fecha_reporte: new Date(),
-      // Si tienes campos extras, agrégalos aquí
-    };
+    this.enviandoReporte = true;
 
     try {
+      // Construir objeto reporte
+      const descripcionCompleta = `Usuario ID: ${this.idUsuarioReportado} | ${this.detallesAdicionales || 'Sin detalles adicionales'}`;
+      
+      const nuevoReporte: Reporte = {
+        id_reporte: '',
+        id_usuario: this.idUsuarioReportante, // quien reporta
+        id_tipo_reporte: this.razonReporte,
+        // Para reportes de perfil, NO incluir id_publicacion o dejarlo undefined
+        descripcion_reporte: descripcionCompleta,
+        fecha_reporte: new Date(),
+      };
+
       const idGenerado = await this.reporteService.guardarReporte(nuevoReporte);
       nuevoReporte.id_reporte = idGenerado as string;
 
@@ -113,6 +123,8 @@ export class ReportarCuentaPage implements OnInit {
       });
       await alerta.present();
       console.error('Error al enviar reporte:', error);
+    } finally {
+      this.enviandoReporte = false;
     }
   }
 }

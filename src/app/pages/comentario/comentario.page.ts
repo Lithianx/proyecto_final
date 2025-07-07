@@ -279,18 +279,19 @@ export class ComentarioPage implements OnInit, OnDestroy {
   this.nuevoComentario = '';
 
   // Crear notificación para autor de la publicación (solo si no es el mismo usuario)
-  if (this.usuarioActual.id_usuario !== this.publicacion.id_usuario) {
-    try {
-      await this.notificacionesService.crearNotificacion(
-        'Comento tu Publicacion ',
-        this.usuarioActual.id_usuario,
-        this.publicacion.id_usuario,
-        this.publicacion.id_publicacion
-      );
-    } catch (error) {
-      console.error('Error al crear notificación de comentario:', error);
-    }
+if (this.usuarioActual.id_usuario !== this.publicacion.id_usuario) {
+  try {
+
+    await this.notificacionesService.crearNotificacion(
+      'Comento tu Publicacion ',
+      this.usuarioActual.id_usuario,
+      this.publicacion.id_usuario,
+      this.publicacion.id_publicacion
+    );
+  } catch (error) {
+    console.error('❌ [COMENTARIO] Error al crear notificación de comentario:', error);
   }
+}
 
   const online = await this.UtilsService.checkInternetConnection();
 
@@ -337,26 +338,23 @@ export class ComentarioPage implements OnInit, OnDestroy {
     await this.likeService.toggleLikeComentario(idUsuarioActual, idComentario);
 
     if (!yaLikeo && idUsuarioActual !== idAutorComentario) {
-      // Crear notificación de like en comentario
-      await this.notificacionesService.crearNotificacion(
-        'Le gusto tu comentario',
-        idUsuarioActual,
-        idAutorComentario,
-        comentario.id_publicacion // Puedes pasar id_publicacion o id_comentario, según tu modelo
 
-      );
-      this.mostrarToast('Has dado like al comentario. Notificación creada.');
-    } else if (yaLikeo && idUsuarioActual !== idAutorComentario) {
-      // Eliminar notificación al quitar like
-      await this.notificacionesService.eliminarNotificacion(
-        'Le gusto tu comentario',
-        idUsuarioActual,
-        idAutorComentario,
-        comentario.id_publicacion
+  await this.notificacionesService.crearNotificacion(
+    'Le gusto tu comentario',
+    idUsuarioActual,
+    idAutorComentario,
+    comentario.id_publicacion
+  );
+} else if (yaLikeo && idUsuarioActual !== idAutorComentario) {
 
-      );
-      this.mostrarToast('Has quitado el like al comentario. Notificación eliminada.');
-    }
+  await this.notificacionesService.eliminarNotificacion(
+    'Le gusto tu comentario',
+    idUsuarioActual,
+    idAutorComentario,
+    comentario.id_publicacion
+  );
+
+}
   } catch (error) {
     console.error('Error al manejar like y notificación de comentario:', error);
     this.mostrarToast('Error al procesar like del comentario.', 'danger');
@@ -372,31 +370,29 @@ export class ComentarioPage implements OnInit, OnDestroy {
 
   try {
     await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
+if (!yaLikeo && idUsuarioActual !== idAutor) {
 
-    if (!yaLikeo && idUsuarioActual !== idAutor) {
-      // Crear notificación de like
-      await this.notificacionesService.crearNotificacion(
-        'Le gusto tu publicacion',
-        idUsuarioActual,
-        idAutor,
-        idPublicacion
-      );
-      
-    } else if (yaLikeo && idUsuarioActual !== idAutor) {
-      // Eliminar notificación al quitar like
-      await this.notificacionesService.eliminarNotificacion(
-        'Le gusto tu publicacio',
-        idUsuarioActual,
-        idAutor,
-        idPublicacion
-      );
-      
-    }
+  await this.notificacionesService.crearNotificacion(
+    'Le gusto tu publicacion',
+    idUsuarioActual,
+    idAutor,
+    idPublicacion
+  );
+} else if (yaLikeo && idUsuarioActual !== idAutor) {
+
+  await this.notificacionesService.eliminarNotificacion(
+    'Le gusto tu publicacion',
+    idUsuarioActual,
+    idAutor,
+    idPublicacion
+  );
+}
   } catch (error) {
     console.error('Error al dar/quitar like o manejar notificación:', error);
     this.mostrarToast('Error al procesar like.', 'danger');
   }
 }
+
 
   getLikesPublicacion(id_publicacion: string): number {
     return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
@@ -474,21 +470,19 @@ async seguir(usuario: Usuario) {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
 
     if (!yaLoSigue && idSeguidor !== idSeguido) {
-      // Crear notificación de "follow"
-      await this.notificacionesService.crearNotificacion(
-        'Comenzo a seguirte',
-        idSeguidor,
-        idSeguido
-      );
-      
-    } else if (yaLoSigue) {
-      // Eliminar notificación de "follow" (dejar de seguir)
-      await this.notificacionesService.eliminarNotificacion(
-        'Comenzo a seguirte',
-        idSeguidor,
-        idSeguido
-      );
-      
+
+  await this.notificacionesService.crearNotificacion(
+    'Comenzo a seguirte',
+    idSeguidor,
+    idSeguido
+  );
+} else if (yaLoSigue) {
+
+  await this.notificacionesService.eliminarNotificacion(
+    'Comenzo a seguirte',
+    idSeguidor,
+    idSeguido
+  );
     }
   } catch (error) {
     console.error('Error al manejar la notificación de seguimiento:', error);

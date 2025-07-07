@@ -123,41 +123,66 @@ export class ReportarPage implements OnInit {
     }
   }
 
+  enviandoReporte = false;
+
   async enviarReporte() {
+    // Prevenir múltiples envíos
+    if (this.enviandoReporte) {
+      console.log('Reporte ya está siendo enviado');
+      return;
+    }
+
     if (!this.reporte.id_tipo_reporte || !this.reporte.descripcion_reporte.trim()) {
       console.log('Formulario incompleto');
       return;
     }
-    this.reporte.id_usuario = this.usuarioActual.id_usuario;
-    this.reporte.fecha_reporte = new Date();
 
-  // Guarda el reporte y recibe el id generado
-  const id = await this.reporteService.guardarReporte({ ...this.reporte });
-  this.reporte.id_reporte = id as string; // Ahora el id_reporte tiene el valor correcto
+    this.enviandoReporte = true;
 
-  console.log('Reporte guardado:', this.reporte);
+    try {
+      this.reporte.id_usuario = this.usuarioActual.id_usuario;
+      this.reporte.fecha_reporte = new Date();
 
-    // Limpiar formulario
-    this.reporte = {
-      id_reporte: '',
-      id_usuario: '',
-      id_tipo_reporte: '',
-      id_publicacion: '',
-      descripcion_reporte: '',
-      fecha_reporte: new Date()
-    };
+      // Guarda el reporte y recibe el id generado
+      const id = await this.reporteService.guardarReporte({ ...this.reporte });
+      this.reporte.id_reporte = id as string; // Ahora el id_reporte tiene el valor correcto
 
-    // Mostrar Toast
-    const toast = await this.toastCtrl.create({
-      message: 'Tu reporte ha sido enviado. Gracias por ayudarnos a mantener la comunidad segura.',
-      duration: 3000,
-      position: 'top',
-      color: 'success'
-    });
+      console.log('Reporte guardado:', this.reporte);
 
-    await toast.present();
+      // Limpiar formulario
+      this.reporte = {
+        id_reporte: '',
+        id_usuario: '',
+        id_tipo_reporte: '',
+        id_publicacion: '',
+        descripcion_reporte: '',
+        fecha_reporte: new Date()
+      };
 
-    this.volver();
+      // Mostrar Toast
+      const toast = await this.toastCtrl.create({
+        message: 'Tu reporte ha sido enviado. Gracias por ayudarnos a mantener la comunidad segura.',
+        duration: 3000,
+        position: 'top',
+        color: 'success'
+      });
+
+      await toast.present();
+
+      this.volver();
+    } catch (error) {
+      console.error('Error al enviar reporte:', error);
+      
+      const toast = await this.toastCtrl.create({
+        message: 'Error al enviar el reporte. Inténtalo de nuevo.',
+        duration: 3000,
+        position: 'top',
+        color: 'danger'
+      });
+      await toast.present();
+    } finally {
+      this.enviandoReporte = false;
+    }
   }
 
   verImagen(publicacion: Publicacion) {

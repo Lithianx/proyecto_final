@@ -108,13 +108,136 @@ private palabrasVetadas = [
     return texto.replace(/[^a-z0-9]+/g, '');
   }
 
+  // Detecta patrones de evasión intencional
+  private detectarPatronEvasion(palabraOriginal: string, palabraVetadaUnida: string): boolean {
+    const textoOriginal = palabraOriginal.toLowerCase();
+    
+    // Patrón 1: Espacios entre letras (ej: "i n s u l t o")
+    const conEspacios = textoOriginal.replace(/\s+/g, '');
+    if (conEspacios.length > 0 && this.unirCaracteresSeparados(conEspacios) === palabraVetadaUnida) {
+      return true;
+    }
+    
+    // Patrón 2: Símbolos intercalados (ej: "p-u-t-a", "p*u*t*a", "G,o,RdAs")
+    const conSimbolos = textoOriginal.replace(/[^a-z0-9]/g, '');
+    if (conSimbolos.toLowerCase() === palabraVetadaUnida) {
+      // Verificar que haya símbolos intercalados
+      const caracteresNoAlfanum = textoOriginal.replace(/[a-z0-9]/g, '').length;
+      return caracteresNoAlfanum >= 2;
+    }
+    
+    // Patrón 3: Letras separadas por comas/puntos (ej: "G,o,RdAs", "p.u.t.a")
+    const textoSinSeparadores = textoOriginal.replace(/[,.\-_|/\\*+=#@!$%^&(){}[\]<>?;:'"~`]/g, '');
+    if (textoSinSeparadores.toLowerCase() === palabraVetadaUnida) {
+      // Verificar que tenga suficientes separadores
+      const separadores = textoOriginal.match(/[,.\-_|/\\*+=#@!$%^&(){}[\]<>?;:'"~`]/g);
+      return separadores && separadores.length >= 2;
+    }
+    
+    // Patrón 4: Prefijos/sufijos obvios (ej: "xxputaxx", "123puta456")
+    const textoSinNumeros = textoOriginal.replace(/[0-9]/g, '');
+    const textoSinX = textoOriginal.replace(/x+/g, '');
+    
+    if (textoSinNumeros.includes(palabraVetadaUnida) || textoSinX.includes(palabraVetadaUnida)) {
+      // Verificar que no sea una palabra normal que contenga la vetada
+      const longitudExtra = textoOriginal.length - palabraVetadaUnida.length;
+      return longitudExtra <= 6; // Máximo 6 caracteres extra (3 antes + 3 después)
+    }
+    
+    return false;
+  }
+
   contienePalabraVetada(texto: string): boolean {
     const textoNormal = this.normalizar(texto);
-    const textoUnido = this.unirCaracteresSeparados(textoNormal);
-
+    
+    // Dividir el texto en palabras individuales
+    const palabrasTexto = textoNormal.split(/\s+/);
+    
+    // 1. Verificar patrones de evasión en el texto completo (sin dividir por espacios)
+    const textoCompletoSinEspacios = textoNormal.replace(/\s+/g, '');
+    const tieneEvasionCompleta = this.palabrasVetadas.some(palabra => {
+      const palabraNorm = this.normalizar(palabra);
+      const palabraVetadaUnida = this.unirCaracteresSeparados(palabraNorm);
+      
+      // Solo verificar palabras individuales para evasión completa
+      if (!palabraNorm.includes(' ') && palabraVetadaUnida.length >= 4) {
+        return this.detectarPatronEvasion(textoCompletoSinEspacios, palabraVetadaUnida);
+      }
+      return false;
+    });
+    
+    if (tieneEvasionCompleta) {
+      return true;
+    }
+    
+    // 2. Verificar palabras individuales y frases
     return this.palabrasVetadas.some(palabra => {
-      const palabraNorm = this.unirCaracteresSeparados(this.normalizar(palabra));
-      return textoUnido.includes(palabraNorm);
+      const palabraNorm = this.normalizar(palabra);
+      
+      // Para frases completas (palabras con espacios), buscar coincidencia exacta en todo el texto
+      if (palabraNorm.includes(' ')) {
+        const textoUnido = this.unirCaracteresSeparados(textoNormal);
+        const palabraVetadaUnida = this.unirCaracteresSeparados(palabraNorm);
+        return textoUnido.includes(palabraVetadaUnida);
+      }
+      
+      // Para palabras individuales, verificar tanto palabras completas como ocultas
+      return palabrasTexto.some(palabraTexto => {
+        const palabraTextoUnida = this.unirCaracteresSeparados(palabraTexto);
+        const palabraVetadaUnida = this.unirCaracteresSeparados(palabraNorm);
+        
+        // 1. Coincidencia exacta de palabra completa
+        if (palabraTextoUnida === palabraVetadaUnida) {
+          return true;
+        }
+        
+        // 2. Detectar palabras vetadas ocultas en palabras más largas
+        // Solo si la palabra vetada tiene 4+ caracteres y la palabra del texto es significativamente más larga
+        if (palabraVetadaUnida.length >= 4 && 
+            palabraTextoUnida.length > palabraVetadaUnida.length + 2 &&
+            palabraTextoUnida.includes(palabraVetadaUnida)) {
+          
+          // Verificar que no sea una palabra común que contenga la vetada
+          const palabrasComunes = [
+            'genérica', 'generica', 'america', 'americana', 'americano',
+            'practico', 'practica', 'pruebas', 'prueba', 'calibrar',
+            'fabricar', 'fabrica', 'publico', 'publica', 'republicano',
+            'republica', 'clasificar', 'clasifica', 'especificar',
+            'especifica', 'modificar', 'modifica', 'verificar',
+            'verifica', 'certificar', 'certifica', 'identificar',
+            'identifica', 'duplicar', 'duplica', 'multiplicar',
+            'multiplica', 'complicar', 'complica', 'explicar',
+            'explica', 'aplicar', 'aplica', 'implicar', 'implica',
+            'replicar', 'replica', 'comunicar', 'comunica',
+            'lubricar', 'lubrica', 'comunicación', 'comunicacion',
+            'fabricacion', 'fabricación', 'ubicacion', 'ubicación',
+            'dedicacion', 'dedicación', 'medicacion', 'medicación',
+            'educacion', 'educación', 'predicacion', 'predicación',
+            'calificacion', 'calificación', 'clasificacion', 'clasificación',
+            'historia', 'historico', 'historica', 'historiador',
+            'instancia', 'instanciar', 'institucion', 'institucional',
+            'construccion', 'construcción', 'instruccion', 'instrucción',
+            'destruccion', 'destrucción', 'obstruccion', 'obstrucción',
+            'abstracto', 'abstracta', 'concreto', 'concreta',
+            'discreto', 'discreta', 'secreto', 'secreta',
+            'atlético', 'atletica', 'matemático', 'matematica',
+            'automático', 'automatica', 'democrático', 'democratica',
+            'aristocrático', 'aristocratica', 'burocrático', 'burocratica', 'analista'
+          ];
+          
+          const palabraOriginal = palabraTexto.toLowerCase();
+          const esPalabraComun = palabrasComunes.some(comun => 
+            this.unirCaracteresSeparados(this.normalizar(comun)) === palabraTextoUnida
+          );
+          
+          // Detectar patrones de evasión intencional
+          const tienePatronEvasion = this.detectarPatronEvasion(palabraTexto, palabraVetadaUnida);
+          
+          return !esPalabraComun && tienePatronEvasion;
+        }
+        
+        return false;
+      });
     });
   }
 }
