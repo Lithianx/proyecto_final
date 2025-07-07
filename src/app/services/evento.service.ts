@@ -306,7 +306,7 @@ export class EventoService {
     return collectionData(q, { idField: 'id' }) as Observable<any[]>;
   }
 
-  async obtenerEventosPorCreadorYEstado(idUsuario: string, estadoId: string = 'EV0aC1pwvmyvaLERiY6B'): Promise<(Evento & { id: string })[]> {
+  async obtenerEventosPorCreadorYEstado(idUsuario: string, estadoId: string = 'fj5gnmZtfaJpt3rhpCZZ'): Promise<(Evento & { id: string })[]> {
   const q = query(
     this.eventosRef,
     where('id_creador', '==', idUsuario),
@@ -392,7 +392,7 @@ async obtenerParticipacionesPorUsuario(id_usuario: string): Promise<Participante
 }
 async obtenerEventosDesdeParticipacionesUsuario(id_usuario: string): Promise<(Evento & { id: string })[]> {
   const eventos: (Evento & { id: string })[] = [];
-  const estadoFinalizadoId = 'EV0aC1pwvmyvaLERiY6B';
+  const estadoFinalizadoId = 'fj5gnmZtfaJpt3rhpCZZ';
 
   try {
     const participaciones = await this.obtenerParticipacionesPorUsuario(id_usuario);
