@@ -30,81 +30,75 @@
         </ion-segment>
       </div>
 
-      <!-- Eventos Inscritos -->
-      <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
-        <h2 class="titulo-seccion">Eventos inscritos</h2>
+        <!-- Eventos Inscritos -->
+        <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
+          <h2 class="titulo-seccion">Eventos inscritos</h2>
 
-        <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
-          <ion-card>
-            <ion-card-content class="contenido-tarjeta">
-              <div class="texto-tarjeta">
-                <h3 class="titulo-evento">
-                  {{ evento.nombre }}
-                </h3>
-                <p class="detalle">Creador: {{ evento.creador }}</p>
-                <p class="detalle">Fecha: {{ evento.fecha }}</p>
-                <p class="detalle">Juego: {{ evento.juego }}</p>
-              </div>
-              <ion-icon
-                name="chevron-forward-outline"
-                class="color-verde icono-forward"
-                size="large"
-                [routerLink]="['/event-insc-cread', evento.id, 'Evento inscrito']">
-              </ion-icon>
-            </ion-card-content>
-          </ion-card>
+          <ng-container *ngIf="eventosInscritosFiltrados.length > 0; else sinEventosInscritos">
+            <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
+              <ion-card>
+                <ion-card-content class="contenido-tarjeta">
+                  <div class="texto-tarjeta">
+                    <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
+                    <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
+                    <p class="detalle">Fecha: {{ evento.fechaInicio || evento.fecha }}</p>
+                    <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
+                  </div>
+                  <ion-icon
+                    name="chevron-forward-outline"
+                    class="color-verde icono-forward"
+                    size="large"
+                    (click)="irASalaEvento(evento)">
+                  </ion-icon>
+                </ion-card-content>
+              </ion-card>
+            </div>
+          </ng-container>
+
+          <ng-template #sinEventosInscritos>
+            <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+              <ion-icon name="calendar-outline" size="large"></ion-icon>
+              <p>No estás inscrito en ningún evento finalizado por el momento.</p>
+            </div>
+          </ng-template>
         </div>
-    </div>
+
+
 
         <!-- Eventos creados -->
-    <div *ngIf="vistaSeleccionada === 'eventos-creados'">
-      <h2 class="titulo-seccion">Eventos creados</h2>
+<!-- Eventos creados -->
+<div *ngIf="vistaSeleccionada === 'eventos-creados'" class="eventos-inscritos">
+  <h2 class="titulo-seccion">Eventos creados</h2>
 
-      <ng-container *ngIf="eventosCreadosDesdeFirebase.length > 0; else sinEventos">
-        <ion-card *ngFor="let evento of eventosCreadosDesdeFirebase" class="evento-card">
-          <ion-card-header class="header-con-estado">
-            <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
-            <ion-card-subtitle>{{ evento.nombre_juego }}</ion-card-subtitle>
-            <div class="estado-luz-texto">
-              <div class="estado-indicador" [ngClass]="{
-                'verde': evento.estado_evento === 'DISPONIBLE',
-                'amarillo': evento.estado_evento === 'EN CURSO',
-                'rojo': evento.estado_evento === 'FINALIZADO',
-                'naranja': evento.estado_evento === 'SIN CUPOS'
-              }"></div>
-              <div class="estado-texto" [ngClass]="{
-                'texto-verde': evento.estado_evento === 'DISPONIBLE',
-                'texto-amarillo': evento.estado_evento === 'EN CURSO',
-                'texto-rojo': evento.estado_evento === 'FINALIZADO',
-                'texto-naranja': evento.estado_evento === 'SIN CUPOS'
-              }">
-                {{ evento.estado_evento }}
-              </div>
-            </div>
-          </ion-card-header>
-
-          <ion-card-content>
-            <p>
-              <strong>Lugar:</strong> {{ evento.lugar }} <span class="texto-verde"> | </span>
-              <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
-            </p>
-            <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
-            <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
-
-            <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
-              VER EVENTO
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </ng-container>
-
-      <ng-template #sinEventos>
-        <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
-          <ion-icon name="calendar-outline" size="large"></ion-icon>
-          <p>No has creado ningún evento por el momento.</p>
-        </div>
-      </ng-template>
+  <ng-container *ngIf="eventosCreadosFiltrados.length > 0; else sinEventos">
+    <div *ngFor="let evento of eventosCreadosFiltrados" class="tarjeta-evento">
+      <ion-card>
+        <ion-card-content class="contenido-tarjeta">
+          <div class="texto-tarjeta">
+            <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
+            <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
+            <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
+            <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
+          </div>
+          <ion-icon
+            name="chevron-forward-outline"
+            class="color-verde icono-forward"
+            size="large"
+            (click)="irASalaEvento(evento)">
+          </ion-icon>
+        </ion-card-content>
+      </ion-card>
     </div>
+  </ng-container>
+
+  <ng-template #sinEventos>
+    <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+      <ion-icon name="calendar-outline" size="large"></ion-icon>
+      <p>No has creado ningún evento finalizado por el momento.</p>
+    </div>
+  </ng-template>
+</div>
+
 
   </div>
 </ion-content>

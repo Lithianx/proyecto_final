@@ -316,16 +316,68 @@ export class PerfilPage implements OnInit {
 }
 
   async cargarEventosCreados() {
-    const id_usuario = this.usuarioActual.id_usuario;
-    if (!id_usuario) return;
-    try {
-      const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-      const juegos = await firstValueFrom(this.eventoService.getJuegos());
-      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+  const id_usuario = this.usuarioActual.id_usuario;
+  if (!id_usuario) return;
 
-      const eventosMapeados = [];
+  try {
+    const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+    const juegos = await firstValueFrom(this.eventoService.getJuegos());
+    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
 
-      for (const evento of eventos) {
+    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+    const eventosMapeados = [];
+
+    for (const evento of eventos) {
+      // ❌ Omitir eventos finalizados
+      if (evento.id_estado_evento === idEstadoFinalizado) continue;
+
+      const juego = juegos.find(j => j.id_juego === evento.id_juego);
+      const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+      const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+      eventosMapeados.push({
+        ...evento,
+        nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+        estado_evento: estado?.descripcion ?? 'Estado desconocido',
+        creador_nombre: creadorNombre
+      });
+    }
+
+    this.eventos = eventosMapeados;
+
+  } catch (error) {
+    console.error('Error al cargar eventos creados:', error);
+  }
+}
+
+
+
+async cargarEventosInscritos() {
+  const id_usuario = this.usuarioActual.id_usuario;
+  if (!id_usuario) return;
+
+  try {
+    const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
+
+    // Filtrar solo participantes con estado 'INSCRITO'
+    const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
+
+    const juegos = await firstValueFrom(this.eventoService.getJuegos());
+    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+    // Obtener el ID del estado FINALIZADO para comparar
+    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+    const eventosMapeados = [];
+
+    for (const p of inscritos) {
+      try {
+        const evento = await this.eventoService.obtenerEventoPorId(p.id_evento);
+
+        // ❌ Saltar eventos finalizados
+        if (evento.id_estado_evento === idEstadoFinalizado) continue;
+
         const juego = juegos.find(j => j.id_juego === evento.id_juego);
         const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
         const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
@@ -336,59 +388,19 @@ export class PerfilPage implements OnInit {
           estado_evento: estado?.descripcion ?? 'Estado desconocido',
           creador_nombre: creadorNombre
         });
+
+      } catch (error) {
+        console.warn('⛔ Evento no disponible o eliminado:', p.id_evento);
       }
-
-      this.eventos = eventosMapeados;
-
-    } catch (error) {
-      console.error('Error al cargar eventos creados:', error);
     }
+
+    this.eventosinscritos = eventosMapeados;
+
+  } catch (error) {
+    console.error('❌ Error al cargar eventos inscritos:', error);
   }
+}
 
-
-  async cargarEventosInscritos() {
-    const id_usuario = this.usuarioActual.id_usuario;
-    if (!id_usuario) return;
-
-    try {
-      const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
-      const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
-
-      const juegos = await firstValueFrom(this.eventoService.getJuegos());
-      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
-
-      const eventosMapeados = [];
-
-      for (const p of inscritos) {
-        try {
-          const evento = await this.eventoService.obtenerEventoPorId(p.id_evento);
-
-          // Validar que el evento no esté finalizado
-          const estadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO');
-          if (evento.id_estado_evento === estadoFinalizado?.id_estado_evento) continue;
-
-          const juego = juegos.find(j => j.id_juego === evento.id_juego);
-          const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
-          const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
-
-          eventosMapeados.push({
-            ...evento,
-            nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
-            estado_evento: estado?.descripcion ?? 'Estado desconocido',
-            creador_nombre: creadorNombre
-          });
-
-        } catch (error) {
-          console.warn('⛔ Evento no disponible:', p.id_evento);
-        }
-      }
-
-      this.eventosinscritos = eventosMapeados;
-
-    } catch (error) {
-      console.error('❌ Error al cargar eventos inscritos:', error);
-    }
-  }
 
 
   irASalaEvento(evento: Evento & { id: string }) {

@@ -122,7 +122,6 @@ export class EventoService {
     return eventos;
   }
 
-
   // Obtener nombre de usuario por su UID (id_creador)
   async obtenerNombreUsuarioPorId(idUsuario: string): Promise<string> {
     try {
@@ -181,9 +180,6 @@ export class EventoService {
 
     return participantes;
   }
-
-
-
 
   async eliminarParticipante(idEvento: string, idUsuario: string): Promise<void> {
     const participantesRef = collection(this.firestore, 'Participante');
@@ -251,8 +247,6 @@ export class EventoService {
     }
   }
 
-
-
   // Obtener los eventos donde el usuario es participante (no necesariamente creador)
   async obtenerParticipantesEventoPorUsuario(id_usuario: string): Promise<Participante[]> {
     const participantesRef = collection(this.firestore, 'Participante');
@@ -271,9 +265,6 @@ export class EventoService {
     return participantes;
   }
 
-
-
-
   async obtenerIdEstadoPorDescripcion(descripcion: string): Promise<string | null> {
     const estadosRef = collection(this.firestore, 'EstadoEvento');
     const q = query(estadosRef, where('descripcion', '==', descripcion));
@@ -285,9 +276,6 @@ export class EventoService {
 
     return null;
   }
-
-
-
 
   //metodos para el chat de la sala.
 
@@ -312,9 +300,6 @@ export class EventoService {
     }
   }
 
-
-
-
   obtenerMensajesEvento(eventoId: string): Observable<any[]> {
     const chatRef = collection(this.firestore, `Evento/${eventoId}/Chat`);
     const q = query(chatRef, orderBy('timestamp'));
@@ -337,6 +322,98 @@ export class EventoService {
       fechaInicio: docSnap.data()['fechaInicio']?.toDate?.() ?? new Date()
     } as Evento & { id: string });
   });
+
+  return eventos;
+}
+
+async obtenerTodosLosParticipantes(): Promise<Participante[]> {
+  const participantesRef = collection(this.firestore, 'Participante');
+  const querySnapshot = await getDocs(participantesRef);
+  const participantes: Participante[] = [];
+
+  for (const docSnap of querySnapshot.docs) {
+    const data = docSnap.data() as Participante;
+
+    // Opcional: cargar nombre del usuario si no viene en el documento
+    let nombreUsuario = data.nombre_usuario;
+    if (!nombreUsuario) {
+      try {
+        const usuarioRef = doc(this.firestore, 'Usuario', data.id_usuario);
+        const usuarioSnap = await getDoc(usuarioRef);
+        if (usuarioSnap.exists()) {
+          nombreUsuario = usuarioSnap.data()['nombre_usuario'] ?? 'Anónimo';
+        }
+      } catch {
+        nombreUsuario = 'Desconocido';
+      }
+    }
+
+    participantes.push({
+      ...data,
+      id_participacion: docSnap.id,
+      nombre_usuario: nombreUsuario
+    });
+  }
+
+  return participantes;
+}
+async obtenerParticipacionesPorUsuario(id_usuario: string): Promise<Participante[]> {
+  const participantesRef = collection(this.firestore, 'Participante');
+  const q = query(participantesRef, where('id_usuario', '==', id_usuario));
+  const querySnapshot = await getDocs(q);
+
+  const participantes: Participante[] = [];
+
+  for (const docSnap of querySnapshot.docs) {
+    const data = docSnap.data() as Participante;
+
+    // Opcional: cargar nombre del evento o usuario si se requiere
+    let nombreUsuario = data.nombre_usuario;
+    if (!nombreUsuario) {
+      try {
+        const usuarioRef = doc(this.firestore, 'Usuario', data.id_usuario);
+        const usuarioSnap = await getDoc(usuarioRef);
+        if (usuarioSnap.exists()) {
+          nombreUsuario = usuarioSnap.data()['nombre_usuario'] ?? 'Anónimo';
+        }
+      } catch {
+        nombreUsuario = 'Desconocido';
+      }
+    }
+
+    participantes.push({
+      ...data,
+      id_participacion: docSnap.id,
+      nombre_usuario: nombreUsuario
+    });
+  }
+
+  return participantes;
+}
+async obtenerEventosDesdeParticipacionesUsuario(id_usuario: string): Promise<(Evento & { id: string })[]> {
+  const eventos: (Evento & { id: string })[] = [];
+  const estadoFinalizadoId = 'EV0aC1pwvmyvaLERiY6B';
+
+  try {
+    const participaciones = await this.obtenerParticipacionesPorUsuario(id_usuario);
+
+    for (const p of participaciones) {
+      try {
+        const evento = await this.obtenerEventoPorId(p.id_evento);
+
+        // ✅ Solo agregar si el evento está FINALIZADO
+        if (evento.id_estado_evento === estadoFinalizadoId) {
+          eventos.push(evento);
+        }
+
+      } catch (error) {
+        console.warn(`❌ Evento con ID ${p.id_evento} no encontrado o eliminado`);
+      }
+    }
+
+  } catch (error) {
+    console.error('Error al obtener eventos desde participaciones del usuario:', error);
+  }
 
   return eventos;
 }

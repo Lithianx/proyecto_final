@@ -35,10 +35,6 @@ export class FirebaseService {
     return usuarios;
   }
 
-
-
-
-
 //publicaciones
 
 async getPublicaciones(): Promise<Publicacion[]> {
@@ -393,11 +389,6 @@ async toggleLikePublicacion(idUsuario: string, idPublicacion: string): Promise<v
     });
   }
 }
-
-
-
-
-
 
 //COMENTARIOS///
 

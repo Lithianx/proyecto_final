@@ -47,17 +47,23 @@ export class HistorialEventosPage implements OnInit {
   }
 
   private async cargarDatosUsuario() {
-    try {
-      const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
-      if (!id_usuario) {
-        console.warn('No hay id_usuario en localStorage');
-        return;
-      }
-      this.cargarEventosCreados(id_usuario);
-    } catch (error) {
-      console.error('Error obteniendo id_usuario desde localStorage', error);
+  try {
+    const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
+    if (!id_usuario) {
+      console.warn('No hay id_usuario en localStorage');
+      return;
     }
+
+    // Cargar eventos creados finalizados
+    this.cargarEventosCreados(id_usuario);
+
+    // ✅ Cargar eventos inscritos finalizados
+    this.cargarEventosInscritos(id_usuario);
+
+  } catch (error) {
+    console.error('Error obteniendo id_usuario desde localStorage', error);
   }
+}
 
   ionViewDidEnter() {
     this.applySliderTransform(this.vistaSeleccionada);
@@ -147,4 +153,18 @@ export class HistorialEventosPage implements OnInit {
   irASalaEvento(evento: Evento) {
     this.router.navigate(['/sala-evento', evento.id]);
   }
+  private async cargarEventosInscritos(idUsuario: string) {
+  try {
+    const eventos = await this.eventoService.obtenerEventosDesdeParticipacionesUsuario(idUsuario);
+    this.eventosinscritos_finaliazado = eventos;
+
+    // ✅ Mostrar cuántos eventos llegaron
+    console.log(`✅ Eventos inscritos finalizados recibidos: ${eventos.length}`);
+    console.table(eventos); // para inspección más fácil
+
+  } catch (error) {
+    console.error('❌ Error cargando eventos inscritos finalizados:', error);
+  }
+}
+
 }

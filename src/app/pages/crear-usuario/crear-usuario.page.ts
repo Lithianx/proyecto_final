@@ -82,13 +82,14 @@ export class CrearUsuarioPage implements OnInit {
       return;
     }
 
-    // Validar correo institucional @duocuc.cl
-    const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@duocuc\.cl$/;
-    if (!correoInstitucionalRegex.test(this.correo)) {
-      this.correoInvalid = true;
-      await this.mostrarToast('Solo se permiten correos institucionales @duocuc.cl');
-      return;
-    }
+// Validar correo institucional permitido
+const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@(duocuc\.cl|profesor\.duoc\.cl|duoc\.cl)$/;
+if (!correoInstitucionalRegex.test(this.correo)) {
+  this.correoInvalid = true;
+  await this.mostrarToast('Solo se permiten correos institucionales @duocuc.cl, @profesor.duoc.cl o @duoc.cl');
+  return;
+}
+
 
     // Validar longitud de contraseña
     if (this.contrasena.length < 6) {
