@@ -256,6 +256,20 @@ export class UsuarioService {
   async setUsuarioOnline(id_usuario: string, online: boolean) {
     const userRef = doc(this.firestore, 'Usuario', id_usuario);
     await updateDoc(userRef, { estado_online: online });
+
+    // Actualizar en memoria
+    const idx = this.usuariosEnMemoria.findIndex(u => u.id_usuario === id_usuario);
+    if (idx !== -1) {
+      this.usuariosEnMemoria[idx].estado_online = online;
+    }
+
+    // Actualizar en localStorage
+    const usuariosLocal = await this.localStorage.getList<Usuario>('usuarios') || [];
+    const idxLocal = usuariosLocal.findIndex(u => u.id_usuario === id_usuario);
+    if (idxLocal !== -1) {
+      usuariosLocal[idxLocal].estado_online = online;
+      await this.localStorage.setItem('usuarios', usuariosLocal);
+    }
   }
 
   async cargarUsuarios(): Promise<void> {
