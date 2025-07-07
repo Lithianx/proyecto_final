@@ -166,4 +166,65 @@ export class FirebaseStorageService {
       throw new Error('Error al comprimir y subir la imagen');
     }
   }
+
+  /**
+   * Sube un video a Firebase Storage
+   * @param videoBase64 - String base64 del video
+   * @param folder - Carpeta donde guardar el video (por defecto 'videos')
+   * @returns URL de descarga del video
+   */
+  async uploadVideo(videoBase64: string, folder: string = 'videos'): Promise<string> {
+    try {
+      // Generar nombre único para el video
+      const fileName = `${uuidv4()}.mp4`;
+      const filePath = `${folder}/${fileName}`;
+      
+      // Crear referencia al archivo
+      const fileRef = ref(this.storage, filePath);
+      
+      // Convertir base64 a blob
+      const blob = this.base64ToBlob(videoBase64);
+      
+      // Subir archivo
+      const uploadResult = await uploadBytes(fileRef, blob);
+      
+      // Obtener URL de descarga
+      const downloadURL = await getDownloadURL(uploadResult.ref);
+      
+      return downloadURL;
+    } catch (error) {
+      console.error('Error al subir video:', error);
+      throw new Error('Error al subir el video');
+    }
+  }
+
+  /**
+   * Verifica si un archivo base64 es un video válido
+   * @param base64String - String base64 del archivo
+   * @returns boolean
+   */
+  isVideo(base64String: string): boolean {
+    return base64String.startsWith('data:video/');
+  }
+
+  /**
+   * Obtiene el tamaño de un archivo base64 en MB
+   * @param base64String - String base64 del archivo
+   * @returns Tamaño en MB
+   */
+  getFileSizeInMB(base64String: string): number {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    return sizeInBytes / (1024 * 1024);
+  }
+
+  /**
+   * Valida si un video cumple con los límites de tamaño
+   * @param base64String - String base64 del video
+   * @param maxSizeMB - Tamaño máximo en MB (por defecto 25MB)
+   * @returns boolean
+   */
+  validateVideoSize(base64String: string, maxSizeMB: number = 25): boolean {
+    return this.getFileSizeInMB(base64String) <= maxSizeMB;
+  }
+
 }
