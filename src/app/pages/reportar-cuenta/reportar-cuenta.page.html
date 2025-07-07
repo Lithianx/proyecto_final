@@ -29,8 +29,9 @@
       <ion-textarea [(ngModel)]="detallesAdicionales" rows="4" placeholder="Escribe detalles si lo deseas..."></ion-textarea>
     </ion-item>
 
-    <ion-button expand="block" color="danger" (click)="enviarReporte()" [disabled]="!razonReporte">
-      Enviar reporte
+    <ion-button expand="block" color="danger" (click)="enviarReporte()" 
+      [disabled]="!razonReporte || enviandoReporte">
+      {{ enviandoReporte ? 'Enviando reporte...' : 'Enviar reporte' }}
     </ion-button>
   </div>
 </ion-content>

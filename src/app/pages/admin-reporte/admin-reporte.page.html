@@ -15,10 +15,28 @@
     <h1 class="app-title">Reportes</h1>
   </div>
 
+
+
+
+
+  
   <div class="profile-form-box">
     <div class="content-box" style="padding: 16px;">
-      <ng-container *ngIf="datos$ | async as datos">
-        <ion-accordion-group expand="inset">
+      <ng-container *ngIf="datos$ | async as datos; else loadingTemplate">
+
+        <!-- Mensaje cuando no hay reportes -->
+        <div *ngIf="datos.reportes && datos.reportes.length === 0" class="sin-reportes">
+          <span class="lupa-spinner">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </span>
+          <ion-text color="medium">
+            <h3>No hay reportes para mostrar</h3>
+            <h6>Tu comunidad al parecer lo está haciendo bien</h6>
+          </ion-text>
+        </div>
+
+        <!-- Lista de reportes -->
+        <ion-accordion-group expand="inset" *ngIf="datos.reportes && datos.reportes.length > 0">
           <ion-accordion *ngFor="let reporte of datos.reportes">
             <ion-item slot="header" color="light">
               <ion-label>
@@ -30,23 +48,55 @@
               </ion-label>
             </ion-item>
             <div class="ion-padding" slot="content">
-              <ng-container *ngIf="getPublicacion(reporte, datos.publicaciones) as publicacion">
+              <!-- Reporte de PUBLICACIÓN -->
+              <ng-container *ngIf="esReporteDePublicacion(reporte) && getPublicacion(reporte, datos.publicaciones) as publicacion">
                 <ion-card>
                   <ion-card-header>
                     <ion-card-title>Descripción del reporte:</ion-card-title>
-                    <ion-card-subtitle> {{ reporte.descripcion_reporte }}</ion-card-subtitle>
+                    <ion-card-subtitle>{{ reporte.descripcion_reporte }}</ion-card-subtitle>
                   </ion-card-header>
                   <ion-card-content>
+                    <h4>Publicación reportada:</h4>
                     <p class="texto-publicacion">{{ publicacion.contenido }}</p>
                     <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="img-publicacion"
                       (click)="verImagen(publicacion)">
                   </ion-card-content>
                 </ion-card>
               </ng-container>
+
+              <!-- Reporte de PERFIL/USUARIO -->
+              <ng-container *ngIf="!esReporteDePublicacion(reporte)">
+                <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Descripción del reporte:</ion-card-title>
+                    <ion-card-subtitle>{{ getDescripcionLimpia(reporte) }}</ion-card-subtitle>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <h4>Reporte de perfil/usuario</h4>
+                    <ng-container *ngIf="getUsuarioReportado(reporte, datos.usuarios) as usuarioReportado">
+                      <div class="usuario-reportado">
+                        <ion-avatar>
+                          <img [src]="usuarioReportado.avatar || 'assets/img/default-avatar.png'">
+                        </ion-avatar>
+                        <div class="info-usuario">
+                          <h5>{{ usuarioReportado.nombre_usuario }}</h5>
+                          <p>{{ usuarioReportado.sub_name}}</p>
+                          <p>{{ usuarioReportado.correo_electronico }}</p>
+                          <label>{{ usuarioReportado.descripcion}}</label>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <div *ngIf="!getUsuarioReportado(reporte, datos.usuarios)" class="usuario-no-encontrado">
+                      <p><strong>Usuario reportado no encontrado</strong></p>
+                      <p>El reporte contiene información insuficiente para identificar al usuario.</p>
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+              </ng-container>
               <ion-row>
                 <ion-col size="6">
                   <ion-button expand="block" class="texto-btn" color="danger"
-                    (click)="aceptarReporte(reporte, datos.publicaciones)">Aceptar reporte</ion-button>
+                    (click)="aceptarReporte(reporte, datos.publicaciones, datos.usuarios)">Aceptar reporte</ion-button>
                 </ion-col>
                 <ion-col size="6">
                   <ion-button expand="block" class="texto-btn" (click)="rechazarReporte(reporte)">Rechazar
@@ -57,6 +107,18 @@
           </ion-accordion>
         </ion-accordion-group>
       </ng-container>
+
+      <!-- Template de carga -->
+      <ng-template #loadingTemplate>
+        <div class="sin-reportes">
+          <span class="lupa-spinner">
+            <ion-icon name="refresh-outline"></ion-icon>
+          </span>
+          <ion-text color="medium">
+            <h3>Cargando reportes...</h3>
+          </ion-text>
+        </div>
+      </ng-template>
     </div>
   </div>
 
