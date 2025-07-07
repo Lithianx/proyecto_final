@@ -222,7 +222,7 @@ private palabrasVetadas = [
             'discreto', 'discreta', 'secreto', 'secreta',
             'atlético', 'atletica', 'matemático', 'matematica',
             'automático', 'automatica', 'democrático', 'democratica',
-            'aristocrático', 'aristocratica', 'burocrático', 'burocratica'
+            'aristocrático', 'aristocratica', 'burocrático', 'burocratica', 'analista'
           ];
           
           const palabraOriginal = palabraTexto.toLowerCase();
