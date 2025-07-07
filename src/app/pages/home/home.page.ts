@@ -202,7 +202,7 @@ async likePublicacion(publicacion: any) {
         idAutor,
         idPublicacion
       );
-      this.mostrarToast('Has dado like y notificación creada.');
+      
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
       // Si ya había dado like y lo quitó, elimina notificación
       await this.notificacionesService.eliminarNotificacion(
@@ -210,7 +210,7 @@ async likePublicacion(publicacion: any) {
         idUsuarioActual,
         idAutor
       );
-      this.mostrarToast('Has quitado el like. Notificación eliminada.');
+      
     }
 
   } catch (error) {
@@ -284,11 +284,11 @@ async seguir(usuario: Usuario) {
         idSeguidor,
         idSeguido
       );
-      this.mostrarToast('Ahora sigues a este usuario. Notificación creada.');
+      
     } else if (yaLoSigue) {
       // Eliminar notificación de "follow" (dejar de seguir)
       await this.notificacionesService.eliminarNotificacion('follow', idSeguidor, idSeguido);
-      this.mostrarToast('Has dejado de seguir a este usuario. Notificación eliminada.');
+      
     }
   } catch (error) {
     console.error('Error al manejar la notificación de seguimiento:', error);
