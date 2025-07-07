@@ -120,6 +120,28 @@ async getNotificacionesConUsuarioHecho(idUserReceptor: string): Promise<any[]> {
     return [];
   }
 }
+async hayNotificacionesSinLeer(idUserReceptor: string): Promise<boolean> {
+  try {
+    const notificaciones = await this.firebaseService.getTodasNotificaciones();
+    return notificaciones.some(n => n.idUserReceptor === idUserReceptor && !n.estado);
+  } catch (error) {
+    console.error('Error al verificar notificaciones sin leer:', error);
+    return false;
+  }
+}
+async marcarNotificacionesComoLeidas(idUserReceptor: string): Promise<void> {
+  try {
+    const notificaciones = await this.firebaseService.getTodasNotificaciones();
+    const noLeidas = notificaciones.filter(n => n.idUserReceptor === idUserReceptor && !n.estado);
 
+    for (const notificacion of noLeidas) {
+      if (notificacion.id_notificacion) {
+        await this.firebaseService.actualizarNotificacion(notificacion.id_notificacion, { estado: true });
+      }
+    }
+  } catch (error) {
+    console.error('Error al marcar notificaciones como leídas:', error);
+  }
+}
 
 }

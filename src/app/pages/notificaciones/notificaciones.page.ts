@@ -54,6 +54,10 @@ export class NotificacionesPage implements OnInit {
 
     this.notificaciones = notis;
     console.log('🔔 Notificaciones enriquecidas ordenadas:', this.notificaciones);
+
+    // Marcar todas como leídas
+    await this.notificacionesService.marcarNotificacionesComoLeidas(this.idUsuarioLogeado);
+
   } catch (error) {
     console.error('❌ Error al cargar notificaciones enriquecidas:', error);
   }

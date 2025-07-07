@@ -527,4 +527,5 @@ async eliminarNotificacion(idNotificacion: string): Promise<void> {
     console.error('Error eliminando la notificación en Firebase:', error);
   }
 }
+
 }

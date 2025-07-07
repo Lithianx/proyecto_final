@@ -41,3 +41,12 @@
       color: #707070; // gris claro
       font-size: 33px;
     }
+    .punto-rojo {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+}

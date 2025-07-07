@@ -3,11 +3,12 @@
     <ion-title style="color: aliceblue;">Skin-a</ion-title>
     <ion-buttons slot="end" class="encabezado-buttons">
 
-      <ion-button (click)="irNotificaciones()">
+      <ion-button (click)="irNotificaciones()" style="position: relative;">
         <ion-icon
           name="notifications-sharp"
           [ngClass]="rutaActual === '/notificaciones' ? 'icon-activo' : 'icon-inactivo'">
         </ion-icon>
+        <span *ngIf="hayNotificacionesSinLeer" class="punto-rojo"></span>
       </ion-button>
 
       <ion-button (click)="irEvento()">
