@@ -345,7 +345,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
         comentario.id_publicacion // Puedes pasar id_publicacion o id_comentario, según tu modelo
 
       );
-      this.mostrarToast('Has dado like al comentario. Notificación creada.');
+      
     } else if (yaLikeo && idUsuarioActual !== idAutorComentario) {
       // Eliminar notificación al quitar like
       await this.notificacionesService.eliminarNotificacion(
@@ -374,29 +374,26 @@ export class ComentarioPage implements OnInit, OnDestroy {
     await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
 
     if (!yaLikeo && idUsuarioActual !== idAutor) {
-      // Crear notificación de like
       await this.notificacionesService.crearNotificacion(
         'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor,
         idPublicacion
       );
-      
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
-      // Eliminar notificación al quitar like
       await this.notificacionesService.eliminarNotificacion(
-        'Le gusto tu publicacio',
+        'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor,
         idPublicacion
       );
-      
     }
   } catch (error) {
     console.error('Error al dar/quitar like o manejar notificación:', error);
     this.mostrarToast('Error al procesar like.', 'danger');
   }
 }
+
 
   getLikesPublicacion(id_publicacion: string): number {
     return this.publicacionesLikes.filter(l => l.id_publicacion === id_publicacion && l.estado_like).length;
@@ -474,21 +471,17 @@ async seguir(usuario: Usuario) {
     this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
 
     if (!yaLoSigue && idSeguidor !== idSeguido) {
-      // Crear notificación de "follow"
       await this.notificacionesService.crearNotificacion(
         'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );
-      
     } else if (yaLoSigue) {
-      // Eliminar notificación de "follow" (dejar de seguir)
       await this.notificacionesService.eliminarNotificacion(
         'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );
-      
     }
   } catch (error) {
     console.error('Error al manejar la notificación de seguimiento:', error);

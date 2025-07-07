@@ -195,26 +195,24 @@ async likePublicacion(publicacion: any) {
     await this.likeService.toggleLike(idUsuarioActual, idPublicacion);
 
     if (!yaLikeo && idUsuarioActual !== idAutor) {
-      // Si no había dado like, lo da y se crea notificación
+      console.log(`👍 [LIKE] Creando notificación: ${idUsuarioActual} dio like a la publicación ${idPublicacion} de ${idAutor}`);
       await this.notificacionesService.crearNotificacion(
         'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor,
         idPublicacion
       );
-      
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
-      // Si ya había dado like y lo quitó, elimina notificación
+      console.log(`👎 [LIKE] Eliminando notificación: ${idUsuarioActual} quitó like a la publicación ${idPublicacion} de ${idAutor}`);
       await this.notificacionesService.eliminarNotificacion(
         'Le gusto tu publicacion',
         idUsuarioActual,
         idAutor
       );
-      
     }
 
   } catch (error) {
-    console.error('Error al procesar like o notificación:', error);
+    console.error('❌ [LIKE] Error al procesar like o notificación:', error);
     this.mostrarToast('Error al procesar like.', 'danger');
   }
 }
@@ -264,37 +262,40 @@ async likePublicacion(publicacion: any) {
     );
   }
 
-  // Seguir/Dejar de seguir
+ // Seguir/Dejar de seguir
 async seguir(usuario: Usuario) {
   const idSeguidor = this.usuarioActual.id_usuario;
   const idSeguido = usuario.id_usuario;
 
   const yaLoSigue = this.seguirService.sigue(idSeguidor, idSeguido);
 
-  await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
-  await this.seguirService.cargarSeguimientos();
-  this.seguimientos = this.seguirService.getSeguimientos();
-  this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
-
   try {
+    await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
+    this.seguimientos = this.seguirService.getSeguimientos();
+    this.followersfriend = this.seguirService.getUsuariosSeguidos(this.usuarios, idSeguidor);
+
     if (!yaLoSigue && idSeguidor !== idSeguido) {
-      // Crear notificación de "follow"
+      console.log(`✅ [SEGUIR] Creando notificación: ${idSeguidor} comenzó a seguir a ${idSeguido}`);
       await this.notificacionesService.crearNotificacion(
         'Comenzo a seguirte',
         idSeguidor,
         idSeguido
       );
-      
     } else if (yaLoSigue) {
-      // Eliminar notificación de "follow" (dejar de seguir)
-      await this.notificacionesService.eliminarNotificacion('follow', idSeguidor, idSeguido);
-      
+      console.log(`🗑️ [SEGUIR] Eliminando notificación: ${idSeguidor} dejó de seguir a ${idSeguido}`);
+      await this.notificacionesService.eliminarNotificacion(
+        'Comenzo a seguirte',
+        idSeguidor,
+        idSeguido
+      );
     }
   } catch (error) {
-    console.error('Error al manejar la notificación de seguimiento:', error);
+    console.error('❌ [SEGUIR] Error al manejar la notificación de seguimiento:', error);
     this.mostrarToast('Error con la notificación de seguimiento.', 'danger');
   }
 }
+
+
 
 
   sigueAlAutor(publicacion: Publicacion): boolean {
