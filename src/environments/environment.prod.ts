@@ -2,12 +2,11 @@ export const environment = {
   production: true,
   giphyApiKey: 'JY1WOhcF9c6Vj8FSsht1WmSXgOhp9fpn',
   firebaseConfig : {
-  apiKey: "AIzaSyCZT-KIRYdhH0zHtL0_3ZYmPDW9kUgFNwI",
-  authDomain: "app-eventos-7f5a8.firebaseapp.com",
-  projectId: "app-eventos-7f5a8",
-  storageBucket: "app-eventos-7f5a8.appspot.com",
-
-  messagingSenderId: "940926776806",
-  appId: "1:940926776806:web:6c39d6ec6874607d531227"
+  apiKey: "AIzaSyCrVM-qv90tiFNWstnTDcWgm0mRKikEjTc",
+  authDomain: "proyecto-789ae.firebaseapp.com",
+  projectId: "proyecto-789ae",
+  storageBucket: "proyecto-789ae.firebasestorage.app",
+  messagingSenderId: "863891793173",
+  appId: "1:863891793173:web:9d1890ce6c3c580063751c"
 }
 };
