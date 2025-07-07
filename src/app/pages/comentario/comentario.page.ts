@@ -381,7 +381,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
         idAutor,
         idPublicacion
       );
-      this.mostrarToast('Has dado like y notificación creada.');
+      
     } else if (yaLikeo && idUsuarioActual !== idAutor) {
       // Eliminar notificación al quitar like
       await this.notificacionesService.eliminarNotificacion(
@@ -390,7 +390,7 @@ export class ComentarioPage implements OnInit, OnDestroy {
         idAutor,
         idPublicacion
       );
-      this.mostrarToast('Has quitado el like. Notificación eliminada.');
+      
     }
   } catch (error) {
     console.error('Error al dar/quitar like o manejar notificación:', error);
@@ -480,7 +480,7 @@ async seguir(usuario: Usuario) {
         idSeguidor,
         idSeguido
       );
-      this.mostrarToast('Ahora sigues a este usuario. Notificación creada.');
+      
     } else if (yaLoSigue) {
       // Eliminar notificación de "follow" (dejar de seguir)
       await this.notificacionesService.eliminarNotificacion(
@@ -488,7 +488,7 @@ async seguir(usuario: Usuario) {
         idSeguidor,
         idSeguido
       );
-      this.mostrarToast('Has dejado de seguir a este usuario. Notificación eliminada.');
+      
     }
   } catch (error) {
     console.error('Error al manejar la notificación de seguimiento:', error);
