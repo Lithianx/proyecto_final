@@ -33,11 +33,14 @@ async guardarReporte(reporte: Reporte): Promise<string | void> {
   console.log('Guardando reporte:', reporte);
   const online = await this.utilsService.checkInternetConnection();
   console.log('Conexión a internet:', online);
+  
   if (online) {
+    // Cuando está online, solo guarda en Firebase
+    // El observable se actualizará automáticamente
     const id = await this.firebaseService.addReporte(reporte);
-    await this.localStorage.addToList<Reporte>('reportes', { ...reporte, id_reporte: id });
     return id;
   } else {
+    // Cuando está offline, guarda en localStorage para sincronizar después
     const id = Date.now().toString();
     await this.localStorage.addToList<Reporte>('reportes', { ...reporte, id_reporte: id });
     return id;
@@ -75,10 +78,24 @@ async eliminarReportesPorPublicacion(id_publicacion: string): Promise<void> {
 async sincronizarReporte() {
   const online = await this.utilsService.checkInternetConnection();
   if (!online) return;
+  
   const reportesLocales = await this.localStorage.getList<Reporte>('reportes') || [];
-  for (const rep of reportesLocales) {
-    await this.firebaseService.addReporte(rep);
+  
+  // Solo sincronizar reportes que no tienen ID de Firebase (los que se crearon offline)
+  const reportesPendientes = reportesLocales.filter(r => 
+    !r.id_reporte || r.id_reporte.length < 20 // IDs de Firebase son más largos
+  );
+  
+  for (const rep of reportesPendientes) {
+    try {
+      const idFirebase = await this.firebaseService.addReporte(rep);
+      console.log(`Reporte sincronizado con ID: ${idFirebase}`);
+    } catch (error) {
+      console.error('Error al sincronizar reporte:', error);
+    }
   }
+  
+  // Limpiar solo los reportes que se sincronizaron exitosamente
   await this.localStorage.setItem('reportes', []);
 }
 

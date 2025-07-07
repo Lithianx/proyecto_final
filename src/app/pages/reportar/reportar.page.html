@@ -72,7 +72,9 @@
           </ion-item>
 
           <ion-button class="ion-padding" expand="full" shape="round" type="submit"
-            [disabled]="!reporte.id_tipo_reporte || !reporte.descripcion_reporte">Enviar Reporte</ion-button>
+            [disabled]="!reporte.id_tipo_reporte || !reporte.descripcion_reporte || enviandoReporte">
+            {{ enviandoReporte ? 'Enviando...' : 'Enviar Reporte' }}
+          </ion-button>
         </form>
       </ion-card-content>
     </ion-card>
