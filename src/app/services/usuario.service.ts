@@ -23,14 +23,26 @@ import {
   collection,
   getDoc
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
+
+// 🚀 TIPO OPTIMIZADO PARA CACHE
+type UsuarioCache = Pick<Usuario, 'id_usuario' | 'nombre_usuario' | 'avatar' | 'rol' | 'correo_electronico' | 'sub_name' | 'descripcion' | 'estado_cuenta'>;
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private usuariosEnMemoria: Usuario[] = [];
   usuarios$: Observable<Usuario[]>;
+
+  // 🚀 NOTIFICACIÓN DE CAMBIOS DE USUARIO
+  private usuarioCambio = new BehaviorSubject<Usuario | null>(null);
+  public usuarioCambio$ = this.usuarioCambio.asObservable();
+
+  // 🚀 CACHE OPTIMIZADO
+  private usuarioActualCache: UsuarioCache | null = null;
+  private ultimaActualizacionCache: number = 0;
+  private readonly CACHE_DURACION = 30000; // 30 segundos
 
   constructor(
     private localStorage: LocalStorageService,
@@ -83,6 +95,9 @@ export class UsuarioService {
           await this.localStorage.setItem('usuarioActual', usuarioMinimo);
           await this.localStorage.setItem('id_usuario', usuario.id_usuario);
           console.log('💾 Usuario guardado en localStorage con estado_cuenta:', usuarioMinimo.estado_cuenta);
+          
+          // 🚀 NOTIFICAR CAMBIO DE USUARIO
+          this.actualizarCacheYNotificar(usuarioMinimo);
         }
         return usuario ?? null;
       } catch (error) {
@@ -118,6 +133,9 @@ export class UsuarioService {
         await this.localStorage.setItem('usuarioActual', usuarioMinimo);
         await this.localStorage.setItem('id_usuario', usuario.id_usuario);
         console.log('💾 Usuario guardado en localStorage offline con estado_cuenta:', usuarioMinimo.estado_cuenta);
+        
+        // 🚀 NOTIFICAR CAMBIO DE USUARIO
+        this.actualizarCacheYNotificar(usuarioMinimo);
       }
       return usuario ?? null;
     }
@@ -198,10 +216,16 @@ export class UsuarioService {
    * Obtiene el usuario actualmente autenticado (desde Firebase o localStorage si está offline).
    */
   async getUsuarioActualConectado(): Promise<Usuario | null> {
+    // 🚀 VERIFICAR CACHE PRIMERO
+    const ahora = Date.now();
+    if (this.usuarioActualCache && (ahora - this.ultimaActualizacionCache) < this.CACHE_DURACION) {
+      return this.usuarioActualCache as Usuario;
+    }
     const online = await this.utilsService.checkInternetConnection();
     if (online) {
       return new Promise((resolve) => {
-        onAuthStateChanged(this.auth, async (user: User | null) => {
+        const unsubscribe = onAuthStateChanged(this.auth, async (user: User | null) => {
+          unsubscribe(); // Detener el listener después de la primera llamada
           if (user && user.email) {
             await this.cargarUsuarios();
             const usuarios = this.getUsuarios();
@@ -226,6 +250,9 @@ export class UsuarioService {
                 estado_cuenta: usuarioEncontrado.estado_cuenta
               };
               await this.localStorage.setItem('usuarioActual', usuarioMinimo);
+              
+              // 🚀 ACTUALIZAR CACHE Y NOTIFICAR
+              this.actualizarCacheYNotificar(usuarioMinimo);
             }
             resolve(usuarioEncontrado ?? null);
           } else {
@@ -245,6 +272,9 @@ export class UsuarioService {
           await this.logout(); // Cerrar sesión automáticamente
           return null;
         }
+        
+        // 🚀 ACTUALIZAR CACHE
+        this.actualizarCacheYNotificar(usuarioActual);
       }
       
       return usuarioActual ?? null;
@@ -420,14 +450,28 @@ export class UsuarioService {
    * Cierra sesión del usuario actual y elimina su info de localStorage.
    */
   async logout(): Promise<void> {
+    console.log('🚪 Cerrando sesión...');
+    
     const usuarioActual = await this.localStorage.getItem<Usuario>('usuarioActual');
     const online = await this.utilsService.checkInternetConnection();
+    
     if (usuarioActual && online) {
-      await this.setUsuarioOnline(usuarioActual.id_usuario, false);
-      await this.auth.signOut();
+      try {
+        await this.setUsuarioOnline(usuarioActual.id_usuario, false);
+        await this.auth.signOut();
+      } catch (error) {
+        console.warn('⚠️ Error cerrando sesión de Firebase:', error);
+      }
     }
+    
+    // Limpiar localStorage
     await this.localStorage.removeItem('usuarioActual');
     await this.localStorage.removeItem('id_usuario');
+    
+    // 🚀 INVALIDAR CACHE Y NOTIFICAR
+    this.invalidarCache();
+    
+    console.log('✅ Sesión cerrada completamente');
   }
 
   async desactivarCuentaUsuario(id_usuario: string): Promise<void> {
@@ -538,5 +582,41 @@ export class UsuarioService {
       return null;
     }
     return await this.localStorage.getItem<Usuario>('usuarioActual');
+  }
+
+  // --- 🚀 MÉTODOS DE CACHE Y NOTIFICACIÓN ---
+
+  /**
+   * Actualiza el cache interno y notifica a otros servicios del cambio de usuario
+   */
+  private actualizarCacheYNotificar(usuario: UsuarioCache | null): void {
+    this.usuarioActualCache = usuario;
+    this.ultimaActualizacionCache = Date.now();
+    this.usuarioCambio.next(usuario as Usuario);
+    console.log('🔄 Usuario actualizado en cache y notificado:', usuario?.nombre_usuario || 'null');
+  }
+
+  /**
+   * Invalida el cache del usuario (útil al hacer logout)
+   */
+  private invalidarCache(): void {
+    this.usuarioActualCache = null;
+    this.ultimaActualizacionCache = 0;
+    this.usuarioCambio.next(null);
+  }
+
+  /**
+   * Obtiene el usuario actual de forma rápida (usando cache si es posible)
+   */
+  async getUsuarioActualRapido(): Promise<Usuario | null> {
+    const ahora = Date.now();
+    
+    // Si el cache es válido, usarlo
+    if (this.usuarioActualCache && (ahora - this.ultimaActualizacionCache) < this.CACHE_DURACION) {
+      return this.usuarioActualCache as Usuario;
+    }
+
+    // Cache expirado, usar método completo
+    return await this.getUsuarioActualConectado();
   }
 }

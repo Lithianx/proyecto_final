@@ -8,7 +8,7 @@ import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
 import { CryptoService } from './crypto.service';
 import { UsuarioService } from './usuario.service';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
 
@@ -22,6 +22,13 @@ export class ComunicacionService {
   // --- Contador de mensajes no vistos ---
   private mensajesNoVistos = new BehaviorSubject<number>(0);
   public mensajesNoVistos$ = this.mensajesNoVistos.asObservable();
+
+  // --- 🚀 CACHE INTELIGENTE PARA EVITAR BUCLES ---
+  private usuarioActualCache: Usuario | null = null;
+  private ultimaActualizacionUsuario: number = 0;
+  private readonly CACHE_DURACION = 30000; // 30 segundos
+  private conversacionesInicializadas = false;
+  private mensajesInicializados = false;
 
   constructor(
     private localStorage: LocalStorageService,
@@ -37,36 +44,133 @@ export class ComunicacionService {
     const conversacionesRef = collection(this.firestore, 'Conversacion');
     this.conversaciones$ = collectionData(conversacionesRef, { idField: 'id_conversacion' }) as Observable<Conversacion[]>;
 
-    // Guardar conversaciones online en local para visualización offline (solo las del usuario actual)
-    this.conversaciones$.subscribe(async conversacionesOnline => {
-      const usuarioActual = await this.usuarioService.getUsuarioActualConectado();
-      if (conversacionesOnline && conversacionesOnline.length > 0 && usuarioActual && usuarioActual.id_usuario) {
-        const conversacionesFiltradas = conversacionesOnline.filter(
-          c =>
-            c.id_usuario_emisor === usuarioActual.id_usuario ||
-            c.id_usuario_receptor === usuarioActual.id_usuario
-        );
-        await this.localStorage.setItem('conversaciones', conversacionesFiltradas);
+    // 🚀 INICIALIZACIÓN OPTIMIZADA CON DEBOUNCE
+    this.inicializarSuscripcionesOptimizadas();
 
-        // Guarda los ids de esas conversaciones para filtrar mensajes
-        const idsConversaciones = conversacionesFiltradas.map(c => c.id_conversacion);
-
-        // Guardar mensajes online en local para visualización offline (solo los de las conversaciones del usuario actual)
-        this.mensajes$.subscribe(async mensajesOnline => {
-          if (mensajesOnline && mensajesOnline.length > 0) {
-            const mensajesFiltrados = mensajesOnline.filter(
-              m => idsConversaciones.includes(m.id_conversacion)
-            );
-            await this.localStorage.setItem('mensajes', mensajesFiltrados);
-          }
-        });
+    // 🚀 ESCUCHAR CAMBIOS DE USUARIO PARA INVALIDAR CACHE
+    this.usuarioService.usuarioCambio$.subscribe(usuario => {
+      if (usuario) {
+        console.log('🔄 Usuario cambió, reinicializando ComunicacionService para:', usuario.nombre_usuario);
+        this.invalidarCacheYReinicializar();
+      } else {
+        console.log('🚪 Usuario cerró sesión, limpiando ComunicacionService');
+        this.resetearContadorMensajesNoVistos();
       }
     });
+  }
 
-    // Suscribirse a los cambios de mensajes para actualizar el contador
-    this.mensajes$.subscribe(async (mensajes) => {
-      await this.actualizarContadorMensajesNoVistos(mensajes);
-    });
+  // --- 🚀 MÉTODOS DE CACHE INTELIGENTE ---
+  private async getUsuarioActualRapido(): Promise<Usuario | null> {
+    const ahora = Date.now();
+    
+    // Si el cache es válido, usarlo
+    if (this.usuarioActualCache && (ahora - this.ultimaActualizacionUsuario) < this.CACHE_DURACION) {
+      return this.usuarioActualCache;
+    }
+
+    // Cache expirado o no existe, actualizar
+    try {
+      this.usuarioActualCache = await this.usuarioService.getUsuarioActualConectado();
+      this.ultimaActualizacionUsuario = ahora;
+      return this.usuarioActualCache;
+    } catch (error) {
+      console.error('❌ Error obteniendo usuario actual:', error);
+      return null;
+    }
+  }
+
+  private invalidarCacheUsuario(): void {
+    this.usuarioActualCache = null;
+    this.ultimaActualizacionUsuario = 0;
+  }
+
+  private inicializarSuscripcionesOptimizadas(): void {
+    // 🚀 CONVERSACIONES CON DEBOUNCE Y CONTROL DE INICIALIZACIÓN
+    this.conversaciones$
+      .pipe(
+        debounceTime(500), // Esperar 500ms antes de procesar
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+      )
+      .subscribe(async conversacionesOnline => {
+        if (this.conversacionesInicializadas) return;
+        await this.procesarConversacionesOnline(conversacionesOnline);
+        this.conversacionesInicializadas = true;
+      });
+
+    // 🚀 MENSAJES CON DEBOUNCE Y CONTROL DE INICIALIZACIÓN
+    this.mensajes$
+      .pipe(
+        debounceTime(300), // Debounce más corto para mensajes
+        distinctUntilChanged((prev, curr) => prev?.length === curr?.length)
+      )
+      .subscribe(async mensajes => {
+        await this.actualizarContadorMensajesNoVistosOptimizado(mensajes);
+      });
+  }
+
+  private async procesarConversacionesOnline(conversacionesOnline: Conversacion[]): Promise<void> {
+    const usuarioActual = await this.getUsuarioActualRapido();
+    if (!conversacionesOnline || conversacionesOnline.length === 0 || !usuarioActual?.id_usuario) {
+      return;
+    }
+
+    const conversacionesFiltradas = conversacionesOnline.filter(
+      c =>
+        c.id_usuario_emisor === usuarioActual.id_usuario ||
+        c.id_usuario_receptor === usuarioActual.id_usuario
+    );
+
+    await this.localStorage.setItem('conversaciones', conversacionesFiltradas);
+
+    // Guarda los ids de esas conversaciones para filtrar mensajes
+    const idsConversaciones = conversacionesFiltradas.map(c => c.id_conversacion);
+
+    // 🚀 SUSCRIPCIÓN ÚNICA A MENSAJES (no anidada)
+    if (!this.mensajesInicializados) {
+      this.mensajes$
+        .pipe(
+          debounceTime(300),
+          distinctUntilChanged((prev, curr) => prev?.length === curr?.length)
+        )
+        .subscribe(async mensajesOnline => {
+          await this.procesarMensajesOnline(mensajesOnline, idsConversaciones);
+        });
+      this.mensajesInicializados = true;
+    }
+  }
+
+  private async procesarMensajesOnline(mensajesOnline: Mensaje[], idsConversaciones: string[]): Promise<void> {
+    if (mensajesOnline && mensajesOnline.length > 0 && idsConversaciones.length > 0) {
+      const mensajesFiltrados = mensajesOnline.filter(
+        m => idsConversaciones.includes(m.id_conversacion)
+      );
+      await this.localStorage.setItem('mensajes', mensajesFiltrados);
+    }
+  }
+
+  private async actualizarContadorMensajesNoVistosOptimizado(mensajes: Mensaje[]) {
+    try {
+      const usuarioActual = await this.getUsuarioActualRapido();
+      if (!usuarioActual) {
+        this.mensajesNoVistos.next(0);
+        return;
+      }
+      const noVistos = mensajes.filter(mensaje =>
+        !mensaje.estado_visto &&
+        mensaje.id_usuario_emisor !== usuarioActual.id_usuario
+      );
+      this.mensajesNoVistos.next(noVistos.length);
+    } catch (error) {
+      this.mensajesNoVistos.next(0);
+    }
+  }
+
+  // 🚀 MÉTODO PÚBLICO PARA INVALIDAR CACHE CUANDO CAMBIE EL USUARIO
+  public invalidarCacheYReinicializar(): void {
+    this.invalidarCacheUsuario();
+    this.conversacionesInicializadas = false;
+    this.mensajesInicializados = false;
+    console.log('🔄 Cache de ComunicacionService invalidado');
   }
 
   private async actualizarContadorMensajesNoVistos(mensajes: Mensaje[]) {
