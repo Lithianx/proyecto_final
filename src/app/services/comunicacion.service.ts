@@ -155,10 +155,22 @@ export class ComunicacionService {
         this.mensajesNoVistos.next(0);
         return;
       }
+
+      // Obtener las conversaciones donde el usuario actual participa
+      const conversaciones = await this.getConversacionesLocales();
+      const conversacionesDelUsuario = conversaciones.filter(conv =>
+        conv.id_usuario_emisor === usuarioActual.id_usuario ||
+        conv.id_usuario_receptor === usuarioActual.id_usuario
+      );
+      const idsConversacionesDelUsuario = conversacionesDelUsuario.map(conv => conv.id_conversacion);
+
+      // Filtrar mensajes no vistos solo de las conversaciones del usuario actual
       const noVistos = mensajes.filter(mensaje =>
         !mensaje.estado_visto &&
-        mensaje.id_usuario_emisor !== usuarioActual.id_usuario
+        mensaje.id_usuario_emisor !== usuarioActual.id_usuario &&
+        idsConversacionesDelUsuario.includes(mensaje.id_conversacion)
       );
+      
       this.mensajesNoVistos.next(noVistos.length);
     } catch (error) {
       this.mensajesNoVistos.next(0);
@@ -180,12 +192,26 @@ export class ComunicacionService {
         this.mensajesNoVistos.next(0);
         return;
       }
+
+      // Obtener las conversaciones donde el usuario actual participa
+      const conversaciones = await this.getConversacionesLocales();
+      const conversacionesDelUsuario = conversaciones.filter(conv =>
+        conv.id_usuario_emisor === usuarioActual.id_usuario ||
+        conv.id_usuario_receptor === usuarioActual.id_usuario
+      );
+      const idsConversacionesDelUsuario = conversacionesDelUsuario.map(conv => conv.id_conversacion);
+
+      // Filtrar mensajes no vistos solo de las conversaciones del usuario actual
       const noVistos = mensajes.filter(mensaje =>
         !mensaje.estado_visto &&
-        mensaje.id_usuario_emisor !== usuarioActual.id_usuario
+        mensaje.id_usuario_emisor !== usuarioActual.id_usuario &&
+        idsConversacionesDelUsuario.includes(mensaje.id_conversacion)
       );
+      
       this.mensajesNoVistos.next(noVistos.length);
+      console.log(`📊 Contador actualizado: ${noVistos.length} mensajes no vistos para ${usuarioActual.nombre_usuario}`);
     } catch (error) {
+      console.error('❌ Error actualizando contador de mensajes no vistos:', error);
       this.mensajesNoVistos.next(0);
     }
   }

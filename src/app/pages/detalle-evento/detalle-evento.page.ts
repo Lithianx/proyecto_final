@@ -8,6 +8,8 @@ import { Evento } from 'src/app/models/evento.model';
 import { firstValueFrom } from 'rxjs';
 import { NotificacionesService } from 'src/app/services/notificaciones.service';
 import { LocalStorageService } from '../../services/local-storage-social.service';
+import { LoadingController } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-detalle-evento',
@@ -23,6 +25,9 @@ export class DetalleEventoPage implements OnInit {
   yaInscrito = false;
   puedeUnirse = false;
 
+  cargandoUnirse: boolean = false;
+
+
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
@@ -31,10 +36,12 @@ export class DetalleEventoPage implements OnInit {
     private toastCtrl: ToastController,
     private usuarioService: UsuarioService,
     private localStorageEventoService: LocalStorageEventoService,
-      private notificacionesService: NotificacionesService,
-       private localStorageService: LocalStorageService,
+    private notificacionesService: NotificacionesService,
+    private localStorageService: LocalStorageService,
+    private loadingCtrl: LoadingController,
 
-  ) {}
+
+  ) { }
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -104,9 +111,18 @@ export class DetalleEventoPage implements OnInit {
     }
   }
 
-    async unirseAlEvento() {
+  async unirseAlEvento() {
+    this.cargandoUnirse = true;
+    const loading = await this.loadingCtrl.create({
+      message: 'Uniéndote al evento...',
+      spinner: 'dots',
+      cssClass: 'custom-loading',
+      backdropDismiss: false
+    });
+    await loading.present();
+    // Mostrar spinner y deshabilitar botón
+
     try {
-      // Obtener ID del usuario logueado desde localStorage
       const idUsuario: string | null = await this.localStorageService.getItem('id_usuario');
       if (!idUsuario) throw new Error('No se encontró el ID del usuario logueado');
 
@@ -124,12 +140,11 @@ export class DetalleEventoPage implements OnInit {
 
       await this.eventoService.actualizarEstadoEvento(this.evento.id);
 
-      // ✅ Crear la notificación para el creador del evento
       await this.notificacionesService.crearNotificacion(
         'Se ha unido a tu evento',
-        idUsuario,                // Usuario que se unió (logueado)
-        this.evento.id_creador,  // Creador del evento
-        this.evento.id           // Evento en cuestión
+        idUsuario,
+        this.evento.id_creador,
+        this.evento.id
       );
 
       const toast = await this.toastCtrl.create({
@@ -141,6 +156,7 @@ export class DetalleEventoPage implements OnInit {
       await toast.present();
 
       this.router.navigate(['/sala-evento', this.evento.id]);
+
     } catch (error) {
       const toast = await this.toastCtrl.create({
         message: 'Error al unirse al evento. ' + (error as any).message,
@@ -149,8 +165,13 @@ export class DetalleEventoPage implements OnInit {
         position: 'top',
       });
       await toast.present();
+    } finally {
+      this.cargandoUnirse = false;
+      await loading.dismiss();
+      // Ocultar spinner al finalizar
     }
   }
+
 
 
   async mostrarToast(mensaje: string, color: 'success' | 'warning' | 'danger') {

@@ -7,12 +7,12 @@ import { PublicacionService } from 'src/app/services/publicacion.service';
 import { Publicacion } from 'src/app/models/publicacion.model';
 import { UtilsService } from 'src/app/services/utils.service';
 import { SeguirService } from 'src/app/services/seguir.service';
-import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { NotificacionesService } from 'src/app/services/notificaciones.service';
-import { Injectable } from '@angular/core';
+import { Evento } from 'src/app/models/evento.model';
+import { Participante } from 'src/app/models/participante.model';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -24,19 +24,30 @@ import { firstValueFrom } from 'rxjs';
 export class PerfilUserPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
-  eventosCreados: (Evento & { id: string; juegoNombre?: string })[] = [];
-  eventosInscritos: (Evento & { id: string; juegoNombre?: string })[] = [];
-
   publicaciones: Publicacion[] = [];
   publicacionesFiltradas: Publicacion[] = [];
 
+  eventosCreados: (Evento & {
+    id: string;
+    nombre_juego?: string;
+    estado_evento?: string;
+    creador_nombre?: string;
+  })[] = [];
+
+  eventosInscritos: (Evento & {
+    id: string;
+    nombre_juego?: string;
+    estado_evento?: string;
+    creador_nombre?: string;
+  })[] = [];
+
   usuarioActual: Usuario = {
     id_usuario: '0',
-    nombre_usuario: 'Usuario Demo',
-    correo_electronico: 'demo@correo.com',
+    nombre_usuario: '',
+    correo_electronico: '',
     fecha_registro: new Date(),
     contrasena: '',
-    avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+    avatar: '',
     estado_cuenta: true,
     estado_online: true,
     sub_name: '',
@@ -44,20 +55,22 @@ export class PerfilUserPage implements OnInit {
     rol: ''
   };
 
+  idUsuario: string = '';
+  idUsuarioLogueado: string = '';
   siguiendo: boolean = false;
-  idUsuario: string = '';  // Usuario del perfil visto
-  idUsuarioLogueado: string = ''; // Usuario que está viendo el perfil
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-  nombreUsuario: string = 'nombre_de_usuario';
-  descripcionBio: string = `No hay descripcion`;
-  subname: string = ``;
+  nombreUsuario: string = '';
+  descripcionBio: string = 'No hay descripcion';
+  subname: string = '';
 
   estadisticas = {
     publicaciones: 0,
     seguidores: 0,
     seguidos: 0
   };
+
+  mostrarModal: boolean = false;
 
   private _vistaSeleccionada: string = 'publicaciones';
   get vistaSeleccionada(): string {
@@ -71,9 +84,6 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-  mostrarModal: boolean = false;
-  juegosMap = new Map<string, string>(); // Map<id_juego, nombre>
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -85,195 +95,156 @@ export class PerfilUserPage implements OnInit {
     private eventoService: EventoService,
     private localStorageService: LocalStorageService,
     private comunicacionService: ComunicacionService,
-    private navCtrl: NavController,
     private notificacionesService: NotificacionesService,
+    private navCtrl: NavController,
   ) {}
 
   async ngOnInit() {
     this.idUsuarioLogueado = await this.localStorageService.getItem('id_usuario') || '';
-    console.log('ID usuario logueado en ngOnInit:', this.idUsuarioLogueado);
-
-    await this.cargarJuegos();
   }
 
   async ionViewWillEnter() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      console.warn('No se recibió id en ruta');
-      return;
-    }
-
-    this.idUsuario = id;
-    console.log('ionViewWillEnter idUsuario:', this.idUsuario);
+    this.idUsuario = this.route.snapshot.paramMap.get('id') || '';
+    if (!this.idUsuario) return;
 
     await this.seguirService.cargarSeguimientos();
-
-    await this.cargarDatosUsuario(id);
-    await this.cargarPublicaciones(id);
-    await this.cargarEventosCreados(id);
-    await this.cargarEventosInscritos(id);
-
+    await this.cargarDatosUsuario();
+    await this.cargarPublicaciones();
+    await this.cargarEventosCreados();
+    await this.cargarEventosInscritos();
     this.actualizarEstadoSeguir();
-    this.actualizarEstadisticasSeguir(id);
-
+    this.actualizarEstadisticasSeguir();
     this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
   }
 
   private actualizarEstadoSeguir() {
-    if (!this.idUsuarioLogueado || !this.idUsuario) {
-      this.siguiendo = false;
-      return;
-    }
     this.siguiendo = this.seguirService.sigue(this.idUsuarioLogueado, this.idUsuario);
   }
 
-  private async cargarDatosUsuario(id_usuario: string) {
+  private actualizarEstadisticasSeguir() {
+    const seguimientos = this.seguirService.getSeguimientos();
+    const seguidores = seguimientos.filter(s => s.id_usuario_seguido === this.idUsuario && s.estado_seguimiento).length;
+    const seguidos = seguimientos.filter(s => s.id_usuario_seguidor === this.idUsuario && s.estado_seguimiento).length;
+    this.estadisticas.seguidores = seguidores;
+    this.estadisticas.seguidos = seguidos;
+  }
+
+  private async cargarDatosUsuario() {
     try {
-      const usuario = await this.usuarioService.getUsuarioPorId(id_usuario);
-      console.log('Datos usuario cargados:', usuario);
-      if (usuario) {
-        this.usuarioActual = usuario;
-        this.fotoPerfil = usuario.avatar || this.fotoPerfil;
-        this.nombreUsuario = usuario.nombre_usuario || this.nombreUsuario;
-        this.descripcionBio = usuario.descripcion || this.descripcionBio;
-        this.subname = usuario.sub_name || this.subname;
-      } else {
-        console.warn('Usuario no encontrado para id:', id_usuario);
-      }
+      const usuario = await this.usuarioService.getUsuarioPorId(this.idUsuario);
+      if (!usuario) return;
+
+      this.usuarioActual = usuario;
+      this.nombreUsuario = usuario.nombre_usuario;
+      this.descripcionBio = usuario.descripcion || 'No hay descripcion';
+      this.subname = usuario.sub_name || '';
+      this.fotoPerfil = usuario.avatar || this.fotoPerfil;
     } catch (error) {
-      console.error('Error al cargar el usuario:', error);
+      console.error('Error cargando datos usuario:', error);
     }
   }
 
-  async cargarPublicaciones(id_usuario: string) {
+  async cargarPublicaciones() {
     try {
-      const todasPublicaciones = await this.publicacionService.getPublicaciones();
-      this.publicaciones = todasPublicaciones.filter(p => p.id_usuario === id_usuario);
+      const todas = await this.publicacionService.getPublicaciones();
+      this.publicaciones = todas.filter(p => p.id_usuario === this.idUsuario);
       this.publicacionesFiltradas = [...this.publicaciones];
       this.estadisticas.publicaciones = this.publicaciones.length;
-      console.log('Publicaciones cargadas:', this.publicaciones);
     } catch (error) {
       console.error('Error cargando publicaciones:', error);
     }
   }
 
-async cargarEventosCreados(id_usuario: string) {
-  try {
-    const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
-
-    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
-
-    this.eventosCreados = eventos
-      .filter(ev => ev.id_estado_evento !== idEstadoFinalizado) // ❌ Excluir finalizados
-      .map(ev => ({
-        ...ev,
-        juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
-      }));
-
-    console.log('Eventos creados cargados:', this.eventosCreados);
-  } catch (error) {
-    console.error('Error al cargar eventos creados:', error);
-  }
-}
-
-async cargarEventosInscritos(id_usuario: string) {
-  try {
-    const participantes = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
-    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
-    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
-
-    const promesas = participantes
-      .filter(p => p.estado_participante === 'INSCRITO') // Solo inscritos
-      .map(p => this.eventoService.obtenerEventoPorId(p.id_evento));
-
-    const eventos = await Promise.all(promesas);
-
-    this.eventosInscritos = eventos
-      .filter(ev => ev.id_estado_evento !== idEstadoFinalizado) // ❌ Excluir finalizados
-      .map(ev => ({
-        ...ev,
-        juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
-      }));
-
-    console.log('Eventos inscritos cargados:', this.eventosInscritos);
-  } catch (error) {
-    console.error('Error al cargar eventos inscritos:', error);
-  }
-}
-
-
-  private async cargarJuegos() {
+  async cargarEventosCreados() {
     try {
-      const juegos = await this.eventoService.getJuegos().toPromise();
-      juegos.forEach(j => this.juegosMap.set(String(j.id_juego), String(j.nombre_juego)));
-      console.log('Juegos cargados:', juegos);
+      const eventos = await this.eventoService.obtenerEventosPorCreador(this.idUsuario);
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+      const idFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+      this.eventosCreados = await Promise.all(eventos
+        .filter(ev => ev.id_estado_evento !== idFinalizado)
+        .map(async ev => ({
+          ...ev,
+          id: ev.id_evento || ev.id,
+          nombre_juego: juegos.find(j => j.id_juego === ev.id_juego)?.nombre_juego?.toString() || 'Juego desconocido',
+          estado_evento: estados.find(e => e.id_estado_evento === ev.id_estado_evento)?.descripcion || 'Estado desconocido',
+          creador_nombre: await this.eventoService.obtenerNombreUsuarioPorId(ev.id_creador)
+        })));
     } catch (error) {
-      console.error('Error al cargar juegos:', error);
+      console.error('Error al cargar eventos creados:', error);
     }
   }
 
-  private actualizarEstadisticasSeguir(id_usuario: string) {
-    const seguimientos = this.seguirService.getSeguimientos() || [];
-    const seguidores = seguimientos.filter(s => s.id_usuario_seguido === id_usuario && s.estado_seguimiento).length;
-    const seguidos = seguimientos.filter(s => s.id_usuario_seguidor === id_usuario && s.estado_seguimiento).length;
-    this.estadisticas.seguidores = seguidores;
-    this.estadisticas.seguidos = seguidos;
-    console.log('Estadísticas seguidores:', seguidores, 'seguidos:', seguidos);
+  async cargarEventosInscritos() {
+    try {
+      const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(this.idUsuario);
+      const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+      const idFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+      this.eventosInscritos = [];
+
+      for (const p of inscritos) {
+        try {
+          const ev = await this.eventoService.obtenerEventoPorId(p.id_evento);
+          if (ev.id_estado_evento === idFinalizado) continue;
+
+          this.eventosInscritos.push({
+            ...ev,
+            id: ev.id_evento || ev.id,
+            nombre_juego: juegos.find(j => j.id_juego === ev.id_juego)?.nombre_juego?.toString() || 'Juego desconocido',
+            estado_evento: estados.find(e => e.id_estado_evento === ev.id_estado_evento)?.descripcion || 'Estado desconocido',
+            creador_nombre: await this.eventoService.obtenerNombreUsuarioPorId(ev.id_creador)
+          });
+        } catch {
+          console.warn('Evento eliminado o inaccesible:', p.id_evento);
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando eventos inscritos:', error);
+    }
+  }
+
+  segmentChanged(event: any) {
+    this.vistaSeleccionada = event.detail.value;
+    this.applySliderTransform(this.vistaSeleccionada);
   }
 
   ionViewDidEnter() {
     this.applySliderTransform(this.vistaSeleccionada);
   }
 
-  segmentChanged(event: any) {
-    const value = event.detail.value;
-    this.vistaSeleccionada = value;
-    this.applySliderTransform(value);
-  }
-
   applySliderTransform(value: string) {
-    const segmentElement = this.publicacionesNav?.nativeElement as HTMLElement;
-    if (!segmentElement) return;
+    const element = this.publicacionesNav?.nativeElement;
+    if (!element) return;
 
-    let position = 0;
+    let pos = 0;
     switch (value) {
-      case 'publicaciones': position = 3; break;
-      case 'eventos-inscritos': position = 320 / 3; break;
-      case 'eventos-creados': position = (315 / 3) * 2; break;
+      case 'publicaciones': pos = 3; break;
+      case 'eventos-inscritos': pos = 320 / 3; break;
+      case 'eventos-creados': pos = (315 / 3) * 2; break;
     }
 
-    segmentElement.style.setProperty('--slider-transform', `translateX(${position}%)`);
+    element.style.setProperty('--slider-transform', `translateX(${pos}%)`);
   }
 
   async abrirOpciones() {
-    const actionSheet = await this.actionSheetCtrl.create({
+    const sheet = await this.actionSheetCtrl.create({
       header: 'Opciones',
       buttons: [
-          {
+        {
           text: this.siguiendo ? 'Dejar de seguir' : 'Seguir',
           icon: this.siguiendo ? 'person-remove-outline' : 'person-add-outline',
-          handler: async () => {
-            await this.seguir();
-          }
+          handler: () => this.seguir()
         },
         {
           text: 'Mandar mensaje',
           icon: 'chatbubble-ellipses-outline',
           handler: async () => {
-            if (!this.idUsuarioLogueado || !this.idUsuario) {
-              console.warn('Falta idUsuarioLogueado o idUsuario para abrir chat');
-              return;
-            }
-            try {
-              const id_conversacion = await this.comunicacionService.obtenerOcrearConversacionPrivada(
-                this.idUsuarioLogueado,
-                this.idUsuario
-              );
-              this.navCtrl.navigateForward(['/chat-privado', id_conversacion]);
-            } catch (error) {
-              console.error('Error al obtener o crear conversación privada:', error);
-            }
+            const id = await this.comunicacionService.obtenerOcrearConversacionPrivada(this.idUsuarioLogueado, this.idUsuario);
+            this.navCtrl.navigateForward(['/chat-privado', id]);
           }
         },
         {
@@ -284,95 +255,68 @@ async cargarEventosInscritos(id_usuario: string) {
         },
         {
           text: 'Cancelar',
-          icon: 'close',
+          icon: 'close-outline',
           role: 'cancel'
         }
       ]
     });
-    await actionSheet.present();
+    await sheet.present();
   }
 
-  async opcion(publicacion: Publicacion) {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Opciones',
-      buttons: [
-        {
-          text: 'Compartir',
-          icon: 'share-outline',
-          handler: async () => await this.compartir(publicacion)
-        },
-        {
-          text: 'Reportar',
-          icon: 'alert-circle-outline',
-          role: 'destructive',
-          handler: () => {
-            this.irAReportar(publicacion);
-          },
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close-outline',
-          role: 'cancel'
-        }
-      ],
-      cssClass: 'custom-action-sheet'
-    });
-    await actionSheet.present();
-  }
+  async seguir() {
+    const idSeguidor = this.idUsuarioLogueado;
+    const idSeguido = this.idUsuario;
+    const yaSigue = this.seguirService.sigue(idSeguidor, idSeguido);
 
-  async compartir(publicacion: Publicacion) {
-    await this.utilsService.compartirPublicacion(publicacion);
+    try {
+      await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
+      await this.seguirService.cargarSeguimientos();
+      this.siguiendo = !yaSigue;
+      this.actualizarEstadisticasSeguir();
+
+      if (!yaSigue) {
+        await this.notificacionesService.crearNotificacion('Comenzo a seguirte', idSeguidor, idSeguido);
+      } else {
+        await this.notificacionesService.eliminarNotificacion('Comenzo a seguirte', idSeguidor, idSeguido);
+      }
+    } catch (error) {
+      console.error('Error en la acción de seguir:', error);
+    }
   }
 
   comentario(publicacion: Publicacion) {
     this.router.navigate(['/comentario', publicacion.id_publicacion]);
   }
 
-  irAReportar(publicacion: Publicacion) {
-    this.router.navigate(['/reportar', publicacion.id_publicacion]);
+  compartir(publicacion: Publicacion) {
+    this.utilsService.compartirPublicacion(publicacion);
+  }
+
+  opcion(publicacion: Publicacion) {
+    this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: 'Compartir',
+          icon: 'share-outline',
+          handler: () => this.compartir(publicacion)
+        },
+        {
+          text: 'Reportar',
+          role: 'destructive',
+          icon: 'alert-circle-outline',
+          handler: () => this.router.navigate(['/reportar', publicacion.id_publicacion])
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel'
+        }
+      ]
+    }).then(sheet => sheet.present());
   }
 
   volver() {
     this.navCtrl.back();
   }
-async seguir() {
-  const idSeguidor = this.idUsuarioLogueado;
-  const idSeguido = this.idUsuario;
-
-  if (!idSeguidor || !idSeguido || idSeguidor === idSeguido) return;
-
-  const yaLoSigue = this.seguirService.sigue(idSeguidor, idSeguido);
-
-  try {
-    await this.seguirService.toggleSeguir(idSeguidor, idSeguido);
-    await this.seguirService.cargarSeguimientos();
-
-    this.siguiendo = !yaLoSigue;
-
-    this.actualizarEstadisticasSeguir(idSeguido);
-
-    if (!yaLoSigue) {
-      // Crear notificación de seguimiento con tu servicio
-      await this.notificacionesService.crearNotificacion(
-        'Comenzo a seguirte',
-        idSeguidor,
-        idSeguido
-      );
-      console.log('Ahora sigues a este usuario. Notificación creada.');
-    } else {
-      // Eliminar notificación de seguimiento con tu servicio
-      await this.notificacionesService.eliminarNotificacion(
-        'Comenzo a seguirte',
-        idSeguidor,
-        idSeguido
-      );
-      console.log('Has dejado de seguir a este usuario. Notificación eliminada.');
-    }
-  } catch (error) {
-    console.error('Error al manejar la notificación de seguimiento:', error);
-    console.error('Error con la notificación de seguimiento.');
-  }
-}
-
-
 }

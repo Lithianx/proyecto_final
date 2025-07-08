@@ -102,27 +102,44 @@
     </div>
 
     <!-- Eventos inscritos -->
-<div class="eventos-inscritos" *ngIf="vistaSeleccionada === 'eventos-inscritos'">
+<div *ngIf="vistaSeleccionada === 'eventos-inscritos'">
   <h2 class="titulo-seccion">Eventos inscritos</h2>
-
   <ng-container *ngIf="eventosinscritos.length > 0; else sinEventosInscritos">
-    <div *ngFor="let evento of eventosinscritos" class="tarjeta-evento">
-      <ion-card>
-        <ion-card-content class="contenido-tarjeta">
-          <div class="texto-tarjeta">
-            <h3 class="titulo-evento">{{ evento.nombre_evento }}</h3>
-            <p class="detalle">Creador: {{ evento.creador_nombre }}</p>
-            <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
-            <p class="detalle">Juego: {{ evento.nombre_juego }}</p>
+    <ion-card *ngFor="let evento of eventosinscritos" class="evento-card">
+      <ion-card-header class="header-con-estado">
+        <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
+        <ion-card-subtitle>{{ evento.nombre_juego }}</ion-card-subtitle>
+        <div class="estado-luz-texto">
+          <div class="estado-indicador" [ngClass]="{
+            'verde': evento.estado_evento === 'DISPONIBLE',
+            'amarillo': evento.estado_evento === 'EN CURSO',
+            'rojo': evento.estado_evento === 'FINALIZADO',
+            'naranja': evento.estado_evento === 'SIN CUPOS'
+          }"></div>
+          <div class="estado-texto" [ngClass]="{
+            'texto-verde': evento.estado_evento === 'DISPONIBLE',
+            'texto-amarillo': evento.estado_evento === 'EN CURSO',
+            'texto-rojo': evento.estado_evento === 'FINALIZADO',
+            'texto-naranja': evento.estado_evento === 'SIN CUPOS'
+          }">
+            {{ evento.estado_evento }}
           </div>
-          <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
-            VER EVENTO
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </div>
-  </ng-container>
+        </div>
+      </ion-card-header>
 
+      <ion-card-content>
+        <p><strong>Lugar:</strong> {{ evento.lugar }} <span class="texto-verde"> | </span>
+          <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
+        </p>
+        <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
+        <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
+
+        <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
+          VER EVENTO
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
   <ng-template #sinEventosInscritos>
     <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
       <ion-icon name="calendar-outline" size="large"></ion-icon>

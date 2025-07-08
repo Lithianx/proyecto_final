@@ -19,10 +19,10 @@
       <ion-card-content class="contenido-pro">
         <div class="estado-box">
           <ion-badge [color]="
-        nombreEstado === 'DISPONIBLE' ? 'success' :
-        nombreEstado === 'EN CURSO' ? 'warning' :
-        nombreEstado === 'FINALIZADO' ? 'danger' : 'medium'
-      ">
+            nombreEstado === 'DISPONIBLE' ? 'success' :
+            nombreEstado === 'EN CURSO' ? 'warning' :
+            nombreEstado === 'FINALIZADO' ? 'danger' : 'medium'
+          ">
             Estado: {{ nombreEstado }}
           </ion-badge>
         </div>
@@ -54,7 +54,6 @@
 
           <ion-item lines="none">
             <ion-icon name="dice-outline" slot="start"></ion-icon>
-
             <ion-label>
               <h3>Juego</h3>
               <p>{{ nombreJuego }}</p>
@@ -71,16 +70,20 @@
         </div>
 
         <div class="unirse-container" *ngIf="evento">
-          <ion-button expand="block" shape="round" size="large" class="boton-unirse-pro" [disabled]="!puedeUnirse"
-            (click)="unirseAlEvento()">
+          <ion-button expand="block" shape="round" size="large" class="boton-unirse-pro"
+            [disabled]="!puedeUnirse || cargandoUnirse" (click)="unirseAlEvento()">
             <ion-icon name="log-in-outline" slot="start"></ion-icon>
             {{ yaInscrito ? 'Ya estás inscrito' : 'Unirse al evento' }}
           </ion-button>
         </div>
       </ion-card-content>
     </ion-card>
-
   </div>
+
+  <!-- Spinner global al centro -->
+  <ion-loading [isOpen]="cargandoUnirse" message="Uniéndote al evento..." spinner="dots" [showBackdrop]="true"
+    cssClass="custom-loading">
+  </ion-loading>
 
 </ion-content>
 

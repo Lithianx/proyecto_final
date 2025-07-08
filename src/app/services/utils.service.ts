@@ -40,7 +40,7 @@ export class UtilsService {
   }
 
 async compartirPublicacion(publicacion: Publicacion) {
-  const urlCustom = `https://app-eventos-7f5a8.web.app/comentario/${publicacion.id_publicacion}`;
+  const urlCustom = `https://proyecto-789ae.web.app/comentario/${publicacion.id_publicacion}`;
   let mensaje = '';
   if (publicacion.contenido && publicacion.contenido.trim() !== '') {
     mensaje = `${publicacion.contenido}\n\n¡Tienes que ver esto!\n${urlCustom}`;
