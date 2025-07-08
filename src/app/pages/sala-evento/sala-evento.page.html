@@ -18,13 +18,13 @@
         <!-- BOTÓN INICIAR / FINALIZAR -->
         <ion-row>
           <ion-col size="12">
-            <!-- Botón para INICIAR EVENTO -->
-            <ion-button expand="block" color="success" *ngIf="!eventoEnCurso" (click)="iniciarEvento()">
+            <ion-button expand="block" color="success" *ngIf="!eventoEnCurso" [disabled]="cargandoEvento"
+              (click)="iniciarEvento()">
               <ion-icon name="play-outline" slot="start"></ion-icon>
               Iniciar evento
             </ion-button>
 
-            <!-- Botón para FINALIZAR EVENTO -->
+
             <ion-button expand="block" color="danger" *ngIf="eventoEnCurso" (click)="iniciarEvento()">
               <ion-icon name="stop-circle-outline" slot="start"></ion-icon>
               Finalizar evento
@@ -32,38 +32,49 @@
           </ion-col>
         </ion-row>
 
-
         <!-- BOTONES PARTICIPAR / SALIR -->
         <ion-row>
           <ion-col size="6">
-            <ion-button expand="block" color="warning" (click)="unirmeComoParticipante()">
+            <ion-button expand="block" color="warning" (click)="unirmeComoParticipante()" [disabled]="eventoEnCurso">
               <ion-icon name="log-in-outline" slot="start"></ion-icon>
               Participar
             </ion-button>
           </ion-col>
           <ion-col size="6">
-            <ion-button expand="block" color="medium" (click)="dejarDeParticipar()" [disabled]="!esParticipante">
+            <ion-button expand="block" color="medium" (click)="dejarDeParticipar()"
+              [disabled]="!esParticipante || eventoEnCurso">
               <ion-icon name="log-out-outline" slot="start"></ion-icon>
               Salir como jugador
             </ion-button>
           </ion-col>
         </ion-row>
 
-        <!-- CAMPO CUPOS (AL FINAL) -->
+        <!-- CAMPO CUPOS -->
         <ion-row>
           <ion-col size="12" class="cupos-wrapper">
             <label class="label-cupos">Cupos</label>
             <div class="fila-input">
               <ion-input class="input-cupos" type="number" [(ngModel)]="nuevoCupo" min="2" max="50"
-                [color]="campoCuposInvalido ? 'danger' : ''" (keydown)="bloquearCaracteresInvalidos($event)"
-                (ionInput)="validarSoloNumeros($event)">
+                [disabled]="eventoEnCurso" [color]="campoCuposInvalido ? 'danger' : ''"
+                (keydown)="bloquearCaracteresInvalidos($event)" (ionInput)="validarSoloNumeros($event)">
               </ion-input>
-
-              <ion-button color="success" size="small" (click)="actualizarCupos()">Actualizar</ion-button>
+              <ion-button color="success" size="small" (click)="actualizarCupos()" [disabled]="eventoEnCurso">
+                Actualizar
+              </ion-button>
             </div>
             <ion-note class="error-cupos" color="danger" *ngIf="campoCuposInvalido">
               El número debe estar entre 2 y 50
             </ion-note>
+          </ion-col>
+        </ion-row>
+
+        <!-- TEMPORIZADOR SOLO PARA ANFITRIÓN -->
+        <ion-row *ngIf="eventoEnCurso">
+          <ion-col size="12">
+            <div class="temporizador temporizador-admin">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ tiempoTranscurrido }}</span>
+            </div>
           </ion-col>
         </ion-row>
 
@@ -132,9 +143,9 @@
           </ion-list>
         </div>
 
-        <!-- TEMPORIZADOR + SALIDA -->
+        <!-- TEMPORIZADOR SOLO PARA NO ANFITRIÓN -->
         <div class="acciones">
-          <div *ngIf="eventoEnCurso" class="temporizador">
+          <div *ngIf="eventoEnCurso && !esAnfitrion" class="temporizador">
             <ion-icon name="time-outline"></ion-icon>
             <span>{{ tiempoTranscurrido }}</span>
           </div>

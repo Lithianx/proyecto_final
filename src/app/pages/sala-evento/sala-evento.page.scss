@@ -316,6 +316,18 @@ ion-fab-list ion-button:hover {
   justify-content: center;
 }
 
+.temporizador-admin {
+  display: flex;
+  align-items: center;
+  justify-content: center; // <-- CENTRA el contenido horizontalmente
+  font-size: 1.3rem;
+  margin-top: 15px;
+  color: #39ff14;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 8px;
+  border-radius: 8px;
+}
+
 // 🌑 PANEL PRINCIPAL
 .panel-admin {
   background-color: #0b0b0b;
