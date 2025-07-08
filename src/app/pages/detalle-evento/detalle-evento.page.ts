@@ -6,6 +6,8 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 import { LocalStorageEventoService } from 'src/app/services/local-storage-evento.service';
 import { Evento } from 'src/app/models/evento.model';
 import { firstValueFrom } from 'rxjs';
+import { NotificacionesService } from 'src/app/services/notificaciones.service';
+import { LocalStorageService } from '../../services/local-storage-social.service';
 
 @Component({
   selector: 'app-detalle-evento',
@@ -28,7 +30,10 @@ export class DetalleEventoPage implements OnInit {
     private eventoService: EventoService,
     private toastCtrl: ToastController,
     private usuarioService: UsuarioService,
-    private localStorageEventoService: LocalStorageEventoService
+    private localStorageEventoService: LocalStorageEventoService,
+      private notificacionesService: NotificacionesService,
+       private localStorageService: LocalStorageService,
+
   ) {}
 
   async ngOnInit() {
@@ -99,8 +104,12 @@ export class DetalleEventoPage implements OnInit {
     }
   }
 
-  async unirseAlEvento() {
+    async unirseAlEvento() {
     try {
+      // Obtener ID del usuario logueado desde localStorage
+      const idUsuario: string | null = await this.localStorageService.getItem('id_usuario');
+      if (!idUsuario) throw new Error('No se encontró el ID del usuario logueado');
+
       const usuario = await this.usuarioService.getUsuarioActualConectado();
       if (!usuario) throw new Error('Usuario no autenticado');
 
@@ -108,12 +117,20 @@ export class DetalleEventoPage implements OnInit {
 
       await this.eventoService.registrarParticipante({
         id_evento: this.evento.id,
-        id_usuario: usuario.id_usuario,
+        id_usuario: idUsuario,
         estado_participante: 'INSCRITO',
         nombre_usuario: usuario.nombre_usuario,
       });
 
       await this.eventoService.actualizarEstadoEvento(this.evento.id);
+
+      // ✅ Crear la notificación para el creador del evento
+      await this.notificacionesService.crearNotificacion(
+        'Se ha unido a tu evento',
+        idUsuario,                // Usuario que se unió (logueado)
+        this.evento.id_creador,  // Creador del evento
+        this.evento.id           // Evento en cuestión
+      );
 
       const toast = await this.toastCtrl.create({
         message: 'Te has unido al evento con éxito 🎉',
@@ -134,6 +151,7 @@ export class DetalleEventoPage implements OnInit {
       await toast.present();
     }
   }
+
 
   async mostrarToast(mensaje: string, color: 'success' | 'warning' | 'danger') {
     const toast = await this.toastCtrl.create({
