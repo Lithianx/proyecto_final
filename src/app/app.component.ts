@@ -9,6 +9,7 @@ import { PublicacionService } from './services/publicacion.service';
 import { ComentarioService } from './services/comentario.service';
 import { GuardaPublicacionService } from './services/guardarpublicacion.service';
 import { ComunicacionService } from './services/comunicacion.service';
+import { UtilsService } from './services/utils.service';
 
 @Component({
   selector: 'app-root',
@@ -25,6 +26,7 @@ export class AppComponent {
     private comentarioService: ComentarioService,
     private guardarPublicacionService: GuardaPublicacionService,
     private comunicacionService: ComunicacionService,
+    private utilsService: UtilsService,
     private router: Router
   ) {
     this.initializeApp();
@@ -34,17 +36,47 @@ export class AppComponent {
   ngOnInit() {
     // Sincroniza al iniciar si hay internet
     this.reporteService.sincronizarReporte();
+    this.comunicacionService.sincronizarMensajesLocales();
+    this.comunicacionService.sincronizarConversacionesLocales();
 
-    // Sincroniza automáticamente cuando vuelva el internet
-    window.addEventListener('online', () => {
-      this.reporteService.sincronizarReporte();
-      this.seguirService.sincronizarSeguimientosLocales();
-      this.publicacionService.sincronizarPublicacionesPersonales();
-      this.comentarioService.sincronizarComentariosLocales();
-      this.guardarPublicacionService.sincronizarGuardadosLocales();
-      this.comunicacionService.sincronizarMensajesLocales();
-      this.comunicacionService.sincronizarConversacionesLocales();
+    // Suscribirse a los cambios de conectividad (funciona tanto en web como móvil)
+    this.utilsService.networkStatus$.subscribe(async (isOnline) => {
+      if (isOnline) {
+        console.log('🔄 Iniciando sincronización automática tras recuperar conexión...');
+        
+        // Pequeña demora para asegurar que la conexión esté estable
+        setTimeout(async () => {
+          try {
+            await this.reporteService.sincronizarReporte();
+            await this.seguirService.sincronizarSeguimientosLocales();
+            await this.publicacionService.sincronizarPublicacionesPersonales();
+            await this.comentarioService.sincronizarComentariosLocales();
+            await this.guardarPublicacionService.sincronizarGuardadosLocales();
+            await this.comunicacionService.sincronizarMensajesLocales();
+            await this.comunicacionService.sincronizarConversacionesLocales();
+            console.log('✅ Sincronización automática completada');
+          } catch (error) {
+            console.error('❌ Error en sincronización automática:', error);
+          }
+        }, 1000); // 1 segundo de espera
+      } else {
+        console.log('📵 Conexión perdida - modo offline activado');
+      }
     });
+
+    // Mantener compatibilidad con web usando eventos del navegador como respaldo
+    if (!this.utilsService.isMobile()) {
+      window.addEventListener('online', () => {
+        console.log('🌐 Evento online del navegador detectado');
+        this.reporteService.sincronizarReporte();
+        this.seguirService.sincronizarSeguimientosLocales();
+        this.publicacionService.sincronizarPublicacionesPersonales();
+        this.comentarioService.sincronizarComentariosLocales();
+        this.guardarPublicacionService.sincronizarGuardadosLocales();
+        this.comunicacionService.sincronizarMensajesLocales();
+        this.comunicacionService.sincronizarConversacionesLocales();
+      });
+    }
   }
 
   initializeApp() {

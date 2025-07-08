@@ -189,7 +189,17 @@ export class ListaChatPage implements OnInit, OnDestroy {
       !ultimoMensaje.estado_visto &&
       ultimoMensaje.id_usuario_emisor !== this.usuarioActual.id_usuario
     ) {
-      await this.comunicacionService.marcarMensajesComoVistos(this.mensajes, id_conversacion, this.usuarioActual.id_usuario);
+      await this.comunicacionService.marcarMensajesComoVistos(
+        [ultimoMensaje], 
+        id_conversacion, 
+        this.usuarioActual.id_usuario
+      );
+      
+      // Actualizar el estado local inmediatamente
+      ultimoMensaje.estado_visto = true;
+      
+      // Recalcular el contador de mensajes no vistos
+      await this.comunicacionService.recalcularContadorMensajesNoVistos();
     }
   }
 
@@ -232,7 +242,14 @@ export class ListaChatPage implements OnInit, OnDestroy {
   esPublicacion(mensaje: Mensaje): boolean {
     try {
       const obj = JSON.parse(mensaje.contenido);
-      return obj && obj.id_publicacion && obj.contenido;
+      // Una publicación debe tener id_publicacion y al menos uno de: contenido, imagen, video
+      return obj && obj.id_publicacion && (
+        obj.contenido || 
+        obj.imagen || 
+        obj.video ||
+        obj.fecha_publicacion ||
+        obj.id_usuario
+      );
     } catch {
       return false;
     }

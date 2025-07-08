@@ -63,13 +63,17 @@ async iniciarSesion() {
 
     console.log('Usuario autenticado:', usuario.correo_electronico);
     // Marca el usuario como online
-await this.usuarioService.setUsuarioOnline(usuario.id_usuario, true);
+    await this.usuarioService.setUsuarioOnline(usuario.id_usuario, true);
 
     this.router.navigate(['/home']);
     
   } catch (error: any) {
     this.errorAutenticacion = true;
-    await this.mostrarToast('Contraseña o correo incorrecto');
+    if (error && error.message && error.message.includes('desactivada')) {
+      await this.mostrarToast('Tu cuenta ha sido desactivada. Contacta al administrador.');
+    } else {
+      await this.mostrarToast('Contraseña o correo incorrecto');
+    }
   }
   this.errorAutenticacion = false;
 }
@@ -80,10 +84,11 @@ await this.usuarioService.setUsuarioOnline(usuario.id_usuario, true);
   async mostrarToast(mensaje: string) {
     const toast = await this.toastController.create({
       message: mensaje,
-      duration: 3000,
-      color: 'danger',
+      duration: 5000,
+      color: 'warning',
       position: 'top',
-      icon: 'alert-circle'
+      icon: 'lock-closed',
+      cssClass: 'toast-cuenta-desactivada'
     });
     await toast.present();
   }

@@ -13,7 +13,7 @@
     <ion-card class="editar-publicacion-card">
         <ion-item lines="none">
             <ion-avatar slot="start">
-                <img [src]="usuarioActual.avatar" />
+                <img [src]="usuarioActual.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
             </ion-avatar>
             <ion-label>
                 <h2>{{usuarioActual.nombre_usuario}}</h2>

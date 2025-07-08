@@ -15,7 +15,7 @@
   <ion-list *ngIf="buscando && resultadosBusqueda.length > 0">
     <ion-item *ngFor="let usuario of resultadosBusqueda" (click)="abrirChat(usuario)">
       <ion-avatar slot="start">
-        <img [src]="usuario.avatar" />
+        <img [src]="usuario.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
       </ion-avatar>
       <ion-label>
         <h2>{{ usuario.nombre_usuario }}</h2>
@@ -53,7 +53,7 @@
       (click)="marcarUltimoMensajeComoVisto(conv.id_conversacion)">
       <div class="chat-avatar-icon">
         <ion-avatar slot="start">
-          <img [src]="getUsuarioReceptor(conv)?.avatar" />
+          <img [src]="getUsuarioReceptor(conv)?.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
         <ion-icon [name]="getUsuarioReceptor(conv)?.estado_online ? 'cloud' : 'cloud-offline-outline'"></ion-icon>
       </div>
@@ -99,7 +99,7 @@
     </ng-template>
   </ng-container>
 </p>
-        <p class="message-text">{{ parseFechaEnvio(conv.fecha_envio) | date:'dd/MM/yyyy hh:mm a' }}</p>
+        <p class="message-text">{{ parseFechaEnvio(getUltimoMensaje(conv.id_conversacion)?.fecha_envio) | date:'dd/MM/yyyy hh:mm a' }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

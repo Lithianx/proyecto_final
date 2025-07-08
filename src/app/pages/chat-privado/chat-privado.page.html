@@ -7,7 +7,7 @@
     <div class="avatar-container">
       <ng-container *ngIf="chatInfo">
         <ion-avatar>
-          <img [src]="chatInfo.avatar" />
+          <img [src]="chatInfo.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
         <ion-title (click)="verPerfil(chatInfo)">{{ chatInfo.nombre_usuario }}</ion-title>
       </ng-container>
@@ -29,9 +29,12 @@
             style="cursor:pointer;">
             <ion-card-content>
               <div *ngIf="obtenerPublicacion(mensaje) as publicacion">
-                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen">
-                <p>
+                <img *ngIf="publicacion.imagen" [src]="publicacion.imagen" class="publicacion-imagen">
+                <p *ngIf="publicacion.contenido && publicacion.contenido.trim().length > 0">
                   {{ publicacion.contenido | slice:0:80 }}<span *ngIf="publicacion.contenido?.length > 80">...</span>
+                </p>
+                <p class="publicacion-sin-texto">
+                  📷 Publicación compartida
                 </p>
               </div>
             </ion-card-content>

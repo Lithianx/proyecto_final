@@ -317,7 +317,25 @@ ion-icon {
 }
 
 
-
+  
+  .publicacion-imagen {
+    width: 100%;
+    max-width: 160px;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .publicacion-sin-texto {
+    color: #999;
+    font-style: italic;
+    margin: 6px 0;
+    font-size: 13px;
+  }
+  
+  ion-card-content {
+    padding: 10px;
+  }
 
 
 // =======================
@@ -370,17 +388,24 @@ ion-icon {
     margin-right: auto;
   }
 
-  .preview-publicacion {
-    transition: box-shadow 0.2s, background 0.2s;
-    cursor: pointer;
 
-    &:hover {
-      box-shadow: 0 4px 24px #3fe52055;
-      background: #232526;
+  
+    .publicacion-imagen {
+      width: 100%;
+      max-width: 380px;
+      height: auto;
+      border-radius: 12px;
+      margin-bottom: 12px;
     }
-    img{
-
-      border-radius: 10px;
+    
+    .publicacion-sin-texto {
+      color: #999;
+      font-style: italic;
+      margin: 10px 0;
+      font-size: 15px;
     }
-  }
+    
+    ion-card-content {
+      padding: 18px;
+    }
 }

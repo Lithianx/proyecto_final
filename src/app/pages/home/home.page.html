@@ -32,7 +32,7 @@
     <ion-card *ngFor="let publicacion of publicacionesFiltradas">
       <ion-item>
         <ion-avatar slot="start">
-          <img [src]="getUsuarioPublicacion(publicacion.id_usuario)?.avatar" />
+          <img [src]="getUsuarioPublicacion(publicacion.id_usuario)?.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
         <ion-label class="etiqueta-usuario" (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
           <h2>{{ getUsuarioPublicacion(publicacion.id_usuario)?.nombre_usuario }}</h2>

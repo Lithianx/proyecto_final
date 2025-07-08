@@ -76,7 +76,9 @@
         <p>
           <strong>Lugar:</strong> {{ evento.lugar }}
           <span style="color: rgb(44, 236, 19);"> | </span>
-          <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
+          <strong>Inicio:</strong> {{ evento.fechaInicio | date:'longDate' }}
+
+
         </p>
         <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
         <p>

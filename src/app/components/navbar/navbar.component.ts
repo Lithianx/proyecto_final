@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { UsuarioService } from '../../services/usuario.service';
 import { Usuario } from '../../models/usuario.model';
+import { Subscription } from 'rxjs';
+import { ComunicacionService } from '../../services/comunicacion.service';
 
 const ADMIN_EMAILS = ['fi.gutierrez@duocuc.cl']; // <-- tus correos admin
 
@@ -13,13 +15,17 @@ const ADMIN_EMAILS = ['fi.gutierrez@duocuc.cl']; // <-- tus correos admin
   styleUrls: ['./navbar.component.scss'],
   standalone: false,
 })
-export class NavbarComponent  implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   usuarioActual: Usuario | null = null;
   rutaActual: string = '';
+  mensajesNoVistos: number = 0;
+  private subscription?: Subscription;
+
   constructor(
     private router: Router,
     private actionSheetCtrl: ActionSheetController,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private comunicacionService: ComunicacionService
   ) {
     this.router.events.subscribe(() => {
       this.rutaActual = this.router.url;
@@ -28,6 +34,15 @@ export class NavbarComponent  implements OnInit {
 
   async ngOnInit() {
     this.usuarioActual = await this.usuarioService.getUsuarioActualConectado();
+    
+    // Suscribirse al contador de mensajes no vistos
+    this.subscription = this.comunicacionService.mensajesNoVistos$.subscribe(
+      count => this.mensajesNoVistos = count
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription?.unsubscribe();
   }
 
   irBuscar() {

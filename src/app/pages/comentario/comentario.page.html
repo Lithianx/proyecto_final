@@ -12,7 +12,7 @@
   <ion-card *ngIf="publicacion" class="publicacion-card">
     <ion-item lines="none">
       <ion-avatar slot="start">
-        <img [src]="usuarioPost.avatar" />
+        <img [src]="usuarioPost.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
       </ion-avatar>
       <ion-label (click)="verPerfil(getUsuarioPublicacion(publicacion.id_usuario))">
         <h2>{{ usuarioPost.nombre_usuario }}</h2>
@@ -114,7 +114,7 @@
 
       <ion-item *ngFor="let comentario of comentariosCombinados">
         <ion-avatar slot="start">
-          <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar" />
+          <img [src]="getUsuarioComentario(comentario.id_usuario)?.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
 
         <ion-label (click)="verPerfil(getUsuarioComentario(comentario.id_usuario))">
@@ -172,7 +172,7 @@
 
           <ion-item *ngFor="let user of followersfriend">
             <ion-avatar slot="start">
-              <img [src]="user.avatar" />
+              <img [src]="user.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
             </ion-avatar>
             <ion-label>
               <h2>{{ user.nombre_usuario }}</h2>

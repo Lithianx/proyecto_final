@@ -29,11 +29,16 @@
         </ion-icon>
       </ion-button>
 
-      <ion-button (click)="irChat()">
-        <ion-icon
-          name="chatbubble-ellipses-outline"
-          [ngClass]="rutaActual  === '/lista-chat' ? 'icon-activo' : 'icon-inactivo'">
-        </ion-icon>
+      <ion-button (click)="irChat()" class="chat-button">
+        <div class="chat-icon-container">
+          <ion-icon
+            name="chatbubble-ellipses-outline"
+            [ngClass]="rutaActual === '/lista-chat' ? 'icon-activo' : 'icon-inactivo'">
+          </ion-icon>
+          <div class="notification-badge" *ngIf="mensajesNoVistos > 0">
+            {{ mensajesNoVistos > 99 ? '99+' : mensajesNoVistos }}
+          </div>
+        </div>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
