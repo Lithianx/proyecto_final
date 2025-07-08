@@ -24,6 +24,10 @@ export class EventoPage implements OnInit {
   tiposJuego: TipoJuego[] = [];
   estados: EstadoEvento[] = [];
 
+  filtroTipoJuego: string = 'todos';
+  textoBusqueda: string = '';
+
+
   constructor(
     private router: Router,
     private navCtrl: NavController,
@@ -76,8 +80,12 @@ export class EventoPage implements OnInit {
         });
       }
 
-      this.eventos = eventosMapeados;
-      this.eventosFiltrados = [...eventosMapeados];
+      // ❌ Excluir eventos finalizados
+      const eventosSinFinalizados = eventosMapeados.filter(e => e.estado_evento !== 'FINALIZADO');
+
+      this.eventos = eventosSinFinalizados;
+      this.eventosFiltrados = [...eventosSinFinalizados];
+
     });
   }
 
@@ -94,20 +102,24 @@ export class EventoPage implements OnInit {
   }
 
   filtrarEventos(event: any) {
-    const texto = event.target.value?.toLowerCase().trim();
-
-    if (!texto) {
-      this.eventosFiltrados = [...this.eventos];
-      return;
-    }
-
-    this.eventosFiltrados = this.eventos.filter((evento) =>
-    (evento.nombre_juego?.toLowerCase()?.includes(texto) ||
-      evento.lugar?.toLowerCase()?.includes(texto) ||
-      evento.tipo_juego?.toLowerCase()?.includes(texto) ||
-      evento.creador_nombre?.toLowerCase()?.includes(texto))
-    );
+    this.textoBusqueda = event.target.value?.toLowerCase().trim() || '';
+    this.aplicarFiltros();
   }
+  aplicarFiltros() {
+    this.eventosFiltrados = this.eventos.filter((evento) => {
+      const coincideTexto =
+        evento.nombre_juego?.toLowerCase()?.includes(this.textoBusqueda) ||
+        evento.lugar?.toLowerCase()?.includes(this.textoBusqueda) ||
+        evento.tipo_juego?.toLowerCase()?.includes(this.textoBusqueda) ||
+        evento.creador_nombre?.toLowerCase()?.includes(this.textoBusqueda);
+
+      const coincideTipo =
+        this.filtroTipoJuego === 'todos' || evento.tipo_juego === this.filtroTipoJuego;
+
+      return coincideTexto && coincideTipo;
+    });
+  }
+
 
   irADetalleEvento(evento: Evento & { id: string }) {
     if (String(evento.id_creador) === String(this.idUsuarioActual)) {
