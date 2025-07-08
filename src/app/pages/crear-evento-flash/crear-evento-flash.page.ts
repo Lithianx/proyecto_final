@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageService } from 'src/app/services/local-storage-social.service';
 import { FiltroPalabraService } from 'src/app/services/filtropalabra.service';
+import { NotificacionesService } from 'src/app/services/notificaciones.service';
 
 import { getAuth } from 'firebase/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
@@ -31,8 +32,6 @@ export class CrearEventoFlashPage implements OnInit {
 
   tipoSeleccionado: string = '';
 
-
-
   constructor(
     private fb: FormBuilder,
     private navCtrl: NavController,
@@ -41,12 +40,11 @@ export class CrearEventoFlashPage implements OnInit {
     private eventoService: EventoService,
     private firestore: Firestore,
     private localStorageService: LocalStorageService,
-    private filtroPalabraService: FiltroPalabraService
+    private filtroPalabraService: FiltroPalabraService,
+    private notificacionesService: NotificacionesService  // <-- Inyectar servicio
   ) { }
 
   ngOnInit() {
-
-
     const ahora = new Date();
     const offsetMs = ahora.getTimezoneOffset() * 60000;
     const chileTime = new Date(ahora.getTime() - offsetMs);
@@ -73,7 +71,6 @@ export class CrearEventoFlashPage implements OnInit {
         this.eventoForm.get('id_tipo_juego')?.setValue(tipos[0].id_tipo_juego);
         this.filtrarJuegos();
       }
-
     });
   }
 
@@ -89,7 +86,6 @@ export class CrearEventoFlashPage implements OnInit {
     this.juegosFiltrados = this.juegos.filter(j => j.id_tipo_juego === idTipo);
     this.eventoForm.get('id_juego')?.setValue('');
   }
-
 
   async crearEvento() {
     if (!this.eventoForm.valid) {
@@ -164,12 +160,11 @@ export class CrearEventoFlashPage implements OnInit {
       return;
     }
 
-
     const evento: Evento = {
       id_creador: idUsuario,
       nombre_evento: formValues.nombre_evento,
       id_juego: formValues.id_juego,
-      id_estado_evento: idEstado, //  usar el ID real 
+      id_estado_evento: idEstado,
       lugar: formValues.lugar,
       descripcion: formValues.descripcion,
       fechaInicio: new Date(formValues.fechaInicio),
@@ -178,6 +173,14 @@ export class CrearEventoFlashPage implements OnInit {
 
     try {
       await this.eventoService.crearEvento(evento);
+
+      // Crear notificación global
+      await this.notificacionesService.crearNotificacion(
+        'Ha creado un evento', // tipoAccion
+        idUsuario,             // idUserHecho (usuario logeado)
+        'global'               // idUserReceptor (id para notificaciones globales)
+      );
+
       const toast = await this.toastCtrl.create({
         message: '✅ Evento creado exitosamente',
         duration: 2000,
@@ -210,12 +213,10 @@ export class CrearEventoFlashPage implements OnInit {
     const nuevo = Math.min(50, Math.max(2, valor));
     this.eventoForm.get('cupos')?.setValue(nuevo);
   }
+
   volverAtras() {
     this.navCtrl.back();
   }
-
-
-
 
   setFecha(valor: string) {
     if (valor) {

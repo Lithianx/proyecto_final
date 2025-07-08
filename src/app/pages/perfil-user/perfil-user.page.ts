@@ -13,7 +13,7 @@ import { LocalStorageService } from 'src/app/services/local-storage-social.servi
 import { ComunicacionService } from 'src/app/services/comunicacion.service';
 import { NotificacionesService } from 'src/app/services/notificaciones.service';
 import { Injectable } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-perfil-user',
@@ -157,34 +157,51 @@ export class PerfilUserPage implements OnInit {
     }
   }
 
-  async cargarEventosCreados(id_usuario: string) {
-    try {
-      const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-      this.eventosCreados = eventos.map(ev => ({
+async cargarEventosCreados(id_usuario: string) {
+  try {
+    const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+    this.eventosCreados = eventos
+      .filter(ev => ev.id_estado_evento !== idEstadoFinalizado) // ❌ Excluir finalizados
+      .map(ev => ({
         ...ev,
         juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
       }));
-      console.log('Eventos creados cargados:', this.eventosCreados);
-    } catch (error) {
-      console.error('Error al cargar eventos creados:', error);
-    }
+
+    console.log('Eventos creados cargados:', this.eventosCreados);
+  } catch (error) {
+    console.error('Error al cargar eventos creados:', error);
   }
+}
 
-  async cargarEventosInscritos(id_usuario: string) {
-    try {
-      const participantes = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
-      const promesas = participantes.map(p => this.eventoService.obtenerEventoPorId(p.id_evento));
-      const eventos = await Promise.all(promesas);
+async cargarEventosInscritos(id_usuario: string) {
+  try {
+    const participantes = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
+    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
 
-      this.eventosInscritos = eventos.map(ev => ({
+    const promesas = participantes
+      .filter(p => p.estado_participante === 'INSCRITO') // Solo inscritos
+      .map(p => this.eventoService.obtenerEventoPorId(p.id_evento));
+
+    const eventos = await Promise.all(promesas);
+
+    this.eventosInscritos = eventos
+      .filter(ev => ev.id_estado_evento !== idEstadoFinalizado) // ❌ Excluir finalizados
+      .map(ev => ({
         ...ev,
         juegoNombre: this.juegosMap.get(ev.id_juego) || 'Sin nombre'
       }));
-      console.log('Eventos inscritos cargados:', this.eventosInscritos);
-    } catch (error) {
-      console.error('Error al cargar eventos inscritos:', error);
-    }
+
+    console.log('Eventos inscritos cargados:', this.eventosInscritos);
+  } catch (error) {
+    console.error('Error al cargar eventos inscritos:', error);
   }
+}
+
 
   private async cargarJuegos() {
     try {

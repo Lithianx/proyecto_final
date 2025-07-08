@@ -1,11 +1,10 @@
 ion-content.login-content {
-    --background: linear-gradient(to top, #028d3c, #000000);
+  --background: linear-gradient(to bottom, #021f00,  #021f00,  #021f00, #062c01,#196112, #66d977);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
 }
-
 .container {
   display: flex;
   flex-direction: column;
@@ -18,11 +17,9 @@ ion-content.login-content {
 }
 
 .app-logo {
-  width: 100px;
-  height: auto;
-  margin-bottom: 1rem;
+  width: 600px;           
+  height: auto;           
 }
-
 .app-title {
   font-size: 1.8rem;
   font-weight: bold;
@@ -177,7 +174,4 @@ ion-item.input-item.error-input ion-input input {
 ion-item.input-item.error-input ion-input input::placeholder {
   color: var(--ion-color-danger);
 }
-.app-logo {
-  width: 100px;
-  height: auto;
-}
+

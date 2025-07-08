@@ -401,9 +401,24 @@ async cargarEventosInscritos() {
   }
 }
 
-
-
   irASalaEvento(evento: Evento & { id: string }) {
     this.router.navigate(['/sala-evento', evento.id]);
   }
+
+  async doRefresh(event: any) {
+  try {
+    await this.cargarDatosUsuario();
+    await this.cargarUsuarios();
+    await this.cargarCantidadSeguidosYSeguidores();
+    await this.cargarPublicaciones();
+    await this.cargarEventosCreados();
+    await this.cargarEventosInscritos();
+    this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+
+    event.target.complete(); // Finaliza el refresco
+  } catch (error) {
+    console.error('Error durante el refresco:', error);
+    event.target.complete(); // Asegúrate de finalizar incluso si falla
+  }
+}
 }

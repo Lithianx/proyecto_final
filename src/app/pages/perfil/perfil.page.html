@@ -3,6 +3,13 @@
 <ion-content class="perfil-content">
   <div class="perfil-container">
 
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="game-controller"
+      refreshingIcon="game-controller">
+    </ion-refresher-content>
+  </ion-refresher>
+
     <!-- Cabecera del perfil -->
     <div class="perfil-header-section">
       <div class="perfil-top">

@@ -31,11 +31,13 @@ export class NotificacionesService {
   }
   async getNotificacionesConDatos(idUserReceptor: string): Promise<any[]> {
   try {
-    // 1. Obtener todas las notificaciones para el receptor
+    // 1. Obtener todas las notificaciones
     const notificaciones = await this.firebaseService.getTodasNotificaciones();
     
-    // Filtrar solo las notificaciones del usuario receptor
-    const notificacionesFiltradas = notificaciones.filter(n => n.idUserReceptor === idUserReceptor);
+    // Filtrar notificaciones que sean para el usuario o para 'global'
+    const notificacionesFiltradas = notificaciones.filter(n => 
+      n.idUserReceptor === idUserReceptor || n.idUserReceptor === 'global'
+    );
 
     const usuarios = await this.firebaseService.getUsuarios();
     const publicaciones = await this.firebaseService.getPublicaciones();
@@ -64,6 +66,7 @@ export class NotificacionesService {
     return [];
   }
 }
+
 
 async eliminarNotificacion(
   tipoAccion: string,
