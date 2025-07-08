@@ -189,7 +189,17 @@ export class ListaChatPage implements OnInit, OnDestroy {
       !ultimoMensaje.estado_visto &&
       ultimoMensaje.id_usuario_emisor !== this.usuarioActual.id_usuario
     ) {
-      await this.comunicacionService.marcarMensajesComoVistos(this.mensajes, id_conversacion, this.usuarioActual.id_usuario);
+      await this.comunicacionService.marcarMensajesComoVistos(
+        [ultimoMensaje], 
+        id_conversacion, 
+        this.usuarioActual.id_usuario
+      );
+      
+      // Actualizar el estado local inmediatamente
+      ultimoMensaje.estado_visto = true;
+      
+      // Recalcular el contador de mensajes no vistos
+      await this.comunicacionService.recalcularContadorMensajesNoVistos();
     }
   }
 
