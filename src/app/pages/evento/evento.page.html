@@ -16,6 +16,28 @@
   <ion-searchbar (ionInput)="filtrarEventos($event)" placeholder="Buscar juego, tipo o creador">
   </ion-searchbar>
 
+  <!-- ion segment para filtro de eventos -->
+  <ion-segment [(ngModel)]="filtroTipoJuego" (ionChange)="aplicarFiltros()" class="segmento-tipo-juego">
+    <ion-segment-button value="todos">
+      <ion-icon name="list-outline"></ion-icon>
+      <ion-label class="segment-label">Todos</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Juego de mesa">
+      <ion-icon name="cube-outline"></ion-icon>
+      <ion-label class="segment-label">Mesa</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Videojuego">
+      <ion-icon name="game-controller-outline"></ion-icon>
+      <ion-label class="segment-label">Video</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Deporte">
+      <ion-icon name="fitness-outline"></ion-icon>
+      <ion-label class="segment-label">Deporte</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+
+
   <ng-container *ngIf="datosCargados">
     <div *ngIf="eventosFiltrados.length === 0" class="no-eventos">
       <ion-icon name="game-controller-outline" class="icono-vacio"></ion-icon>
