@@ -10,6 +10,11 @@ import { ComentarioService } from './services/comentario.service';
 import { GuardaPublicacionService } from './services/guardarpublicacion.service';
 import { ComunicacionService } from './services/comunicacion.service';
 import { UtilsService } from './services/utils.service';
+import { ActionPerformed,
+  PushNotifications,
+  PushNotificationSchema,
+  Token
+ } from '@capacitor/push-notifications';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +34,7 @@ export class AppComponent {
     private utilsService: UtilsService,
     private router: Router
   ) {
+    if (this.platform.is('capacitor'))  this.initPush();
     this.initializeApp();
     this.handleCustomScheme();
   }
@@ -100,4 +106,37 @@ export class AppComponent {
       }
     });
   }
+
+
+initPush() {
+
+    console.log('Initializing HomePage');
+
+    PushNotifications.requestPermissions().then(result => {
+      if (result.receive === 'granted') {
+        PushNotifications.register();
+      } else {
+        console.error('Push notifications permission denied');
+      }
+    });
+
+    PushNotifications.addListener('registration', (token: Token) => {
+      console.log('Push registration success, token:', token.value);
+    });
+
+    PushNotifications.addListener('registrationError', (error: any) => {
+      console.error('Push registration error:', error);
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+      console.log('Push notification received:', notification);
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      const data = action.notification.data;
+      console.log('Push notification action performed:', data);
+    });
+  }
+
+
 }

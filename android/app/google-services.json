@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "863891793173",
+    "project_id": "proyecto-789ae",
+    "storage_bucket": "proyecto-789ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:863891793173:android:63a6b8e070ffe9f963751c",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGCYWAPm6TkS7xOMS8x0MhKdJ6M8XJgB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
