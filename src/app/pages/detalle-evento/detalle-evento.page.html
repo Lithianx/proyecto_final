@@ -7,76 +7,79 @@
   </ion-button>
 
   <div class="contenedor-evento">
-    <ion-card class="card-monster" *ngIf="evento">
-      <ion-card-header>
-        <ion-card-title class="titulo-monster">🎮 {{ evento.nombre_evento }}</ion-card-title>
-        <ion-card-subtitle class="subtitulo-monster">
-          Creado por: <span style="color: rgb(15, 209, 167);">{{ creadorNombre }}</span>
+    <ion-card class="card-monster-pro" *ngIf="evento">
+      <ion-card-header class="header-evento">
+        <ion-icon name="game-controller-outline" class="icono-titulo"></ion-icon>
+        <ion-card-title>{{ evento.nombre_evento }}</ion-card-title>
+        <ion-card-subtitle>
+          Creado por: <span class="creador">{{ creadorNombre }}</span>
         </ion-card-subtitle>
-
-        <!-- Estado con luz -->
-        <div class="estado-luz-texto">
-          <div class="estado-indicador" [ngClass]="{
-            'verde': nombreEstado === 'DISPONIBLE',
-            'amarillo': nombreEstado === 'EN CURSO',
-            'rojo': nombreEstado === 'FINALIZADO',
-            'naranja': nombreEstado === 'SIN CUPOS'
-          }"></div>
-
-          <div class="estado-texto" [ngClass]="{
-            'texto-verde': nombreEstado === 'DISPONIBLE',
-            'texto-amarillo': nombreEstado === 'EN CURSO',
-            'texto-rojo': nombreEstado === 'FINALIZADO',
-            'texto-naranja': nombreEstado === 'SIN CUPOS'
-          }">
-            Estado: {{ nombreEstado }}
-          </div>
-        </div>
       </ion-card-header>
 
-      <ion-card-content class="contenido-scroll">
-        <div class="contenido-evento">
-
-          <div class="campo-evento campo-descripcion">
-            <label>📝 Descripción</label>
-            <p>{{ evento.descripcion }}</p>
-          </div>
-
-          <div class="fila-doble">
-            <div class="campo-evento">
-              <label>📍 Lugar</label>
-              <p>{{ evento.lugar }}</p>
-            </div>
-            <div class="campo-evento">
-              <label>🕒 Fecha Inicio</label>
-              <p>{{ evento.fechaInicio | date: 'short' }}</p>
-            </div>
-          </div>
-
-          <div class="fila-doble">
-            <div class="campo-evento">
-              <label>🎮 Juego</label>
-              <p>{{ nombreJuego }}</p>
-            </div>
-            <div class="campo-evento">
-              <label>👥 Cupos</label>
-              <p>{{ evento.cupos }}</p>
-            </div>
-          </div>
-
+      <ion-card-content class="contenido-pro">
+        <div class="estado-box">
+          <ion-badge [color]="
+        nombreEstado === 'DISPONIBLE' ? 'success' :
+        nombreEstado === 'EN CURSO' ? 'warning' :
+        nombreEstado === 'FINALIZADO' ? 'danger' : 'medium'
+      ">
+            Estado: {{ nombreEstado }}
+          </ion-badge>
         </div>
 
-        <div class="boton-unirse-container" *ngIf="evento">
-          <ion-button expand="block"
-                      shape="round"
-                      color="success"
-                      [disabled]="!puedeUnirse"
-                      (click)="unirseAlEvento()">
+        <div class="info-evento">
+          <ion-item lines="none">
+            <ion-icon name="document-text-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Descripción</h3>
+              <p class="descripcion">{{ evento.descripcion }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="location-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Lugar</h3>
+              <p>{{ evento.lugar }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Fecha de inicio</h3>
+              <p>{{ evento.fechaInicio | date: 'short' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="dice-outline" slot="start"></ion-icon>
+
+            <ion-label>
+              <h3>Juego</h3>
+              <p>{{ nombreJuego }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Cupos</h3>
+              <p>{{ evento.cupos }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="unirse-container" *ngIf="evento">
+          <ion-button expand="block" shape="round" size="large" class="boton-unirse-pro" [disabled]="!puedeUnirse"
+            (click)="unirseAlEvento()">
+            <ion-icon name="log-in-outline" slot="start"></ion-icon>
             {{ yaInscrito ? 'Ya estás inscrito' : 'Unirse al evento' }}
           </ion-button>
         </div>
       </ion-card-content>
     </ion-card>
+
   </div>
 
 </ion-content>

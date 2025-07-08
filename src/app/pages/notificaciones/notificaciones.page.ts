@@ -40,11 +40,12 @@ export class NotificacionesPage implements OnInit {
     }
   }
 
- async cargarNotificaciones() {
+async cargarNotificaciones() {
   try {
-    const notis = await this.notificacionesService.getNotificacionesConUsuarioHecho(this.idUsuarioLogeado);
+    // Cambiado a getNotificacionesConDatos para incluir globales
+    const notis = await this.notificacionesService.getNotificacionesConDatos(this.idUsuarioLogeado);
 
-    // Ordenar por fecha descendente (más reciente primero)
+    // orden y demás código queda igual...
     notis.sort((a, b) => {
       const fechaA = a.fecha ? (a.fecha.toDate ? a.fecha.toDate() : a.fecha) : new Date(0);
       const fechaB = b.fecha ? (b.fecha.toDate ? b.fecha.toDate() : b.fecha) : new Date(0);
@@ -55,7 +56,6 @@ export class NotificacionesPage implements OnInit {
     this.notificaciones = notis;
     console.log('🔔 Notificaciones enriquecidas ordenadas:', this.notificaciones);
 
-    // Marcar todas como leídas
     await this.notificacionesService.marcarNotificacionesComoLeidas(this.idUsuarioLogeado);
 
   } catch (error) {

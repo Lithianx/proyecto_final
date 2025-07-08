@@ -22,7 +22,7 @@ export class SeguidoresPage {
     private alertController: AlertController,
     private seguirService: SeguirService,
     private usuarioService: UsuarioService,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
   ) {}
 
   async ionViewWillEnter() {

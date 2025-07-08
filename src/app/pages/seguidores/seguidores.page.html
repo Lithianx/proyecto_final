@@ -25,7 +25,8 @@
   <ion-list class="followers-list">
     <ion-item *ngFor="let user of seguidoresFiltrados" (click)="verPerfil(user.id_usuario)">
       <ion-avatar slot="start">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="{{ user.nombre_usuario }}" />
+        <img [src]="user.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" alt="{{ user.nombre_usuario }}" />
+
       </ion-avatar>
 
       <ion-label>{{ user.nombre_usuario }}</ion-label>

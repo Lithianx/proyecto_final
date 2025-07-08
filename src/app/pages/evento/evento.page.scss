@@ -162,5 +162,29 @@ ion-searchbar{
   color: #ccc;
 }
 
+.segmento-tipo-juego {
+  --background: #111;
+  --color-checked: #2ec015;
+  --indicator-color: #2ec015;
+  font-size: 10px;
+
+  ion-segment-button {
+    --color: #fff;
+    --color-checked: #2ec015;
+    flex-direction: column;
+
+    ion-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+
+    .segment-label {
+      font-size: 10px;
+    }
+  }
+}
+
+
+
 
 

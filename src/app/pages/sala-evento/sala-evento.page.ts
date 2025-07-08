@@ -439,20 +439,18 @@ export class SalaEventoPage implements OnInit, OnDestroy {
 
   async iniciarEvento() {
     if (!this.eventoEnCurso) {
-      this.cargandoEvento = true;
-      try {
-        const estadoEnCursoID = await this.eventoService.obtenerIdEstadoPorDescripcion('EN CURSO');
-        await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
-          id_estado_evento: estadoEnCursoID,
-          timestampInicioEvento: new Date()
-        });
-        this.eventoEnCurso = true;
-        this.tiempoInicial = Date.now();
-        this.iniciarTemporizador();
-      } catch (error) {
-        console.error('❌ Error al iniciar evento:', error);
-      }
-      this.cargandoEvento = false;
+      const alerta = await this.alertCtrl.create({
+        header: '¿Iniciar evento?',
+        message: 'Una vez iniciado, no se podrá pausar hasta que finalice.',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          {
+            text: 'Iniciar',
+            handler: async () => await this.ejecutarInicioEvento()
+          }
+        ]
+      });
+      await alerta.present();
     } else {
       const alerta = await this.alertCtrl.create({
         header: 'Finalizar Evento',
@@ -474,7 +472,6 @@ export class SalaEventoPage implements OnInit, OnDestroy {
               setTimeout(() => {
                 this.cargandoEvento = false;
                 this.navCtrl.navigateRoot(`/evento-finalizado/${this.eventoId}`);
-
               }, 2000);
             },
           },
@@ -483,6 +480,26 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       await alerta.present();
     }
   }
+
+
+  private async ejecutarInicioEvento() {
+    this.cargandoEvento = true;
+    try {
+      const estadoEnCursoID = await this.eventoService.obtenerIdEstadoPorDescripcion('EN CURSO');
+      await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+        id_estado_evento: estadoEnCursoID,
+        timestampInicioEvento: new Date()
+      });
+      this.eventoEnCurso = true;
+      this.tiempoInicial = Date.now();
+      this.iniciarTemporizador();
+    } catch (error) {
+      console.error('❌ Error al iniciar evento:', error);
+    }
+    this.cargandoEvento = false;
+  }
+
+
 
   iniciarTemporizador() {
     this.intervalId = setInterval(() => {

@@ -1,4 +1,4 @@
-// Fondo general
+// 🌑 Fondo general
 .fondo-negro {
   --background: #000;
   height: 100%;
@@ -6,198 +6,145 @@
   flex-direction: column;
 }
 
-// Botón volver
+// 🔙 Botón volver
 .boton-volver {
   --color: rgb(41, 197, 41);
   margin-top: 10px;
   margin-bottom: 10px;
 }
 
-// Contenedor general
+// 📦 Contenedor principal
 .contenedor-evento {
   flex: 1;
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: flex-start;
   padding: 16px;
   box-sizing: border-box;
   overflow-y: auto;
 }
 
-// Tarjeta del evento
-.card-monster {
-  width: 100%;
-  max-width: 500px;
-  background: #111;
+// 💾 Tarjeta principal del evento
+.card-monster-pro {
+  background: #121212;
   border: 2px solid #2ec015;
   border-radius: 16px;
   box-shadow: 0 0 15px #2ec015;
-  color: #2ec015;
-  display: flex;
-  flex-direction: column;
+  color: #fff;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-// Título y subtítulo
-.titulo-monster {
-  font-size: 1.4rem;
-  font-weight: bold;
+// 🎮 Encabezado de la tarjeta
+.header-evento {
   text-align: center;
-  color: #2ec015;
-}
+  padding-bottom: 10px;
 
-.subtitulo-monster {
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-align: center;
-  color: rgb(15, 209, 167);
-}
-
-// Scroll del contenido
-.contenido-scroll {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 16px;
-  overflow-y: auto;
-}
-
-// Contenedor interno del contenido
-.contenido-evento {
-  display: flex;
-  height: 82%;
-  flex-direction: column;
-  gap: 24px;
-  padding-bottom: 16px;
-}
-
-// Fila de dos columnas
-.fila-doble {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-
-  .campo-evento {
-    flex: 1 1 48%;
-  }
-}
-
-// Campo genérico
-.campo-evento {
-  label {
-    display: block;
-    font-weight: bold;
-    font-size: 0.95rem;
+  .icono-titulo {
+    font-size: 2.2rem;
     color: #2ec015;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
   }
 
-  p {
-    font-size: 0.95rem;
-    margin: 0;
-    color: #fff;
+  ion-card-title {
+    font-size: 1.3rem;
+    color: #2ec015;
+    font-weight: bold;
+  }
+
+  ion-card-subtitle {
+    font-size: 1rem;
+    color: rgb(15, 209, 167);
+  }
+
+  .creador {
+    font-weight: bold;
   }
 }
 
-// Descripción especial
-.campo-descripcion p {
-  font-style: italic;
-  color: #ccc;
-}
-
-// Swipe personalizado
-.swipe-button-container {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
-}
-
-.swipe-track {
-  position: relative;
-  background-color: #222;
-  border-radius: 30px;
-  height: 50px;
-  overflow: hidden;
-  box-shadow: 0 0 10px #21a10a;
-  width: 100%;
-  max-width: 400px;
-}
-
-.swipe-fill {
-  position: absolute;
-  height: 100%;
-  width: 0;
-  background-color: #21a10a;
-  border-radius: 30px;
-  transition: width 0.3s ease;
-  z-index: 1;
-}
-
-.swipe-thumb {
-  position: absolute;
-  left: 0;
-  height: 100%;
-  width: 50px;
-  background-color: #000;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  box-shadow: 0 0 8px #21a10a;
-}
-
-.swipe-text {
-  position: absolute;
-  width: 100%;
+// 📊 Estado del evento
+.estado-box {
   text-align: center;
-  line-height: 50px;
-  color: #ffffff;
-  z-index: 0;
+  margin: 10px 0 20px 0;
+
+  ion-badge {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 12px;
+    box-shadow: 0 0 8px rgba(46, 192, 21, 0.4);
+  }
 }
 
-.estado-luz-texto {
+// 🧩 Contenido del evento
+.contenido-pro {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.estado-indicador {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+// ℹ️ Lista de información del evento
+.info-evento {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  ion-item {
+    --background: transparent;
+    --color: #ffffff;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    color: #ffffff;
+
+    ion-icon {
+      color: #2ec015;
+      font-size: 1.4rem;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #2ec015;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 0.9rem;
+      margin: 4px 0 0;
+      color: #ccc;
+    }
+  }
 }
 
-.verde {
-  background-color: #2dff00;
-  box-shadow: 0 0 10px rgba(45, 255, 0, 0.6);
+.descripcion {
+  font-style: italic;
+  color: #a0a0a0;
 }
 
-.amarillo {
-  background-color: #ffd500;
-  box-shadow: 0 0 10px rgba(255, 213, 0, 0.6);
+// ✅ Botón "Unirse al evento"
+.unirse-container {
+  margin-top: 24px;
 }
 
-.rojo {
-  background-color: #ff3c3c;
-  box-shadow: 0 0 10px rgba(255, 60, 60, 0.6);
-}
-
-.estado-texto {
-  font-size: 14px;
+.boton-unirse-pro {
+  --background: #2ec015;
+  --background-hover: #39ff14;
+  --color: #000;
+  --border-radius: 9999px;
+  border-radius: 9999px !important;
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 12px #2ec015;
+  transition: all 0.3s ease;
+  padding: 12px;
 }
 
-.texto-verde {
-  color: #2dff00;
-}
 
-.texto-amarillo {
-  color: #ffd500;
-}
-
-.texto-rojo {
-  color: #ff3c3c;
+.boton-unirse-pro:disabled {
+  --background: #555;
+  --color: #ccc;
+  opacity: 0.7;
+  box-shadow: none;
 }

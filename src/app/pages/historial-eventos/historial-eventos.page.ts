@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { Router } from '@angular/router'; // <-- Importa Router
+import { Router } from '@angular/router';
 import { EventoService } from 'src/app/services/evento.service';
 import { LocalStorageService } from '../../services/local-storage-social.service';
+import { firstValueFrom } from 'rxjs';
 
 // Define una interfaz mínima para Evento
 interface Evento {
@@ -27,7 +28,6 @@ export class HistorialEventosPage implements OnInit {
   @ViewChild('publicacionesNav', { read: ElementRef }) publicacionesNav!: ElementRef;
 
   eventosinscritos_finaliazado = [ /* ... */ ]; // igual que antes
-
   eventosCreados_finaliazado = [ /* ... */ ]; // igual que antes
 
   mostrarModal: boolean = false;
@@ -38,15 +38,19 @@ export class HistorialEventosPage implements OnInit {
   constructor(
     private eventoService: EventoService,
     private localStorageService: LocalStorageService,
-    private router: Router // <-- Inyecta Router aquí
+    private router: Router
   ) {}
 
-  ngOnInit() {
-    this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
-    this.cargarDatosUsuario();
-  }
+ngOnInit() {
+  this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+  // No llamar cargarDatosUsuario() aquí
+}
 
-  private async cargarDatosUsuario() {
+async ionViewWillEnter() {
+  await this.cargarDatosUsuario();
+}
+
+private async cargarDatosUsuario() {
   try {
     const id_usuario: string | null = await this.localStorageService.getItem('id_usuario');
     if (!id_usuario) {
@@ -55,15 +59,56 @@ export class HistorialEventosPage implements OnInit {
     }
 
     // Cargar eventos creados finalizados
-    this.cargarEventosCreados(id_usuario);
+    await this.cargarEventosCreadosFinalizados(id_usuario);
 
-    // ✅ Cargar eventos inscritos finalizados
-    this.cargarEventosInscritos(id_usuario);
+    // Cargar eventos inscritos finalizados
+    await this.cargarEventosInscritos(id_usuario);
 
   } catch (error) {
     console.error('Error obteniendo id_usuario desde localStorage', error);
   }
 }
+
+  // Nuevo método para cargar solo eventos creados finalizados con datos completos
+  async cargarEventosCreadosFinalizados(idUsuario: string) {
+    try {
+      const eventos = await this.eventoService.obtenerEventosPorCreador(idUsuario);
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+      const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+      if (!idEstadoFinalizado) {
+        console.warn('No se encontró estado FINALIZADO');
+        this.eventosCreadosDesdeFirebase = [];
+        return;
+      }
+
+      const eventosFinalizadosMapeados = [];
+
+      for (const evento of eventos) {
+        if (evento.id_estado_evento !== idEstadoFinalizado) continue;
+
+        const juego = juegos.find(j => j.id_juego === evento.id_juego);
+        const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+        const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+        eventosFinalizadosMapeados.push({
+          ...evento,
+          nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+          estado_evento: estado?.descripcion ?? 'Estado desconocido',
+          creador_nombre: creadorNombre
+        });
+      }
+
+      this.eventosCreadosDesdeFirebase = eventosFinalizadosMapeados;
+
+      console.log('Eventos creados finalizados cargados:', this.eventosCreadosDesdeFirebase);
+
+    } catch (error) {
+      console.error('Error al cargar eventos creados finalizados:', error);
+      this.eventosCreadosDesdeFirebase = [];
+    }
+  }
 
   ionViewDidEnter() {
     this.applySliderTransform(this.vistaSeleccionada);
@@ -137,34 +182,45 @@ export class HistorialEventosPage implements OnInit {
   }
 
   async cargarEventosCreados(idUsuario: string) {
-  try {
-    const eventos = await this.eventoService.obtenerEventosPorCreadorYEstado(idUsuario);
-    
-    // Muestra todos los eventos recibidos en consola
-    console.log('🔥 Eventos recibidos desde Firebase:');
-    console.table(eventos); // Muestra en tabla los datos si usas Chrome
-
-    this.eventosCreadosDesdeFirebase = eventos;
-  } catch (error) {
-    console.error('❌ Error cargando eventos creados:', error);
+    try {
+      const eventos = await this.eventoService.obtenerEventosPorCreadorYEstado(idUsuario);
+      console.log('🔥 Eventos recibidos desde Firebase:');
+      console.table(eventos);
+      this.eventosCreadosDesdeFirebase = eventos;
+    } catch (error) {
+      console.error('❌ Error cargando eventos creados:', error);
+    }
   }
-}
 
   irASalaEvento(evento: Evento) {
     this.router.navigate(['/evento-finalizado', evento.id]);
   }
-  private async cargarEventosInscritos(idUsuario: string) {
+
+private async cargarEventosInscritos(idUsuario: string) {
   try {
     const eventos = await this.eventoService.obtenerEventosDesdeParticipacionesUsuario(idUsuario);
-    this.eventosinscritos_finaliazado = eventos;
 
-    // ✅ Mostrar cuántos eventos llegaron
+    // Obtenemos para cada evento el nombre del creador y armamos el nuevo array
+    const eventosConNombreCreador = await Promise.all(
+      eventos.map(async (evento) => {
+        const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador || '');
+        return {
+          ...evento,
+          creador_nombre: creadorNombre || 'Desconocido'
+        };
+      })
+    );
+
+    this.eventosinscritos_finaliazado = eventosConNombreCreador;
+
     console.log(`✅ Eventos inscritos finalizados recibidos: ${eventos.length}`);
-    console.table(eventos); // para inspección más fácil
+    console.table(this.eventosinscritos_finaliazado);
 
   } catch (error) {
     console.error('❌ Error cargando eventos inscritos finalizados:', error);
+    this.eventosinscritos_finaliazado = [];
   }
 }
+
 
 }

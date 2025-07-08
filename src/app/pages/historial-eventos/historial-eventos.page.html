@@ -2,104 +2,99 @@
 
 <ion-content fullscreen="true">
   <div class="contenido-wrapper">
-      <!-- Encabezado -->
-      <div class="header-row">
-        <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
-          <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
-        </ion-button>
-        <h1 class="app-title">Historial de eventos</h1>
-      </div>
+    <!-- Encabezado -->
+    <div class="header-row">
+      <ion-button fill="clear" class="back-button" [routerLink]="['/perfil']" aria-label="Volver atrás">
+        <ion-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+      </ion-button>
+      <h1 class="app-title">Historial de eventos</h1>
+    </div>
 
-      <!-- Searchbar habilitada para búsqueda -->
-      <ion-searchbar
-        class="search-bar"
-        placeholder="Buscar evento"
-        (ionInput)="onSearchChange($event)"
-        [value]="searchTerm"
-      ></ion-searchbar>
+    <!-- Searchbar habilitada para búsqueda -->
+    <ion-searchbar
+      class="search-bar"
+      placeholder="Buscar evento"
+      (ionInput)="onSearchChange($event)"
+      [value]="searchTerm"
+    ></ion-searchbar>
 
-      <!-- Segmento de navegación -->
+    <!-- Segmento de navegación -->
     <div #publicacionesNav class="publicaciones-nav">
-        <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
-          <ion-segment-button value="eventos-inscritos">
-            <ion-icon name="flash-outline"></ion-icon>
-          </ion-segment-button>
-          <ion-segment-button value="eventos-creados">
-            <ion-icon name="game-controller-outline"></ion-icon>
-          </ion-segment-button>
-        </ion-segment>
-      </div>
+      <ion-segment [(ngModel)]="vistaSeleccionada" (ionChange)="segmentChanged($event)">
+        <ion-segment-button value="eventos-inscritos">
+          <ion-icon name="flash-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="eventos-creados">
+          <ion-icon name="game-controller-outline"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
 
-        <!-- Eventos Inscritos -->
-        <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
-          <h2 class="titulo-seccion">Eventos inscritos</h2>
+    <!-- Eventos Inscritos -->
+    <div *ngIf="vistaSeleccionada === 'eventos-inscritos'" class="eventos-inscritos">
+      <h2 class="titulo-seccion">Eventos inscritos</h2>
 
-          <ng-container *ngIf="eventosInscritosFiltrados.length > 0; else sinEventosInscritos">
-            <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
-              <ion-card>
-                <ion-card-content class="contenido-tarjeta">
-                  <div class="texto-tarjeta">
-                    <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
-                    <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
-                    <p class="detalle">Fecha: {{ evento.fechaInicio || evento.fecha }}</p>
-                    <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
-                  </div>
-                  <ion-icon
-                    name="chevron-forward-outline"
-                    class="color-verde icono-forward"
-                    size="large"
-                    (click)="irASalaEvento(evento)">
-                  </ion-icon>
-                </ion-card-content>
-              </ion-card>
-            </div>
-          </ng-container>
-
-          <ng-template #sinEventosInscritos>
-            <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
-              <ion-icon name="calendar-outline" size="large"></ion-icon>
-              <p>No estás inscrito en ningún evento finalizado por el momento.</p>
-            </div>
-          </ng-template>
+      <ng-container *ngIf="eventosInscritosFiltrados.length > 0; else sinEventosInscritos">
+        <div *ngFor="let evento of eventosInscritosFiltrados" class="tarjeta-evento">
+          <ion-card>
+            <ion-card-content class="contenido-tarjeta">
+              <div class="texto-tarjeta">
+                <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
+                <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
+                <p class="detalle">Fecha: {{ evento.fechaInicio || evento.fecha | date:'short' }}</p>
+                <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
+              </div>
+              <ion-icon
+                name="chevron-forward-outline"
+                class="color-verde icono-forward"
+                size="large"
+                (click)="irASalaEvento(evento)">
+              </ion-icon>
+            </ion-card-content>
+          </ion-card>
         </div>
+      </ng-container>
 
-
-
-        <!-- Eventos creados -->
-<!-- Eventos creados -->
-<div *ngIf="vistaSeleccionada === 'eventos-creados'" class="eventos-inscritos">
-  <h2 class="titulo-seccion">Eventos creados</h2>
-
-  <ng-container *ngIf="eventosCreadosFiltrados.length > 0; else sinEventos">
-    <div *ngFor="let evento of eventosCreadosFiltrados" class="tarjeta-evento">
-      <ion-card>
-        <ion-card-content class="contenido-tarjeta">
-          <div class="texto-tarjeta">
-            <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
-            <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
-            <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
-            <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
-          </div>
-          <ion-icon
-            name="chevron-forward-outline"
-            class="color-verde icono-forward"
-            size="large"
-            (click)="irASalaEvento(evento)">
-          </ion-icon>
-        </ion-card-content>
-      </ion-card>
+      <ng-template #sinEventosInscritos>
+        <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+          <ion-icon name="calendar-outline" size="large"></ion-icon>
+          <p>No estás inscrito en ningún evento finalizado por el momento.</p>
+        </div>
+      </ng-template>
     </div>
-  </ng-container>
 
-  <ng-template #sinEventos>
-    <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
-      <ion-icon name="calendar-outline" size="large"></ion-icon>
-      <p>No has creado ningún evento finalizado por el momento.</p>
+    <!-- Eventos Creados -->
+    <div *ngIf="vistaSeleccionada === 'eventos-creados'" class="eventos-inscritos">
+      <h2 class="titulo-seccion">Eventos creados</h2>
+
+      <ng-container *ngIf="eventosCreadosFiltrados.length > 0; else sinEventos">
+        <div *ngFor="let evento of eventosCreadosFiltrados" class="tarjeta-evento">
+          <ion-card>
+            <ion-card-content class="contenido-tarjeta">
+              <div class="texto-tarjeta">
+                <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
+                <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
+                <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
+                <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
+              </div>
+              <ion-icon
+                name="chevron-forward-outline"
+                class="color-verde icono-forward"
+                size="large"
+                (click)="irASalaEvento(evento)">
+              </ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ng-container>
+
+      <ng-template #sinEventos>
+        <div class="no-publicaciones-container" style="text-align:center; margin-top: 50px;">
+          <ion-icon name="calendar-outline" size="large"></ion-icon>
+          <p>No has creado ningún evento finalizado por el momento.</p>
+        </div>
+      </ng-template>
     </div>
-  </ng-template>
-</div>
-
-
   </div>
 </ion-content>
 
