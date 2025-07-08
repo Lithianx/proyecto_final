@@ -148,3 +148,11 @@
   opacity: 0.7;
   box-shadow: none;
 }
+
+::ng-deep .custom-loading {
+  --background: #111;
+  --color: #2ec015;
+  font-weight: bold;
+  text-align: center;
+  z-index: 9999;
+}
