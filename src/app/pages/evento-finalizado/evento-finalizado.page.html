@@ -20,7 +20,7 @@
       <ion-card-content>
         <p><strong>Juego:</strong> {{ evento?.nombre_juego }}</p>
         <p><strong>Lugar:</strong> {{ evento?.lugar }}</p>
-        <p><strong>Fecha de inicio:</strong> {{ evento?.fechaInicio | date: 'short' }}</p>
+        <p><strong>Fecha de inicio:</strong> {{ evento?.fechaInicio | date: 'longDate' }}</p>
         <p *ngIf="duracion !== 'No disponible'"><strong>Duración:</strong> {{ duracion }}</p>
         <p *ngIf="duracion === 'No disponible'"><strong>Duración:</strong> No disponible</p>
 
