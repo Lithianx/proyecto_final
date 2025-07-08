@@ -401,6 +401,8 @@ async cargarEventosInscritos() {
   }
 }
 
+
+
   irASalaEvento(evento: Evento & { id: string }) {
     this.router.navigate(['/sala-evento', evento.id]);
   }
