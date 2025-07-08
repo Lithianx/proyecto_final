@@ -488,3 +488,29 @@ ion-fab-list ion-button:hover {
   flex-direction: column;
   align-items: center;
 }
+
+
+.jugadores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 6px; 
+
+  span {
+    font-weight: bold;
+    color: #2ec015;
+  }
+
+  .icono-toggle {
+    font-size: 1.4rem;
+    color: #2ec015;
+    cursor: pointer;
+    margin-left: 12px; 
+    transition: transform 0.2s ease;
+  }
+
+  .icono-toggle:hover {
+    transform: scale(1.2);
+  }
+}
+

@@ -122,13 +122,13 @@
 
         <!-- Lista de jugadores -->
         <div *ngIf="jugadores?.length > 0" class="panel-admin">
-          <ion-item-divider color="dark">
-            Jugadores actuales
-            <ion-button *ngIf="esAnfitrion" fill="clear" size="small"
-              (click)="mostrarPanelJugadores = !mostrarPanelJugadores">
-              <ion-icon [name]="mostrarPanelJugadores ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-            </ion-button>
+          <ion-item-divider color="dark" class="jugadores-header">
+            <span>Jugadores actuales</span>
+            <ion-icon *ngIf="esAnfitrion" [name]="mostrarPanelJugadores ? 'eye-off-outline' : 'eye-outline'"
+              class="icono-toggle" (click)="mostrarPanelJugadores = !mostrarPanelJugadores">
+            </ion-icon>
           </ion-item-divider>
+
 
           <ion-list *ngIf="esAnfitrion ? mostrarPanelJugadores : true">
             <ion-item *ngFor="let jugador of jugadores" (click)="esAnfitrion ? confirmarExpulsion(jugador) : null"
