@@ -41,7 +41,7 @@
               <div class="texto-tarjeta">
                 <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
                 <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
-                <p class="detalle">Fecha: {{ evento.fechaInicio || evento.fecha | date:'short' }}</p>
+                <p class="detalle">Fecha: {{ evento.fechaInicio || evento.fecha | date:'longDate' }}</p>
                 <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
               </div>
               <ion-icon
@@ -74,7 +74,7 @@
               <div class="texto-tarjeta">
                 <h3 class="titulo-evento">{{ evento.nombre_evento || evento.nombre }}</h3>
                 <p class="detalle">Creador: {{ evento.creador_nombre || evento.creador }}</p>
-                <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'short' }}</p>
+                <p class="detalle">Fecha: {{ evento.fechaInicio | date: 'longDate' }}</p>
                 <p class="detalle">Juego: {{ evento.nombre_juego || evento.juego }}</p>
               </div>
               <ion-icon
