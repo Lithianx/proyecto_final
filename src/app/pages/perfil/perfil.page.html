@@ -129,7 +129,7 @@
 
       <ion-card-content>
         <p><strong>Lugar:</strong> {{ evento.lugar }} <span class="texto-verde"> | </span>
-          <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
+          <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'longDate' }}
         </p>
         <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
         <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
@@ -177,7 +177,7 @@
 
           <ion-card-content>
             <p><strong>Lugar:</strong> {{ evento.lugar }} <span class="texto-verde"> | </span>
-              <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'short' }}
+              <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'longDate' }}
             </p>
             <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
             <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
