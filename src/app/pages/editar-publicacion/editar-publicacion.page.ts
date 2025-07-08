@@ -74,11 +74,20 @@ export class EditarPublicacionPage implements OnInit {
     this.route.params.subscribe(async params => {
       this.postId = params['id'];
 
-      // Cargar publicaciones según conexión
-      if (navigator.onLine) {
+      // Cargar publicaciones según conexión usando el servicio utils
+      const isOnline = await this.utilsService.checkInternetConnection();
+      console.log(`🔍 Cargando publicación para editar. Online: ${isOnline}, ID: ${this.postId}`);
+
+      if (isOnline) {
+        console.log('📡 Cargando publicaciones online...');
         this.publicaciones = await this.publicacionService.getPublicaciones();
       } else {
-        this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+        console.log('📴 Cargando publicaciones offline...');
+        // Cargar tanto publicaciones locales como personales offline
+        const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+        const publicacionesPersonales = await this.publicacionService.getPublicacionesPersonal();
+        this.publicaciones = [...publicacionesLocales, ...publicacionesPersonales];
+        console.log(`📄 Publicaciones cargadas offline: ${this.publicaciones.length}`);
       }
 
       // Buscar la publicación por ID (id_publicacion ahora es string)
@@ -88,8 +97,21 @@ export class EditarPublicacionPage implements OnInit {
         this.publicacion = publicacionEncontrada;
         this.contenido = this.publicacion.contenido;
         this.imagenBase64 = this.publicacion.imagen || null;
+        console.log(`✅ Publicación encontrada para editar: ${this.publicacion.id_publicacion}`);
       } else {
-        console.warn('Publicación no encontrada');
+        console.warn(`❌ Publicación no encontrada con ID: ${this.postId}`);
+        console.log('📄 Publicaciones disponibles:', this.publicaciones.map(p => ({ id: p.id_publicacion, contenido: p.contenido?.substring(0, 50) })));
+        
+        // Mostrar toast de error
+        const toast = await this.toastCtrl.create({
+          message: 'Publicación no encontrada',
+          duration: 3000,
+          color: 'danger'
+        });
+        await toast.present();
+        
+        // Regresar a la página anterior
+        this.navCtrl.back();
       }
     });
   }
@@ -253,6 +275,10 @@ async guardarCambios() {
 
   if (!this.publicacion) return;
 
+  // Verificar conexión al inicio
+  const isOnline = await this.utilsService.checkInternetConnection();
+  console.log(`💾 Guardando cambios en publicación. Online: ${isOnline}`);
+
   // Mostrar toast de carga
   const loadingToast = await this.toastCtrl.create({
     message: 'Guardando cambios...',
@@ -271,8 +297,7 @@ async guardarCambios() {
         imagenUrl = this.imagenBase64;
       } else {
         // Verificar conexión para subir la imagen
-        const online = await this.utilsService.checkInternetConnection();
-        if (online) {
+        if (isOnline) {
           // Si había una imagen anterior y no es de Giphy, eliminarla
           if (this.publicacion.imagen && 
               this.publicacion.imagen.includes('firebasestorage.googleapis.com') &&
@@ -292,17 +317,11 @@ async guardarCambios() {
             1200, // maxHeight
             0.8   // quality
           );
+          console.log('✅ Imagen subida exitosamente:', imagenUrl);
         } else {
-          // Si no hay conexión, mostrar error
-          await loadingToast.dismiss();
-          const toast = await this.toastCtrl.create({
-            message: 'No se puede subir la imagen sin conexión a internet.',
-            duration: 3000,
-            color: 'danger',
-            position: 'top'
-          });
-          toast.present();
-          return;
+          // Si no hay conexión, usar la imagen base64 para guardar offline
+          imagenUrl = this.imagenBase64;
+          console.log('📴 Guardando imagen en base64 para sincronización posterior');
         }
       }
     }
@@ -312,26 +331,35 @@ async guardarCambios() {
     this.publicacion.imagen = imagenUrl;
 
     await this.publicacionService.updatePublicacion(this.publicacion);
+    console.log('✅ Publicación actualizada exitosamente');
 
     // Cerrar toast de carga
     await loadingToast.dismiss();
 
-    // Si quieres mostrar todas las publicaciones (online/offline)
-    if (navigator.onLine) {
+    // Recargar publicaciones según el estado de conexión
+    if (isOnline) {
       this.publicaciones = await this.publicacionService.getPublicaciones();
     } else {
-      this.publicaciones = await this.publicacionService.getPublicacionesPersonal();
+      // Cargar tanto publicaciones locales como personales offline
+      const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      const publicacionesPersonales = await this.publicacionService.getPublicacionesPersonal();
+      this.publicaciones = [...publicacionesLocales, ...publicacionesPersonales];
     }
 
-    console.log('Cambios guardados:', this.publicaciones);
-    await this.mostrarToast('¡Publicación modificada exitosamente!');
+    console.log('📄 Publicaciones recargadas:', this.publicaciones.length);
+    
+    const mensaje = isOnline ? 
+      '¡Publicación modificada exitosamente!' : 
+      '¡Publicación guardada offline! Se sincronizará cuando haya conexión.';
+    
+    await this.mostrarToast(mensaje);
     this.router.navigate(['/home']);
 
   } catch (error) {
     // Cerrar toast de carga en caso de error
     await loadingToast.dismiss();
     
-    console.error('Error al guardar cambios:', error);
+    console.error('❌ Error al guardar cambios:', error);
     const toast = await this.toastCtrl.create({
       message: 'Error al guardar los cambios. Inténtalo de nuevo.',
       duration: 3000,

@@ -3,13 +3,41 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { Publicacion } from '../models/publicacion.model';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map, of } from 'rxjs';
+import { catchError, map, of, Subject } from 'rxjs';
 import { Network } from '@capacitor/network';
 
 @Injectable({ providedIn: 'root' })
 export class UtilsService {
 
-  constructor(private http: HttpClient) {}
+  // Subject para emitir cambios de conectividad
+  private networkStatusSubject = new Subject<boolean>();
+  public networkStatus$ = this.networkStatusSubject.asObservable();
+
+  constructor(private http: HttpClient) {
+    this.initNetworkMonitoring();
+  }
+
+  // Inicializar el monitoreo de red
+  private async initNetworkMonitoring() {
+    if (this.isMobile()) {
+      // Para móvil, usar Capacitor Network
+      Network.addListener('networkStatusChange', (status) => {
+        console.log('📡 Cambio de estado de red (móvil):', status.connected);
+        this.networkStatusSubject.next(status.connected);
+      });
+    } else {
+      // Para web, usar eventos del navegador
+      window.addEventListener('online', () => {
+        console.log('📡 Conexión restaurada (web)');
+        this.networkStatusSubject.next(true);
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('📡 Conexión perdida (web)');
+        this.networkStatusSubject.next(false);
+      });
+    }
+  }
 
 async compartirPublicacion(publicacion: Publicacion) {
   const urlCustom = `https://app-eventos-7f5a8.web.app/comentario/${publicacion.id_publicacion}`;

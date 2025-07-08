@@ -60,24 +60,45 @@ export class ComentarioService {
   // Sincronizar comentarios offline con Firebase
   async sincronizarComentariosLocales(): Promise<void> {
     const online = await this.utilsService.checkInternetConnection();
-    if (!online) return;
+    if (!online) {
+      console.log('❌ Sin conexión - no se pueden sincronizar comentarios offline');
+      return;
+    }
 
+    console.log('🔄 Iniciando sincronización de comentarios offline...');
     const comentariosOffline = await this.getComentariosOffline();
+    
+    if (comentariosOffline.length === 0) {
+      console.log('✅ No hay comentarios offline para sincronizar');
+      return;
+    }
+
+    console.log(`💬 Sincronizando ${comentariosOffline.length} comentarios offline`);
     const noSincronizados: any[] = [];
+    let sincronizados = 0;
 
     for (const comentario of comentariosOffline) {
       try {
+        console.log(`📤 Intentando sincronizar comentario para publicación: ${comentario.id_publicacion}`);
+        
         const publicacion = await this.publicacionService.getPublicacionById(comentario.id_publicacion);
         if (!publicacion) {
+          console.log(`⚠️ Publicación no encontrada para comentario: ${comentario.id_publicacion}`);
           noSincronizados.push(comentario);
           continue;
         }
+        
         await this.firebaseService.addComentario(comentario);
+        sincronizados++;
+        console.log(`✅ Comentario sincronizado exitosamente para publicación: ${comentario.id_publicacion}`);
         // El observable comentarios$ se actualizará y guardará en local automáticamente
       } catch (error) {
+        console.error(`❌ Error sincronizando comentario para publicación ${comentario.id_publicacion}:`, error);
         noSincronizados.push(comentario);
       }
     }
+
+    console.log(`📊 Sincronización de comentarios completada: ${sincronizados} sincronizados, ${noSincronizados.length} pendientes`);
 
     // Guarda solo los no sincronizados para el próximo intento
     await this.localStorage.setItem('comentariosOffline', noSincronizados);

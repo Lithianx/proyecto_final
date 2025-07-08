@@ -255,6 +255,7 @@ async publicar() {
         // Verificar conexión para subir la imagen
         const online = await this.utilsService.checkInternetConnection();
         if (online) {
+          console.log('📡 Subiendo imagen online...');
           // Comprimir y subir la imagen
           imagenUrl = await this.firebaseStorageService.uploadCompressedImage(
             this.imagenBase64,
@@ -263,17 +264,12 @@ async publicar() {
             1200, // maxHeight
             0.8   // quality
           );
+          console.log('✅ Imagen subida exitosamente:', imagenUrl);
         } else {
-          // Si no hay conexión, mostrar error
-          await loadingToast.dismiss();
-          const toast = await this.toastCtrl.create({
-            message: 'No se puede subir la imagen sin conexión a internet.',
-            duration: 3000,
-            color: 'danger',
-            position: 'top'
-          });
-          toast.present();
-          return;
+          console.log('📴 Guardando imagen offline en base64 para sincronización posterior');
+          // Si no hay conexión, usar la imagen base64 para guardar offline
+          // La sincronización se encargará de subirla después
+          imagenUrl = this.imagenBase64;
         }
       }
     }

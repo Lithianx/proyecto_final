@@ -127,13 +127,30 @@ export class ComunicacionService {
       ...mensaje,
       contenido: await this.cryptoService.cifrar(mensaje.contenido)
     };
+    
+    console.log(`📨 Enviando mensaje. Online: ${online}, Conversación: ${mensaje.id_conversacion}`);
+    
     if (online) {
       try {
         const mensajesRef = collection(this.firestore, 'Mensaje');
-        const docRef = await addDoc(mensajesRef, { ...mensajeCifrado, id_mensaje: '', fecha_envio: serverTimestamp() });
+        const docRef = await addDoc(mensajesRef, { 
+          ...mensajeCifrado, 
+          id_mensaje: '', 
+          fecha_envio: serverTimestamp() 
+        });
         await updateDoc(docRef, { id_mensaje: docRef.id });
+        console.log(`✅ Mensaje enviado online exitosamente: ${docRef.id}`);
       } catch (error) {
-        console.error('Error al enviar mensaje a Firestore:', error);
+        console.error('❌ Error al enviar mensaje online, guardando offline:', error);
+        // Si falla el envío online, guarda offline
+        const id = Date.now().toString();
+        const mensajeOffline = {
+          ...mensajeCifrado,
+          id_mensaje: id,
+          fecha_envio: new Date()
+        };
+        await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+        console.log(`💾 Mensaje guardado offline como respaldo: ${id}`);
       }
     } else {
       const id = Date.now().toString();
@@ -143,6 +160,7 @@ export class ComunicacionService {
         fecha_envio: new Date()
       };
       await this.localStorage.addToList<Mensaje>('mensajes_offline', mensajeOffline);
+      console.log(`📴 Mensaje guardado offline (sin conexión): ${id}`);
     }
     return true;
   }
@@ -269,38 +287,84 @@ export class ComunicacionService {
   }
 
   private async existeMensajeEnFirestore(mensaje: Mensaje): Promise<boolean> {
-    const mensajesRef = collection(this.firestore, 'Mensaje');
-    const q = query(
-      mensajesRef,
-      where('id_conversacion', '==', mensaje.id_conversacion),
-      where('id_usuario_emisor', '==', mensaje.id_usuario_emisor),
-      where('contenido', '==', mensaje.contenido),
-      where('fecha_envio', '==', mensaje.fecha_envio)
-    );
-    const snapshot = await getDocs(q);
-    return !snapshot.empty;
+    try {
+      const mensajesRef = collection(this.firestore, 'Mensaje');
+      
+      // Buscar por contenido cifrado y conversación (más confiable que fecha)
+      const q = query(
+        mensajesRef,
+        where('id_conversacion', '==', mensaje.id_conversacion),
+        where('id_usuario_emisor', '==', mensaje.id_usuario_emisor),
+        where('contenido', '==', mensaje.contenido)
+      );
+      
+      const snapshot = await getDocs(q);
+      const existe = !snapshot.empty;
+      
+      if (existe) {
+        console.log(`🔍 Mensaje duplicado encontrado en Firestore para conversación: ${mensaje.id_conversacion}`);
+      }
+      
+      return existe;
+    } catch (error) {
+      console.error('❌ Error verificando existencia de mensaje en Firestore:', error);
+      // En caso de error, asumir que no existe para intentar sincronizar
+      return false;
+    }
   }
 
   async sincronizarMensajesLocales(): Promise<void> {
     const online = await this.utilsService.checkInternetConnection();
-    if (!online) return;
+    if (!online) {
+      console.log('❌ Sin conexión - no se pueden sincronizar mensajes offline');
+      return;
+    }
 
+    console.log('🔄 Iniciando sincronización de mensajes offline...');
     let mensajesOffline = await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
+    
+    if (mensajesOffline.length === 0) {
+      console.log('✅ No hay mensajes offline para sincronizar');
+      return;
+    }
+
+    console.log(`📨 Sincronizando ${mensajesOffline.length} mensajes offline`);
     const noSincronizados: Mensaje[] = [];
+    let sincronizados = 0;
 
     for (const mensaje of mensajesOffline) {
       try {
+        console.log(`📤 Intentando sincronizar mensaje: ${mensaje.id_mensaje}`);
+        
+        // Verificar si ya existe
         const existe = await this.existeMensajeEnFirestore(mensaje);
         if (!existe) {
           const mensajesRef = collection(this.firestore, 'Mensaje');
-          const docRef = await addDoc(mensajesRef, { ...mensaje, id_mensaje: '', fecha_envio: serverTimestamp() });
+          const docRef = await addDoc(mensajesRef, { 
+            ...mensaje, 
+            id_mensaje: '', 
+            fecha_envio: serverTimestamp() 
+          });
           await updateDoc(docRef, { id_mensaje: docRef.id });
+          sincronizados++;
+          console.log(`✅ Mensaje sincronizado exitosamente: ${docRef.id}`);
+        } else {
+          console.log(`⚠️ Mensaje ya existe en Firestore, marcando como sincronizado: ${mensaje.id_mensaje}`);
+          sincronizados++;
         }
-      } catch {
+      } catch (error) {
+        console.error(`❌ Error sincronizando mensaje ${mensaje.id_mensaje}:`, error);
         noSincronizados.push(mensaje);
       }
     }
-    await this.localStorage.setItem('mensajes_offline', noSincronizados);
+    
+    console.log(`📊 Sincronización completada: ${sincronizados} sincronizados, ${noSincronizados.length} pendientes`);
+    
+    // Solo actualizar localStorage si hubo cambios
+    if (noSincronizados.length !== mensajesOffline.length) {
+      await this.localStorage.setItem('mensajes_offline', noSincronizados);
+      console.log(`💾 LocalStorage actualizado: ${noSincronizados.length} mensajes pendientes`);
+    }
   }
 
   async sincronizarConversacionesLocales(): Promise<void> {
@@ -324,5 +388,31 @@ export class ComunicacionService {
 
   public resetearContadorMensajesNoVistos() {
     this.mensajesNoVistos.next(0);
+  }
+
+  // Método de diagnóstico para verificar el estado de sincronización
+  async diagnosticarEstadoOffline(): Promise<{
+    mensajes: number,
+    publicaciones: number,
+    comentarios: number,
+    conversaciones: number,
+    isOnline: boolean
+  }> {
+    const mensajesOffline = await this.localStorage.getList<Mensaje>('mensajes_offline') || [];
+    const publicacionesOffline = await this.localStorage.getList<any>('publicaciones_personal') || [];
+    const comentariosOffline = await this.localStorage.getList<any>('comentariosOffline') || [];
+    const conversacionesOffline = await this.localStorage.getList<any>('conversaciones_offline') || [];
+    const isOnline = await this.utilsService.checkInternetConnection();
+
+    const diagnostico = {
+      mensajes: mensajesOffline.length,
+      publicaciones: publicacionesOffline.length,
+      comentarios: comentariosOffline.length,
+      conversaciones: conversacionesOffline.length,
+      isOnline
+    };
+
+    console.log('🔍 Diagnóstico de estado offline:', diagnostico);
+    return diagnostico;
   }
 }

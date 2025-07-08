@@ -101,6 +101,23 @@ export class HomePage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     await this.cargarDatosHome();
+    
+    // Suscribirse a cambios de conectividad para sincronización automática
+    this.UtilsService.networkStatus$.subscribe(async (isOnline) => {
+      if (isOnline) {
+        console.log('🔄 Conexión restaurada - iniciando sincronización automática');
+        // Sincronizar todas las operaciones offline
+        try {
+          await this.publicacionService.sincronizarPublicacionesPersonales();
+          await this.comunicacionService.sincronizarMensajesLocales();
+          // Recargar datos después de sincronizar
+          await this.cargarDatosHome();
+          this.mostrarToast('Datos sincronizados correctamente');
+        } catch (error) {
+          console.error('❌ Error en sincronización automática:', error);
+        }
+      }
+    });
   }
 
   async ionViewWillEnter() {
@@ -139,8 +156,17 @@ export class HomePage implements OnInit, OnDestroy {
         await this.localStorage.setItem('publicaciones', this.publicaciones);
       });
     } else {
-      // Cargar publicaciones desde localStorage
-      this.publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      // Cargar publicaciones desde localStorage y publicaciones personales (offline)
+      const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      const publicacionesPersonales = await this.publicacionService.getPublicacionesPersonal();
+      
+      // Combinar ambas listas y eliminar duplicados
+      this.publicaciones = [...publicacionesLocales, ...publicacionesPersonales];
+      this.publicaciones = this.publicaciones.filter((pub, index, self) => 
+        index === self.findIndex(p => p.id_publicacion === pub.id_publicacion)
+      );
+      
+      console.log(`📄 Publicaciones offline cargadas: ${publicacionesLocales.length} locales + ${publicacionesPersonales.length} personales = ${this.publicaciones.length} total`);
       this.publicaciones.sort((a, b) => b.fecha_publicacion.getTime() - a.fecha_publicacion.getTime());
       this.publicacionesAmigos = [...this.publicaciones];
     }

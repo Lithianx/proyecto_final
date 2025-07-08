@@ -25,25 +25,64 @@ export class PublicacionService {
   async getPublicaciones(): Promise<Publicacion[]> {
     let publicaciones: Publicacion[] | null = null;
     const online = await this.utilsService.checkInternetConnection();
+    
     if (online) {
-      publicaciones = await this.firebaseService.getPublicaciones();
+      console.log('📡 Cargando publicaciones online...');
+      try {
+        publicaciones = await this.firebaseService.getPublicaciones();
+      } catch (error) {
+        console.error('❌ Error cargando publicaciones online:', error);
+      }
     }
+    
     if (!publicaciones) {
-      publicaciones = await this.localStorage.getList<Publicacion>('publicaciones');
+      console.log('📴 Cargando publicaciones desde localStorage...');
+      // Cargar publicaciones locales
+      const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      
+      // Si estamos offline, también incluir publicaciones personales
+      if (!online) {
+        const publicacionesPersonales = await this.getPublicacionesPersonal();
+        publicaciones = [...publicacionesLocales, ...publicacionesPersonales];
+        console.log(`📄 Publicaciones offline cargadas: ${publicacionesLocales.length} locales + ${publicacionesPersonales.length} personales = ${publicaciones.length} total`);
+      } else {
+        publicaciones = publicacionesLocales;
+        console.log(`📄 Publicaciones locales cargadas: ${publicaciones.length}`);
+      }
     }
+    
     if (!publicaciones || publicaciones.length === 0) {
       publicaciones = [];
     }
-    publicaciones.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
-    return publicaciones;
+    
+    // Eliminar duplicados por ID
+    const publicacionesUnicas = publicaciones.filter((pub, index, self) => 
+      index === self.findIndex(p => p.id_publicacion === pub.id_publicacion)
+    );
+    
+    publicacionesUnicas.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
+    return publicacionesUnicas;
   }
 
   ////ONLINE//////
 
   // Obtiene publicación por ID según conexión
   async getPublicacionById(id: string): Promise<Publicacion | undefined> {
-    const publicaciones = await this.getPublicaciones();
-    return publicaciones.find(p => p.id_publicacion === id);
+    const online = await this.utilsService.checkInternetConnection();
+    
+    if (online) {
+      const publicaciones = await this.getPublicaciones();
+      return publicaciones.find(p => p.id_publicacion === id);
+    } else {
+      // Buscar en todas las fuentes offline
+      const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      const publicacionesPersonales = await this.getPublicacionesPersonal();
+      const todasLasPublicaciones = [...publicacionesLocales, ...publicacionesPersonales];
+      
+      const encontrada = todasLasPublicaciones.find(p => p.id_publicacion === id);
+      console.log(`🔍 Buscando publicación ${id} offline. Encontrada: ${!!encontrada}`);
+      return encontrada;
+    }
   }
 
   // Agrega publicación según conexión
@@ -70,19 +109,64 @@ async addPublicacion(publicacion: Publicacion) {
   // Edita publicación según conexión
   async updatePublicacion(publicacion: Publicacion) {
     const online = await this.utilsService.checkInternetConnection();
+    console.log(`💾 Actualizando publicación ${publicacion.id_publicacion}. Online: ${online}`);
+    
     if (online) {
-      await this.firebaseService.updatePublicacion(publicacion);
-      const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
-      const actualizadas = publicaciones.map(p =>
-        p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
-      );
-      await this.localStorage.setItem('publicaciones', actualizadas);
+      try {
+        await this.firebaseService.updatePublicacion(publicacion);
+        console.log('✅ Publicación actualizada en Firebase');
+        
+        // Actualizar en localStorage
+        const publicaciones = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+        const actualizadas = publicaciones.map(p =>
+          p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
+        );
+        await this.localStorage.setItem('publicaciones', actualizadas);
 
-      const personales = await this.getPublicacionesPersonal();
-      const filtradas = personales.filter(p => p.id_publicacion !== publicacion.id_publicacion);
-      await this.localStorage.setItem('publicaciones_personal', filtradas);
+        // Eliminar de publicaciones personales si existe (ya no es offline)
+        const personales = await this.getPublicacionesPersonal();
+        const filtradas = personales.filter(p => p.id_publicacion !== publicacion.id_publicacion);
+        await this.localStorage.setItem('publicaciones_personal', filtradas);
+        
+        console.log('✅ LocalStorage actualizado');
+      } catch (error) {
+        console.error('❌ Error actualizando en Firebase, guardando offline:', error);
+        await this.updatePublicacionPersonal(publicacion);
+      }
     } else {
-      await this.updatePublicacionPersonal(publicacion);
+      console.log('📴 Actualizando publicación offline');
+      
+      // Buscar en ambas listas: locales y personales
+      const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+      const publicacionesPersonales = await this.getPublicacionesPersonal();
+      
+      // Verificar si existe en publicaciones locales
+      const existeEnLocales = publicacionesLocales.some(p => p.id_publicacion === publicacion.id_publicacion);
+      const existeEnPersonales = publicacionesPersonales.some(p => p.id_publicacion === publicacion.id_publicacion);
+      
+      if (existeEnLocales) {
+        // Actualizar en publicaciones locales
+        const actualizadas = publicacionesLocales.map(p =>
+          p.id_publicacion === publicacion.id_publicacion ? { ...publicacion } : p
+        );
+        await this.localStorage.setItem('publicaciones', actualizadas);
+        console.log('✅ Publicación actualizada en publicaciones locales');
+        
+        // También agregar/actualizar en publicaciones personales para sincronización posterior
+        if (existeEnPersonales) {
+          await this.updatePublicacionPersonal(publicacion);
+          console.log('✅ Publicación actualizada en publicaciones personales para sincronización');
+        } else {
+          // Agregar a publicaciones personales para sincronización
+          const publicacionParaSincronizar = { ...publicacion };
+          await this.localStorage.addToList<Publicacion>('publicaciones_personal', publicacionParaSincronizar);
+          console.log('✅ Publicación agregada a publicaciones personales para sincronización');
+        }
+      } else {
+        // Solo actualizar en publicaciones personales
+        await this.updatePublicacionPersonal(publicacion);
+        console.log('✅ Publicación actualizada en publicaciones personales');
+      }
     }
   }
 
@@ -160,25 +244,87 @@ async addPublicacion(publicacion: Publicacion) {
   // Sincroniza publicaciones personales cuando haya internet
   async sincronizarPublicacionesPersonales() {
     const online = await this.utilsService.checkInternetConnection();
-    if (!online) return;
+    if (!online) {
+      console.log('❌ Sin conexión - no se pueden sincronizar publicaciones offline');
+      return;
+    }
 
+    console.log('🔄 Iniciando sincronización de publicaciones offline...');
     const personales = await this.getPublicacionesPersonal();
+    
+    if (personales.length === 0) {
+      console.log('✅ No hay publicaciones offline para sincronizar');
+      return;
+    }
+
+    console.log(`📝 Sincronizando ${personales.length} publicaciones offline`);
     const sincronizadas: Publicacion[] = [];
     const noSincronizadas: Publicacion[] = [];
 
     for (const pub of personales) {
       try {
-        const id = await this.firebaseService.addPublicacion(pub);
-        pub.id_publicacion = id;
-        await this.localStorage.addToList<Publicacion>('publicaciones', pub);
+        console.log(`📤 Intentando sincronizar publicación: ${pub.id_publicacion}`);
+        
+        // Verificar si es una publicación nueva (ID generado localmente) o editada (ID de Firebase)
+        const esPublicacionNueva = this.esIdGeneradoLocalmente(pub.id_publicacion);
+        
+        // Si la imagen es base64, subirla a Firebase Storage antes de sincronizar
+        if (pub.imagen && pub.imagen.startsWith('data:image/')) {
+          console.log(`📤 Subiendo imagen base64 para publicación: ${pub.id_publicacion}`);
+          try {
+            const imagenUrl = await this.firebaseStorageService.uploadCompressedImage(
+              pub.imagen,
+              'publicaciones',
+              1200, // maxWidth
+              1200, // maxHeight
+              0.8   // quality
+            );
+            pub.imagen = imagenUrl;
+            console.log(`✅ Imagen subida exitosamente: ${imagenUrl}`);
+          } catch (error) {
+            console.error(`❌ Error subiendo imagen para publicación ${pub.id_publicacion}:`, error);
+            // Si falla la subida de imagen, marcar como no sincronizada
+            noSincronizadas.push(pub);
+            continue;
+          }
+        }
+        
+        if (esPublicacionNueva) {
+          console.log(`🆕 Sincronizando publicación nueva: ${pub.id_publicacion}`);
+          const id = await this.firebaseService.addPublicacion(pub);
+          pub.id_publicacion = id;
+          await this.localStorage.addToList<Publicacion>('publicaciones', pub);
+        } else {
+          console.log(`✏️ Sincronizando publicación editada: ${pub.id_publicacion}`);
+          await this.firebaseService.updatePublicacion(pub);
+          
+          // Actualizar en publicaciones locales si existe
+          const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+          const actualizadas = publicacionesLocales.map(p =>
+            p.id_publicacion === pub.id_publicacion ? { ...pub } : p
+          );
+          await this.localStorage.setItem('publicaciones', actualizadas);
+        }
+        
         sincronizadas.push(pub);
-      } catch (e) {
-        // Si falla, la dejamos para intentar después
+        console.log(`✅ Publicación sincronizada exitosamente: ${pub.id_publicacion}`);
+      } catch (error) {
+        console.error(`❌ Error sincronizando publicación ${pub.id_publicacion}:`, error);
         noSincronizadas.push(pub);
       }
     }
+    
+    console.log(`📊 Sincronización de publicaciones completada: ${sincronizadas.length} sincronizadas, ${noSincronizadas.length} pendientes`);
+    
     // Solo elimina las que sí se sincronizaron
     await this.localStorage.setItem('publicaciones_personal', noSincronizadas);
+  }
+
+  // Método para determinar si un ID fue generado localmente
+  private esIdGeneradoLocalmente(id: string): boolean {
+    // Los IDs generados localmente son timestamps (solo números)
+    // Los IDs de Firebase contienen letras y caracteres especiales
+    return /^\d+$/.test(id);
   }
 
 
@@ -203,5 +349,66 @@ async addPublicacion(publicacion: Publicacion) {
     } else {
       return this.getPublicacionesDeSeguidos(publicaciones, seguimientos, usuarioActualId);
     }
+  }
+
+  // Método de diagnóstico para verificar publicaciones offline
+  async diagnosticarPublicacionesOffline(): Promise<{
+    publicacionesPersonales: number,
+    publicacionesLocales: number,
+    publicacionesNuevas: number,
+    publicacionesEditadas: number,
+    isOnline: boolean
+  }> {
+    const publicacionesPersonales = await this.getPublicacionesPersonal();
+    const publicacionesLocales = await this.localStorage.getList<Publicacion>('publicaciones') || [];
+    const isOnline = await this.utilsService.checkInternetConnection();
+
+    let publicacionesNuevas = 0;
+    let publicacionesEditadas = 0;
+
+    for (const pub of publicacionesPersonales) {
+      if (this.esIdGeneradoLocalmente(pub.id_publicacion)) {
+        publicacionesNuevas++;
+      } else {
+        publicacionesEditadas++;
+      }
+    }
+
+    const diagnostico = {
+      publicacionesPersonales: publicacionesPersonales.length,
+      publicacionesLocales: publicacionesLocales.length,
+      publicacionesNuevas,
+      publicacionesEditadas,
+      isOnline
+    };
+
+    console.log('🔍 Diagnóstico de publicaciones offline:', diagnostico);
+    return diagnostico;
+  }
+
+  // Método para verificar si hay publicaciones con imágenes pendientes de subir
+  async getPublicacionesConImagenesPendientes(): Promise<Publicacion[]> {
+    const publicacionesPersonales = await this.getPublicacionesPersonal();
+    return publicacionesPersonales.filter(pub => 
+      pub.imagen && pub.imagen.startsWith('data:image/')
+    );
+  }
+
+  // Método para obtener estadísticas de sincronización
+  async getEstadisticasSincronizacion(): Promise<{
+    totalOffline: number,
+    conImagenes: number,
+    sinImagenes: number
+  }> {
+    const publicacionesPersonales = await this.getPublicacionesPersonal();
+    const conImagenes = publicacionesPersonales.filter(pub => 
+      pub.imagen && pub.imagen.startsWith('data:image/')
+    );
+    
+    return {
+      totalOffline: publicacionesPersonales.length,
+      conImagenes: conImagenes.length,
+      sinImagenes: publicacionesPersonales.length - conImagenes.length
+    };
   }
 }
