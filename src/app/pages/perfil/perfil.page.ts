@@ -11,7 +11,7 @@ import { Publicacion } from 'src/app/models/publicacion.model';
 import { Evento } from 'src/app/models/evento.model';
 import { EventoService } from 'src/app/services/evento.service';
 import { Participante } from 'src/app/models/participante.model';
-import { firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-perfil',
@@ -50,10 +50,11 @@ export class PerfilPage implements OnInit {
   })[] = [];
 
   eventosinscritos: (Evento & {
-  id: string;
-  nombre_juego?: string;
-  creador_nombre?: string;
-})[] = [];
+    id: string;
+    nombre_juego?: string;
+    estado_evento?: string;
+    creador_nombre?: string;
+  })[] = [];
 
   fotoPerfil: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
   nombreUsuario: string = 'nombre_de_usuario';
@@ -133,13 +134,13 @@ export class PerfilPage implements OnInit {
     }
   }
 
- private async cargarCantidadSeguidosYSeguidores() {
-  const id = this.usuarioActual.id_usuario;
-  if (!id) {
-    this.estadisticas.seguidos = 0;
-    this.estadisticas.seguidores = 0;
-    return;
-  }
+  private async cargarCantidadSeguidosYSeguidores() {
+    const id = this.usuarioActual.id_usuario;
+    if (!id) {
+      this.estadisticas.seguidos = 0;
+      this.estadisticas.seguidores = 0;
+      return;
+    }
 
     try {
       const seguidos = this.seguirService.getUsuariosSeguidos(this.usuarios, id);
@@ -150,7 +151,6 @@ export class PerfilPage implements OnInit {
       console.error('Error al obtener seguidos/seguidores:', error);
     }
   }
-
 
   private async cargarPublicaciones() {
     const id = this.usuarioActual.id_usuario;
@@ -272,33 +272,33 @@ export class PerfilPage implements OnInit {
   }
 
   async abrirOpciones() {
-  const actionSheet = await this.actionSheetCtrl.create({
-    header: 'Opciones',
-    buttons: [
-      {
-        text: 'Editar perfil',
-        icon: 'person-outline',
-        cssClass: 'icono-verde',
-        handler: () => this.router.navigate(['/editar-perfil'])
-      },
-      {
-        text: 'Historial de eventos',
-        icon: 'time-outline',
-        cssClass: 'icono-verde',
-        handler: () => this.router.navigate(['/historial-eventos'])
-      },
-      {
-        text: 'Guardados',
-        icon: 'bookmark',
-        cssClass: 'icono-verde',
-        handler: () => this.router.navigate(['/publicaciones-guardadas'])
-      },
-      {
-        text: 'Términos y condiciones',
-        icon: 'school-outline',
-        cssClass: 'icono-verde',
-        handler: () => this.router.navigate(['/info-cuenta-institucional'])
-      },
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Opciones',
+      buttons: [
+        {
+          text: 'Editar perfil',
+          icon: 'person-outline',
+          cssClass: 'icono-verde',
+          handler: () => this.router.navigate(['/editar-perfil'])
+        },
+        {
+          text: 'Historial de eventos',
+          icon: 'time-outline',
+          cssClass: 'icono-verde',
+          handler: () => this.router.navigate(['/historial-eventos'])
+        },
+        {
+          text: 'Guardados',
+          icon: 'bookmark',
+          cssClass: 'icono-verde',
+          handler: () => this.router.navigate(['/publicaciones-guardadas'])
+        },
+        {
+          text: 'Términos y condiciones',
+          icon: 'school-outline',
+          cssClass: 'icono-verde',
+          handler: () => this.router.navigate(['/info-cuenta-institucional'])
+        },
         {
           text: 'Cerrar sesión',
           icon: 'log-out-outline',
@@ -306,76 +306,30 @@ export class PerfilPage implements OnInit {
           cssClass: 'cerrar-sesion-btn',
           handler: async () => {
             await this.usuarioService.logout();
-            await this.localStorageService.clear(); 
+            await this.localStorageService.clear();
             this.router.navigate(['/login']);
           }
         }
-    ]
-  });
-  await actionSheet.present();
-}
+      ]
+    });
+    await actionSheet.present();
+  }
 
   async cargarEventosCreados() {
-  const id_usuario = this.usuarioActual.id_usuario;
-  if (!id_usuario) return;
+    const id_usuario = this.usuarioActual.id_usuario;
+    if (!id_usuario) return;
 
-  try {
-    const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
-    const juegos = await firstValueFrom(this.eventoService.getJuegos());
-    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+    try {
+      const eventos = await this.eventoService.obtenerEventosPorCreador(id_usuario);
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
 
-    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+      const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
 
-    const eventosMapeados = [];
+      const eventosMapeados = [];
 
-    for (const evento of eventos) {
-      // ❌ Omitir eventos finalizados
-      if (evento.id_estado_evento === idEstadoFinalizado) continue;
-
-      const juego = juegos.find(j => j.id_juego === evento.id_juego);
-      const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
-      const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
-
-      eventosMapeados.push({
-        ...evento,
-        nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
-        estado_evento: estado?.descripcion ?? 'Estado desconocido',
-        creador_nombre: creadorNombre
-      });
-    }
-
-    this.eventos = eventosMapeados;
-
-  } catch (error) {
-    console.error('Error al cargar eventos creados:', error);
-  }
-}
-
-
-
-async cargarEventosInscritos() {
-  const id_usuario = this.usuarioActual.id_usuario;
-  if (!id_usuario) return;
-
-  try {
-    const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
-
-    // Filtrar solo participantes con estado 'INSCRITO'
-    const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
-
-    const juegos = await firstValueFrom(this.eventoService.getJuegos());
-    const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
-
-    // Obtener el ID del estado FINALIZADO para comparar
-    const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
-
-    const eventosMapeados = [];
-
-    for (const p of inscritos) {
-      try {
-        const evento = await this.eventoService.obtenerEventoPorId(p.id_evento);
-
-        // ❌ Saltar eventos finalizados
+      for (const evento of eventos) {
+        // ❌ Omitir eventos finalizados
         if (evento.id_estado_evento === idEstadoFinalizado) continue;
 
         const juego = juegos.find(j => j.id_juego === evento.id_juego);
@@ -388,37 +342,81 @@ async cargarEventosInscritos() {
           estado_evento: estado?.descripcion ?? 'Estado desconocido',
           creador_nombre: creadorNombre
         });
-
-      } catch (error) {
-        console.warn('⛔ Evento no disponible o eliminado:', p.id_evento);
       }
+
+      this.eventos = eventosMapeados;
+
+    } catch (error) {
+      console.error('Error al cargar eventos creados:', error);
     }
-
-    this.eventosinscritos = eventosMapeados;
-
-  } catch (error) {
-    console.error('❌ Error al cargar eventos inscritos:', error);
   }
-}
+
+  async cargarEventosInscritos() {
+    const id_usuario = this.usuarioActual.id_usuario;
+    if (!id_usuario) return;
+
+    try {
+      const participantes: Participante[] = await this.eventoService.obtenerParticipantesEventoPorUsuario(id_usuario);
+
+      // Filtrar solo participantes con estado 'INSCRITO'
+      const inscritos = participantes.filter(p => p.estado_participante === 'INSCRITO');
+
+      const juegos = await firstValueFrom(this.eventoService.getJuegos());
+      const estados = await firstValueFrom(this.eventoService.getEstadosEvento());
+
+      // Obtener el ID del estado FINALIZADO para comparar
+      const idEstadoFinalizado = estados.find(e => e.descripcion === 'FINALIZADO')?.id_estado_evento;
+
+      const eventosMapeados = [];
+
+      for (const p of inscritos) {
+        try {
+          const evento = await this.eventoService.obtenerEventoPorId(p.id_evento);
+
+          // ❌ Saltar eventos finalizados
+          if (evento.id_estado_evento === idEstadoFinalizado) continue;
+
+          const juego = juegos.find(j => j.id_juego === evento.id_juego);
+          const estado = estados.find(e => e.id_estado_evento === evento.id_estado_evento);
+          const creadorNombre = await this.eventoService.obtenerNombreUsuarioPorId(evento.id_creador);
+
+          eventosMapeados.push({
+            ...evento,
+            nombre_juego: juego?.nombre_juego ?? 'Juego desconocido',
+            estado_evento: estado?.descripcion ?? 'Estado desconocido',
+            creador_nombre: creadorNombre
+          });
+
+        } catch (error) {
+          console.warn('⛔ Evento no disponible o eliminado:', p.id_evento);
+        }
+      }
+
+      this.eventosinscritos = eventosMapeados;
+
+    } catch (error) {
+      console.error('❌ Error al cargar eventos inscritos:', error);
+    }
+  }
 
   irASalaEvento(evento: Evento & { id: string }) {
     this.router.navigate(['/sala-evento', evento.id]);
   }
 
   async doRefresh(event: any) {
-  try {
-    await this.cargarDatosUsuario();
-    await this.cargarUsuarios();
-    await this.cargarCantidadSeguidosYSeguidores();
-    await this.cargarPublicaciones();
-    await this.cargarEventosCreados();
-    await this.cargarEventosInscritos();
-    this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
+    try {
+      await this.cargarDatosUsuario();
+      await this.cargarUsuarios();
+      await this.cargarCantidadSeguidosYSeguidores();
+      await this.cargarPublicaciones();
+      await this.cargarEventosCreados();
+      await this.cargarEventosInscritos();
+      this.segmentChanged({ detail: { value: this.vistaSeleccionada } });
 
-    event.target.complete(); // Finaliza el refresco
-  } catch (error) {
-    console.error('Error durante el refresco:', error);
-    event.target.complete(); // Asegúrate de finalizar incluso si falla
+      event.target.complete(); // Finaliza el refresco
+    } catch (error) {
+      console.error('Error durante el refresco:', error);
+      event.target.complete(); // Asegúrate de finalizar incluso si falla
+    }
   }
-}
 }
