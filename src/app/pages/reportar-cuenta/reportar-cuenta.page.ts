@@ -21,8 +21,8 @@ export class ReportarCuentaPage implements OnInit {
     'Contenido ofensivo',
     'Comportamiento inapropiado',
     'Suplantación de identidad',
-    'Spam o publicidad',
-    'Otro'
+    'Spam o publicidad'
+
   ];
 
   // Aquí guardaremos el usuario que hace el reporte
