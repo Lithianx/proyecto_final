@@ -8,7 +8,7 @@ import { FirebaseService } from './firebase.service';
 import { UtilsService } from './utils.service';
 import { CryptoService } from './crypto.service';
 import { UsuarioService } from './usuario.service';
-import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, take } from 'rxjs';
 
 import { Firestore, collection, collectionData, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
 
@@ -492,6 +492,19 @@ export class ComunicacionService {
 
   public resetearContadorMensajesNoVistos() {
     this.mensajesNoVistos.next(0);
+  }
+
+  // Método público para recalcular el contador de mensajes no vistos
+  public async recalcularContadorMensajesNoVistos() {
+    try {
+      // Obtener todos los mensajes actuales del observable
+      this.mensajes$.pipe(take(1)).subscribe(async mensajes => {
+        await this.actualizarContadorMensajesNoVistosOptimizado(mensajes);
+      });
+    } catch (error) {
+      console.error('Error al recalcular contador de mensajes no vistos:', error);
+      this.mensajesNoVistos.next(0);
+    }
   }
 
   // Método de diagnóstico para verificar el estado de sincronización

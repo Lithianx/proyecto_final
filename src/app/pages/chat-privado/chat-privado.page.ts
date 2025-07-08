@@ -99,6 +99,21 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   async ngOnInit() {
+    await this.cargarDatosChat();
+  }
+
+  /**
+   * Se ejecuta cada vez que se abre la página del chat.
+   * Esto asegura que los mensajes y notificaciones se actualicen al entrar al chat.
+   */
+  async ionViewWillEnter() {
+    await this.cargarDatosChat();
+  }
+
+  /**
+   * Método centralizado para cargar todos los datos del chat
+   */
+  private async cargarDatosChat() {
     // Cargar usuario actual
     const usuario = await this.usuarioService.getUsuarioActualConectado();
     if (usuario) {
@@ -120,6 +135,10 @@ export class ChatPrivadoPage implements OnInit {
     this.usuarios = this.usuarioService.getUsuarios();
 
     this.idConversacionActual = this.route.snapshot.paramMap.get('id') ?? '';
+
+    // Desuscribirse de suscripciones anteriores para evitar duplicados
+    this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
 
     // Verifica conexión
     const online = await this.utilsService.checkInternetConnection();
@@ -229,7 +248,10 @@ export class ChatPrivadoPage implements OnInit {
     }
     console.log('mensajesCombinados', this.mensajesCombinados);
     console.log('mensajes', this.mensajes);
-console.log('mensajesOffline', this.mensajesOffline);
+    console.log('mensajesOffline', this.mensajesOffline);
+
+    // Recalcular el contador de mensajes no vistos después de cargar los datos
+    await this.comunicacionService.recalcularContadorMensajesNoVistos();
   }
 
   verImagen(publicacion: { imagen: string }) {
@@ -303,6 +325,17 @@ console.log('mensajesOffline', this.mensajesOffline);
         this.idConversacionActual,
         this.usuarioActual.id_usuario
       );
+      
+      // Actualizar el estado local inmediatamente para que el contador se refleje de inmediato
+      mensajesNoVistos.forEach(mensaje => {
+        mensaje.estado_visto = true;
+      });
+      
+      // Recalcular el contador de mensajes no vistos
+      await this.comunicacionService.recalcularContadorMensajesNoVistos();
+      
+      // Forzar detección de cambios
+      this.cdRef.detectChanges();
     }
   }
 
