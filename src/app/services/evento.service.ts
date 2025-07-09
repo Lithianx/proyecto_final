@@ -24,15 +24,30 @@ import { Juego } from '../models/juego.model';
 import { TipoJuego } from '../models/tipo-juego.model';
 import { Participante } from '../models/participante.model';
 import { Auth } from '@angular/fire/auth';
+import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EventoService {
   private eventosRef: CollectionReference<DocumentData>;
+  // 🔄 Cache para evitar múltiples llamadas innecesarias
+  private lastUpdateTime: number = 0;
+  private cacheTimeout: number = 5000; // 5 segundos de caché
 
-  constructor(private firestore: Firestore, private auth: Auth) {
+  constructor(private firestore: Firestore, private auth: Auth, private cacheService: CacheService) {
     this.eventosRef = collection(this.firestore, 'Evento');
+  }
+
+  // 🔄 Método para invalidar caché manualmente
+  invalidarCache(): void {
+    this.lastUpdateTime = 0;
+    console.log('🔄 Cache de eventos invalidado');
+  }
+
+  // 🔄 Verificar si el caché es válido
+  private isCacheValid(): boolean {
+    return (Date.now() - this.lastUpdateTime) < this.cacheTimeout;
   }
 
   // Crear un nuevo evento
@@ -42,13 +57,16 @@ export class EventoService {
 
   // Obtener todos los eventos en tiempo real
   obtenerEventos(): Observable<(Evento & { id: string })[]> {
+    console.log('🔄 Obteniendo eventos desde Firebase...');
     return collectionData(this.eventosRef, { idField: 'id' }).pipe(
-      map((eventos) =>
-        eventos.map((evento: any) => ({
+      map((eventos) => {
+        console.log('🔥 Datos recibidos desde Firebase:', eventos.length, 'eventos');
+        this.lastUpdateTime = Date.now();
+        return eventos.map((evento: any) => ({
           ...evento,
           fechaInicio: evento.fechaInicio?.toDate?.() ?? new Date()
-        })) as (Evento & { id: string })[]
-      )
+        })) as (Evento & { id: string })[];
+      })
     );
   }
 

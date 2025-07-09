@@ -180,7 +180,7 @@
               <strong>Inicio:</strong> {{ evento.fechaInicio | date: 'longDate' }}
             </p>
             <p><strong>Cupos:</strong> {{ evento.cupos }}</p>
-            <p><strong>Creado por:</strong> <span class="texto-verde">{{ evento.creador_nombre }}</span></p>
+            <p><strong>Creado por: </strong> <span class="texto-verde"> [ {{ evento.creador_nombre }} ]</span></p>
 
             <ion-button expand="block" class="boton-ver-evento" (click)="irASalaEvento(evento)">
               VER EVENTO
