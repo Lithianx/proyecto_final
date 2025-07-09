@@ -47,7 +47,27 @@ La aplicación está diseñada como una plataforma social gamer para estudiantes
 
 ---
 
+
+## Imagenes
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/659b5a35-521f-40df-84f3-46b147d06699" width="200" alt="Perfil de usuario" />
+  <img src="https://github.com/user-attachments/assets/2f524a5e-72ee-40a3-985b-bc2272a20b7f" width="200" alt="Lista de eventos" />
+  <img src="https://github.com/user-attachments/assets/7b808058-b01e-4b30-a610-7b908f07114f" width="200" alt="Home Feed" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4bd55bc0-7a0f-458b-bce1-b860f90decde" width="200" alt="Lista de chat" />
+  <img src="https://github.com/user-attachments/assets/08abb2ea-7ff7-49f6-9e3a-0a0a0e98a3c8" width="200" alt="Detalles del evento" />
+  <img src="https://github.com/user-attachments/assets/ab8c62f4-5a19-4079-9acf-67d948157128" width="200" alt="Lista de reportes" />
+</p>
+
+
+---
+
+
 ##  Instalación del Proyecto
+
 
 ```bash
 # Clona el repositorio
