@@ -433,4 +433,26 @@ export class EventoService {
   }
 
 
+
+  async obtenerEventoActivoDelUsuario(id_usuario: string): Promise<(Evento & { id: string }) | null> {
+    const participantesRef = collection(this.firestore, 'Participante');
+    const q = query(participantesRef, where('id_usuario', '==', id_usuario), where('estado_participante', '==', 'INSCRITO'));
+    const querySnapshot = await getDocs(q);
+
+    const estadoFinalizadoID = await this.obtenerIdEstadoPorDescripcion('FINALIZADO');
+
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data() as Participante;
+      const evento = await this.obtenerEventoPorId(data.id_evento);
+
+      if (evento.id_estado_evento !== estadoFinalizadoID) {
+        return evento;
+      }
+    }
+
+    return null;
+  }
+
+
+
 }

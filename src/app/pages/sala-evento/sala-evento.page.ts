@@ -362,9 +362,12 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   }
 
   async actualizarCupos() {
-    if (this.nuevoCupo < 2 || this.nuevoCupo > 50) {
+    const jugadoresActuales = this.jugadores.length;
+    const cupoSolicitado = this.nuevoCupo;
+
+    if (cupoSolicitado < 0 || cupoSolicitado > 50) {
       const toast = await this.toastCtrl.create({
-        message: '❌ Los cupos deben estar entre 2 y 50.',
+        message: '❌ Los cupos deben estar entre 0 y 50.',
         duration: 3000,
         color: 'warning',
         position: 'top',
@@ -373,29 +376,37 @@ export class SalaEventoPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.nuevoCupo >= this.jugadores.length) {
-      await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
-        cupos: this.nuevoCupo
-      });
-      this.evento.cupos = this.nuevoCupo;
-      await this.eventoService.actualizarEstadoEvento(this.eventoId);
+    const totalPermitido = 50;
+    const totalJugadoresYCupos = jugadoresActuales + cupoSolicitado;
+
+    if (totalJugadoresYCupos > totalPermitido) {
+      const cupoMaximoPermitido = totalPermitido - jugadoresActuales;
       const toast = await this.toastCtrl.create({
-        message: 'Cupos actualizados ✅',
-        duration: 2000,
-        color: 'success',
-        position: 'top',
-      });
-      await toast.present();
-    } else {
-      const toast = await this.toastCtrl.create({
-        message: '❌ No puedes reducir los cupos por debajo de los jugadores actuales.',
-        duration: 3000,
+        message: `❌ No puedes asignar ${cupoSolicitado} cupos porque ya hay ${jugadoresActuales} jugadores. Máximo permitido: ${cupoMaximoPermitido}.`,
+        duration: 4000,
         color: 'danger',
         position: 'top',
       });
       await toast.present();
+      return;
     }
+
+    await updateDoc(doc(this.firestore, 'Evento', this.eventoId), {
+      cupos: cupoSolicitado
+    });
+
+    this.evento.cupos = cupoSolicitado;
+    await this.eventoService.actualizarEstadoEvento(this.eventoId);
+
+    const toast = await this.toastCtrl.create({
+      message: '✅ Cupos actualizados correctamente.',
+      duration: 2000,
+      color: 'success',
+      position: 'top',
+    });
+    await toast.present();
   }
+
 
   toggleChat() {
     this.chatAbierto = !this.chatAbierto;
@@ -558,31 +569,37 @@ export class SalaEventoPage implements OnInit, OnDestroy {
   validarSoloNumeros(event: any) {
     let valor = event.target.value;
 
-    // Eliminar todo lo que no sea número
+    // 🧼 Eliminar todo lo que no sea número
     valor = valor.replace(/[^0-9]/g, '');
 
-    // Limitar longitud a 2 caracteres (máximo "50")
+    // ⏹️ Limitar longitud a 2 caracteres
     if (valor.length > 2) {
       valor = valor.substring(0, 2);
     }
 
     const numero = parseInt(valor, 10);
+    const jugadoresActuales = this.jugadores.length;
+    const maxPermitido = 50 - jugadoresActuales;
 
+    // ⛔ Valor vacío o NaN
     if (isNaN(numero) || valor === '') {
-      this.nuevoCupo = 2;
+      this.nuevoCupo = 0;
       this.campoCuposInvalido = true;
       return;
     }
 
-    if (numero < 2 || numero > 50) {
+    // ❌ Fuera de rango permitido (entre 0 y máximo permitido según jugadores)
+    if (numero < 0 || numero > maxPermitido) {
       this.nuevoCupo = numero;
       this.campoCuposInvalido = true;
       return;
     }
 
+    // ✅ Valor válido
     this.nuevoCupo = numero;
     this.campoCuposInvalido = false;
   }
+
 
 
 
