@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { Keyboard } from '@capacitor/keyboard';
@@ -24,7 +24,7 @@ import { Conversacion } from 'src/app/models/conversacion.model';
   styleUrls: ['./chat-privado.page.scss'],
   standalone: false,
 })
-export class ChatPrivadoPage implements OnInit {
+export class ChatPrivadoPage implements OnInit, OnDestroy {
   private mensajesSub?: Subscription;
   private conversacionesSub?: Subscription;
 
@@ -57,6 +57,8 @@ export class ChatPrivadoPage implements OnInit {
   incrementoMensajes = 30;
   cargandoMas = false;
 
+  // Control para saber si el chat está activo
+  private chatActivo = false;
 
   imagenSeleccionada: string | null = null;
   videoSeleccionado: string | null = null;
@@ -107,7 +109,20 @@ export class ChatPrivadoPage implements OnInit {
    * Esto asegura que los mensajes y notificaciones se actualicen al entrar al chat.
    */
   async ionViewWillEnter() {
+    this.chatActivo = true; // Activar el chat
     await this.cargarDatosChat();
+    // Marcar mensajes como vistos al entrar al chat
+    await this.marcarMensajesRecibidosComoVistos();
+  }
+
+  /**
+   * Se ejecuta cuando la página vuelve a estar visible (por ejemplo, al volver de otra app)
+   */
+  async ionViewDidEnter() {
+    // Asegurar que el chat esté marcado como activo
+    this.chatActivo = true;
+    // Marcar mensajes como vistos al volver a la página
+    await this.marcarMensajesRecibidosComoVistos();
   }
 
   /**
@@ -181,7 +196,10 @@ export class ChatPrivadoPage implements OnInit {
           this.cargandoMas = false;
         }
 
-        await this.marcarMensajesRecibidosComoVistos();
+        // Solo marcar mensajes como vistos si el chat está activo
+        if (this.chatActivo) {
+          await this.marcarMensajesRecibidosComoVistos();
+        }
       });
 
       // Busca la conversación actual y el usuario receptor real (online)
@@ -275,11 +293,6 @@ export class ChatPrivadoPage implements OnInit {
   }
 
 
-  ngOnDestroy() {
-    this.mensajesSub?.unsubscribe();
-    this.conversacionesSub?.unsubscribe();
-  }
-
   // Scroll infinito: cargar más mensajes al hacer scroll arriba
   onScroll(event: any) {
     const scrollTop = event.detail.scrollTop;
@@ -314,6 +327,11 @@ export class ChatPrivadoPage implements OnInit {
   }
 
   async marcarMensajesRecibidosComoVistos() {
+    // Solo marcar mensajes como vistos si el chat está activo
+    if (!this.chatActivo) {
+      return;
+    }
+
     const mensajesNoVistos = this.mensajes.filter(
       m =>
         m.id_usuario_emisor !== this.usuarioActual.id_usuario &&
@@ -828,7 +846,21 @@ async enviarMensaje() {
   }
 
   ionViewWillLeave() {
+    this.chatActivo = false; // Desactivar el chat
     Keyboard.hide();
+    
+    // Desuscribirse para evitar que los mensajes se marquen como vistos cuando no esté en el chat
+    this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
+  }
+
+  /**
+   * Se ejecuta cuando el componente se destruye
+   */
+  ngOnDestroy() {
+    this.chatActivo = false;
+    this.mensajesSub?.unsubscribe();
+    this.conversacionesSub?.unsubscribe();
   }
 
 
