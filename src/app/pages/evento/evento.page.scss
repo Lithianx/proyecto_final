@@ -71,6 +71,34 @@ ion-searchbar{
   }
 
 
+  .lupa-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 3rem;
+      color: #3fe520;
+      animation: girarLupa 2.5s linear infinite;
+    }
+  }
+
+@keyframes girarLupa {
+  0% {
+    transform: rotate(-30deg);
+  }
+
+  50% {
+    transform: rotate(30deg);
+  }
+
+  100% {
+    transform: rotate(-30deg);
+  }
+}
+
+
   .header-con-estado {
   display: flex;
   align-items: flex-start;

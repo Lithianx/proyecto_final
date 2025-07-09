@@ -40,7 +40,9 @@
 
   <ng-container *ngIf="datosCargados">
     <div *ngIf="eventosFiltrados.length === 0" class="no-eventos">
-      <ion-icon name="game-controller-outline" class="icono-vacio"></ion-icon>
+      <span class="lupa-spinner">
+        <ion-icon name="game-controller-outline"></ion-icon>
+      </span>
       <h3 class="texto-vacio">Aún no hay eventos disponibles</h3>
       <p class="subtexto-vacio">¡Vuelve más tarde o crea el primero tú!</p>
     </div>

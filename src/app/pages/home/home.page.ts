@@ -112,7 +112,6 @@ export class HomePage implements OnInit, OnDestroy {
           await this.comunicacionService.sincronizarMensajesLocales();
           // Recargar datos después de sincronizar
           await this.cargarDatosHome();
-          this.mostrarToast('Datos sincronizados correctamente');
         } catch (error) {
           console.error('❌ Error en sincronización automática:', error);
         }
