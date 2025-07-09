@@ -54,17 +54,21 @@
           <ion-col size="12" class="cupos-wrapper">
             <label class="label-cupos">Cupos</label>
             <div class="fila-input">
-              <ion-input class="input-cupos" type="number" [(ngModel)]="nuevoCupo" min="2" max="50"
+              <ion-input type="number" min="0" [max]="50 - jugadores.length" [(ngModel)]="nuevoCupo"
                 [disabled]="eventoEnCurso" [color]="campoCuposInvalido ? 'danger' : ''"
-                (keydown)="bloquearCaracteresInvalidos($event)" (ionInput)="validarSoloNumeros($event)">
+                (keydown)="bloquearCaracteresInvalidos($event)" (ionInput)="validarSoloNumeros($event)" class="input-cupos">
               </ion-input>
-              <ion-button color="success" size="small" (click)="actualizarCupos()" [disabled]="eventoEnCurso">
+
+              <ion-button color="success" size="small" (click)="actualizarCupos()"
+                [disabled]="eventoEnCurso || campoCuposInvalido">
                 Actualizar
               </ion-button>
+
             </div>
             <ion-note class="error-cupos" color="danger" *ngIf="campoCuposInvalido">
-              El número debe estar entre 2 y 50
+              El número debe estar entre 0 y {{ 50 - jugadores.length }}.
             </ion-note>
+
           </ion-col>
         </ion-row>
 
