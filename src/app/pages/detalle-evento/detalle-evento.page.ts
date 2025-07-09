@@ -120,7 +120,6 @@ export class DetalleEventoPage implements OnInit {
       backdropDismiss: false
     });
     await loading.present();
-    // Mostrar spinner y deshabilitar botón
 
     try {
       const idUsuario: string | null = await this.localStorageService.getItem('id_usuario');
@@ -129,6 +128,21 @@ export class DetalleEventoPage implements OnInit {
       const usuario = await this.usuarioService.getUsuarioActualConectado();
       if (!usuario) throw new Error('Usuario no autenticado');
 
+      // ✅ Verificar si ya está en otro evento no finalizado
+      const eventoEnConflicto = await this.eventoService.obtenerEventoActivoDelUsuario(idUsuario);
+
+      if (eventoEnConflicto && eventoEnConflicto.id !== this.evento.id) {
+        const alerta = await this.toastCtrl.create({
+          message: `❌ Ya estás inscrito en el evento "${eventoEnConflicto.nombre_evento}". Sal de ese evento para unirte a otro.`,
+          duration: 3500,
+          color: 'warning',
+          position: 'top'
+        });
+        await alerta.present();
+        return;
+      }
+
+      // ✅ Unirse normalmente
       await this.eventoService.tomarEvento(this.evento.id);
 
       await this.eventoService.registrarParticipante({
@@ -168,7 +182,6 @@ export class DetalleEventoPage implements OnInit {
     } finally {
       this.cargandoUnirse = false;
       await loading.dismiss();
-      // Ocultar spinner al finalizar
     }
   }
 
