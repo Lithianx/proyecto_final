@@ -66,8 +66,10 @@ La aplicación está diseñada como una plataforma social gamer para estudiantes
 ---
 ## Instalación APK
 Para Android:
-Descarga el archivo APK desde el siguiente enlace: (https://github.com/Lithianx/proyecto_final/releases/tag/APK)
+Descarga el archivo APK desde el siguiente enlace: (https://github.com/Lithianx/proyecto_final/releases/tag/APK).
+
 Habilita la instalación de aplicaciones de orígenes desconocidos en la configuración de tu dispositivo.
+
 Instala el archivo APK.
 
 ##  Instalación del Proyecto
